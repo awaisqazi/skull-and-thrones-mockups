@@ -30,7 +30,8 @@
         "https://www.instagram.com/stylesbyelyse/",
         "https://www.instagram.com/p/DW-AKnFlHLb/"
       ],
-      "confidence": "confirmed"
+      "confidence": "confirmed",
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "adrian",
@@ -61,7 +62,8 @@
         "https://www.instagram.com/p/DdjtYHpFgfD/",
         "https://www.instagram.com/p/DdIUjTeFi45/"
       ],
-      "confidence": "confirmed"
+      "confidence": "confirmed",
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "fabi",
@@ -96,7 +98,8 @@
       "languages": [
         "English",
         "Spanish"
-      ]
+      ],
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "jayden-sanchez",
@@ -121,7 +124,8 @@
       "sources": [
         "https://www.instagram.com/cutsfromjay/"
       ],
-      "confidence": "confirmed"
+      "confidence": "confirmed",
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "darian",
@@ -151,7 +155,8 @@
         "https://www.instagram.com/p/DaqHiCTFK5n/",
         "https://www.instagram.com/p/DQ9lSgrDj3P/"
       ],
-      "confidence": "confirmed"
+      "confidence": "confirmed",
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "reno",
@@ -205,7 +210,8 @@
         "https://www.instagram.com/p/DYs4OSWT7XX/",
         "https://www.instagram.com/p/DJHzEvMSl03/"
       ],
-      "confidence": "confirmed"
+      "confidence": "confirmed",
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "anastacio",
@@ -236,7 +242,8 @@
         "https://www.instagram.com/p/DHclb7pOXFg/",
         "https://www.instagram.com/p/DHkSF2etxwR/"
       ],
-      "confidence": "confirmed"
+      "confidence": "confirmed",
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "ruben",
@@ -267,7 +274,8 @@
         "https://www.instagram.com/p/DZkFL18gC84/",
         "https://www.instagram.com/p/Db9qsXVggVF/"
       ],
-      "confidence": "likely"
+      "confidence": "likely",
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "peter",
@@ -294,7 +302,8 @@
         "https://www.instagram.com/droddhaaa/",
         "https://www.instagram.com/p/DSKlFp_EyJ4/"
       ],
-      "confidence": "confirmed"
+      "confidence": "confirmed",
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "juan",
@@ -323,7 +332,8 @@
         "https://www.instagram.com/jmoreno0424/",
         "https://www.instagram.com/p/C7nXOMzOXwg/"
       ],
-      "confidence": "likely"
+      "confidence": "likely",
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "eric-el-samurai",
@@ -352,7 +362,8 @@
         "https://www.instagram.com/eric.thesamurai/",
         "https://www.instagram.com/p/DQ9rGAuAGI6/"
       ],
-      "confidence": "confirmed"
+      "confidence": "confirmed",
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "jackie",
@@ -384,7 +395,8 @@
         "https://www.instagram.com/p/DFfd0HOxBSq/",
         "https://www.instagram.com/p/DYsQWD9xrVT/"
       ],
-      "confidence": "confirmed"
+      "confidence": "confirmed",
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "carlos",
@@ -410,7 +422,8 @@
         "https://www.instagram.com/carloss_barber/",
         "https://www.instagram.com/p/DCuShlauJZQ/"
       ],
-      "confidence": "confirmed"
+      "confidence": "confirmed",
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "rudy",
@@ -442,7 +455,8 @@
         "https://www.instagram.com/p/DDF4Ke4usyQ/",
         "https://www.instagram.com/p/DRD0yp9jhDe/"
       ],
-      "confidence": "confirmed"
+      "confidence": "confirmed",
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "javier",
@@ -495,7 +509,8 @@
         "https://www.instagram.com/p/DGx3wnzparW/",
         "https://www.instagram.com/p/DNBAtzquCyy/"
       ],
-      "confidence": "confirmed"
+      "confidence": "confirmed",
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "valentina",
@@ -525,7 +540,8 @@
       "languages": [
         "English",
         "Spanish"
-      ]
+      ],
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "david",
@@ -555,7 +571,8 @@
         "https://www.instagram.com/p/DRisJzEFxtk/",
         "https://www.instagram.com/p/DKaRa0qOnNI/"
       ],
-      "confidence": "confirmed"
+      "confidence": "confirmed",
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "alejandro",
@@ -585,7 +602,8 @@
         "https://www.instagram.com/cuts.by.alejandro/",
         "https://www.instagram.com/p/DFBJkMtx1Lr/"
       ],
-      "confidence": "confirmed"
+      "confidence": "confirmed",
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "christian",
@@ -615,7 +633,8 @@
       "sources": [
         "https://www.instagram.com/christianfadeit/"
       ],
-      "confidence": "confirmed"
+      "confidence": "confirmed",
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "angel-m",
@@ -668,7 +687,8 @@
         "https://www.instagram.com/p/DPCGGqxDrLW/",
         "https://www.instagram.com/p/DU07EVAjvJ-/"
       ],
-      "confidence": "confirmed"
+      "confidence": "confirmed",
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "brandon",
@@ -697,7 +717,8 @@
         "https://www.instagram.com/p/DKhnJq2OGxj/",
         "https://www.instagram.com/p/DMvwDH-ua99/"
       ],
-      "confidence": "likely"
+      "confidence": "likely",
+      "headshot_source": "instagram-profile"
     },
     {
       "slug": "bella",
@@ -727,7 +748,8 @@
         "https://www.instagram.com/p/DPgwpSxDuBN/",
         "https://www.instagram.com/p/Dc6twNqFetO/"
       ],
-      "confidence": "confirmed"
+      "confidence": "confirmed",
+      "headshot_source": "instagram-profile"
     }
   ]
 }

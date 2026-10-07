@@ -66,6 +66,8 @@ const barbers = defineCollection({
     instagram: z.string().optional(),
     /** Remote headshot URL (Supabase Storage later). Absent = generated placeholder tile. */
     headshot: z.string().url().optional(),
+    /** Where the current headshot came from; 'instagram-profile' means interim until the shop supplies real headshots. */
+    headshot_source: z.enum(['client', 'instagram-profile']).optional(),
     specialties: z.array(z.string()).default([]),
     bio: z.string().default(''),
     accepting_new_clients: z.boolean().default(true),
