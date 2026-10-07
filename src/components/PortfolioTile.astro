@@ -8,11 +8,11 @@ const what = `${t.style} by ${t.barber_name}`;
 const local = localPortfolioImage(t.id);
 const hasPhoto = Boolean(t.image || local);
 const alt = hasPhoto ? what : `Placeholder photo: ${t.style.toLowerCase()} by ${t.barber_name}`;
-const full = local ? (await getImage({ src: local, width: 1600, format: 'jpg' })).src : t.full;
+const full = local ? (await getImage({ src: local, width: 1600, format: 'jpg', quality: 82 })).src : t.full;
 ---
 <figure class="tile" data-tags={t.tag} data-barber={t.barber} data-full={full}>
   {local
-    ? <Image src={local} alt={alt} width={t.width} height={t.height} loading="lazy" />
+    ? <Image src={local} alt={alt} width={t.width} height={t.height} fit="cover" position="attention" loading="lazy" />
     : t.image
       ? <Image src={t.image} alt={alt} width={t.width} height={t.height} loading="lazy" />
       : <img src={t.src} alt={alt} width={t.width} height={t.height} loading="lazy" />}
