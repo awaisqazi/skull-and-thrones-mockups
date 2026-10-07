@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
 import Layout from '../layouts/Layout.astro';
 import LocationTabs from '../components/LocationTabs.astro';
 import BarberGrid from '../components/BarberGrid.astro';
@@ -15,6 +17,9 @@ const [first, second] = locations;
 const featured = await Promise.all(locations.map(async (l) => ({ l, items: await getPortfolio({ location: l.slug, featured: true }) })));
 const marquee = ['Skin fades', 'Scissor work', 'Beards', 'Kids cuts', 'Long hair', 'Color', 'Designs', 'Hot towel'];
 const igTiles = Array.from({ length: 6 }, (_, i) => placeholder(500, 500, `IG ${i}`));
+// Drop a photo at src/assets/hero.(jpg|png|webp) to replace the hero placeholder.
+const heroFiles = import.meta.glob<{ default: ImageMetadata }>('/src/assets/hero.{jpg,jpeg,png,webp}', { eager: true });
+const hero = Object.values(heroFiles)[0]?.default;
 ---
 <Layout
   title="Barbershop in Addison & Elmhurst, IL · Skull & Thrones"
@@ -40,7 +45,9 @@ const igTiles = Array.from({ length: 6 }, (_, i) => placeholder(500, 500, `IG ${
         </ul>
       </div>
       <div class="media hero__media">
-        <img src={placeholder(1600, 1100, 'Hero shop')} alt="Placeholder: interior of the shop" width="1600" height="1100" fetchpriority="high" />
+        {hero
+          ? <Image src={hero} alt="A Skull & Thrones barber shaping a fade with clippers" width={1600} height={1100} fit="cover" position="attention" fetchpriority="high" loading="eager" />
+          : <img src={placeholder(1600, 1100, 'Hero shop')} alt="Placeholder: interior of the shop" width="1600" height="1100" fetchpriority="high" />}
         <span class="ph-tag">Placeholder photo</span>
         <a class="badge" href={url('book/')} aria-label="Book an appointment">
           <svg viewBox="0 0 100 100" aria-hidden="true"><defs><path id="ring" d="M50 50m-38 0a38 38 0 1 1 76 0a38 38 0 1 1-76 0" /></defs><text font-family="Inter Tight, sans-serif" font-size="9" font-weight="700" fill="#111"><textPath href="#ring" textLength="236" lengthAdjust="spacing">BOOK NOW · PICK YOUR CHAIR · </textPath></text></svg>
