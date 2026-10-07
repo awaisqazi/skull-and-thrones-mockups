@@ -42,6 +42,10 @@ const locations = defineCollection({
     any_artist_item_id: z.string(),
     map_query: z.string(),
     parking: z.string().optional(),
+    /** Instagram handle (no @) for this location; both shops currently share @skullandthrones. */
+    instagram: z.string().optional(),
+    /** Short verified facts (from Instagram, Oct 2026) for the location page / CMS. */
+    notes: z.array(z.string()).default([]),
     placeholder_fields: z.array(z.string()).default([]),
   }),
 });
@@ -68,6 +72,12 @@ const barbers = defineCollection({
     sort_order: z.number().int().default(0),
     is_active: z.boolean().default(true),
     square_note: z.string().optional(),
+    /** Languages verified from the barber's own posts. */
+    languages: z.array(z.string()).default([]),
+    /** URLs the bio/specialties/instagram were verified from. */
+    sources: z.array(z.string().url()).default([]),
+    /** confirmed | likely (handle matches roster name, location not stated) | none (nothing found). */
+    confidence: z.enum(['confirmed', 'likely', 'none']).optional(),
     /** Fields that hold invented mockup copy and still need real client data. */
     placeholder_fields: z.array(z.string()).default([]),
   }),
@@ -83,7 +93,10 @@ const portfolio = defineCollection({
     width: z.number().int().positive(),
     height: z.number().int().positive(),
     /** Remote photo URL (Supabase Storage later). Absent = generated placeholder tile. */
-    image: z.string().url().optional(),
+    image: z.string().url().nullable().optional(),
+    /** Public Instagram post this tile represents (shown as an "IG ↗" link while image is null). */
+    source_url: z.string().url().optional(),
+    caption: z.string().optional(),
     featured: z.boolean().default(false),
     sort_order: z.number().int().default(0),
     placeholder: z.boolean().default(false),

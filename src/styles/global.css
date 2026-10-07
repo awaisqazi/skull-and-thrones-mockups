@@ -562,3 +562,7 @@ a.card__open { color: inherit; text-decoration: none; }
   .marquee__track { flex-wrap: wrap; width: auto; }
   .marquee__dup { display: none; }
 }
+
+/* ---------- 17. Instagram source link on portfolio tiles (image pending) ---------- */
+.tile .tile__ig { z-index: 3; pointer-events: auto; text-decoration: none; font-size: 10.5px; padding: 6px 9px; }
+.tile .tile__ig:hover, .tile .tile__ig:focus-visible { background: var(--accent); color: var(--ink); outline: none; }

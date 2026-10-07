@@ -1,5 +1,5 @@
 {
-  "_note": "Both shops. Hours: days use 0 = Sunday … 6 = Saturday, times are 24h shop-local (America/Chicago). square_booking_url is the location's Square services page; per-barber URLs append /{item_id}. Parking text is PLACEHOLDER until the client confirms.",
+  "_note": "Both shops. Hours: days use 0 = Sunday … 6 = Saturday, times are 24h shop-local (America/Chicago). square_booking_url is the location's Square services page; per-barber URLs append /{item_id}. Parking text is PLACEHOLDER until the client confirms. instagram/notes verified from @skullandthrones on 2026-10-07; there is one shared Instagram account for both shops. Walk-in policy, gift cards and prices were NOT found on Instagram.",
   "locations": [
     {
       "slug": "addison",
@@ -12,16 +12,47 @@
       "phone": "(630) 613-8134",
       "phone_e164": "+16306138134",
       "hours": [
-        { "label": "Mon – Fri", "days": [1, 2, 3, 4, 5], "opens": "10:00", "closes": "19:00" },
-        { "label": "Saturday", "days": [6], "opens": "08:00", "closes": "16:00" },
-        { "label": "Sunday", "days": [0], "opens": "09:00", "closes": "15:00" }
+        {
+          "label": "Mon – Fri",
+          "days": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "opens": "10:00",
+          "closes": "19:00"
+        },
+        {
+          "label": "Saturday",
+          "days": [
+            6
+          ],
+          "opens": "08:00",
+          "closes": "16:00"
+        },
+        {
+          "label": "Sunday",
+          "days": [
+            0
+          ],
+          "opens": "09:00",
+          "closes": "15:00"
+        }
       ],
       "hours_short": "Mon–Fri 10–7",
       "square_booking_url": "https://book.squareup.com/appointments/j4bvyc6hjb6dmt/location/D11BVA91E8V3N/services",
       "any_artist_item_id": "UPKLK2CAHWYINF22WNWPSCY4",
       "map_query": "1405 W Lake Street, Addison, IL 60101",
       "parking": "Details to confirm with client (lot / street / meters).",
-      "placeholder_fields": ["parking"]
+      "placeholder_fields": [
+        "parking"
+      ],
+      "instagram": "skullandthrones",
+      "notes": [
+        "Shop and barbers use the 'Skull & Thrones Hair Society' name on Instagram; the Addison address (1405 W Lake St) is in barber bios."
+      ]
     },
     {
       "slug": "elmhurst",
@@ -34,16 +65,48 @@
       "phone": "(331) 315-6055",
       "phone_e164": "+13313156055",
       "hours": [
-        { "label": "Mon – Fri", "days": [1, 2, 3, 4, 5], "opens": "10:00", "closes": "19:00" },
-        { "label": "Saturday", "days": [6], "opens": "08:00", "closes": "16:00" },
-        { "label": "Sunday", "days": [0], "opens": "09:00", "closes": "15:00" }
+        {
+          "label": "Mon – Fri",
+          "days": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "opens": "10:00",
+          "closes": "19:00"
+        },
+        {
+          "label": "Saturday",
+          "days": [
+            6
+          ],
+          "opens": "08:00",
+          "closes": "16:00"
+        },
+        {
+          "label": "Sunday",
+          "days": [
+            0
+          ],
+          "opens": "09:00",
+          "closes": "15:00"
+        }
       ],
       "hours_short": "Mon–Fri 10–7",
       "square_booking_url": "https://book.squareup.com/appointments/ryfrr2g9lvsdsp/location/L65DF5AG5BDAN/services",
       "any_artist_item_id": "YWLSORKMSZEAIER66TICZXKB",
       "map_query": "183 N. York St., Elmhurst, IL 60126",
       "parking": "Details to confirm with client (lot / street / meters).",
-      "placeholder_fields": ["parking"]
+      "placeholder_fields": [
+        "parking"
+      ],
+      "instagram": "skullandthrones",
+      "notes": [
+        "Moved on March 5, 2026 into a new ~3,000 sq ft space in downtown Elmhurst (shop post, Mar 2026), after about 3.5 years in its first Elmhurst spot.",
+        "Instagram 'Elmhurst' story highlight exists on @skullandthrones."
+      ]
     }
   ]
 }

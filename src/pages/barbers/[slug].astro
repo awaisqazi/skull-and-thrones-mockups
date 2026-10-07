@@ -61,7 +61,7 @@ const person = {
           <a class="btn btn--light btn--lg" href={work.length ? '#work' : url(`${loc.slug}/#portfolio`)}>See their work</a>
         </div>
         {(isPlaceholder('bio') || isPlaceholder('headshot')) && (
-          <p class="note">Book opens {b.first_name}'s own Square booking page at {loc.name}. Bio, specialties and photo are placeholders until the client supplies them.</p>
+          <p class="note">Book opens {b.first_name}'s own Square booking page at {loc.name}. {isPlaceholder('bio') ? 'Bio, specialties and photo are placeholders until the client supplies them.' : 'Bio and specialties are drawn from their public Instagram; photo is a placeholder until the client supplies one.'}</p>
         )}
       </div>
     </div>

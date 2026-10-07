@@ -1,5 +1,5 @@
 {
-  "_note": "Seeded from docs/barbers.json (Square booking pages, 2026-10-07). booking_url = location.square_booking_url + '/' + item_id (built in src/lib/data.ts). Fields listed in placeholder_fields are invented for the mockup and must be replaced with client-supplied copy. Item IDs change if a barber's Square service is deleted/recreated.",
+  "_note": "Seeded from docs/barbers.json (Square booking pages, 2026-10-07). booking_url = location.square_booking_url + '/' + item_id (built in src/lib/data.ts). Fields listed in placeholder_fields are invented for the mockup and must be replaced with client-supplied copy. Item IDs change if a barber's Square service is deleted/recreated. Instagram handles, bios, specialties, sources and confidence were filled 2026-10-07 from public Instagram (see docs/instagram-findings.md). confidence: confirmed = profile names Skull & Thrones and/or links this barber's own Square item; likely = name matches roster but profile does not name the location; none = no account found. Specialties = [] means no evidence yet.",
   "barbers": [
     {
       "slug": "elyse-lc",
@@ -10,22 +10,27 @@
       "haircut_from": 50,
       "item_id": "DBRRZN5WC3Y3RTSNMMW5EJGN",
       "specialties": [
-        "Long hair",
         "Scissor work",
+        "Perms",
+        "Color",
         "Fades"
       ],
-      "bio": "Long & short hair specialist and hybrid artist — clipper and shear. Go-to for long hair and scissor work.",
+      "bio": "Elyse \"LC\" Mendez is a hair artist at Skull & Thrones Hair Society in Addison. Her Instagram highlights shear work, faded looks, hair color and perms, including perm + drop fade combos and wavy mid-length cuts.",
       "accepting_new_clients": true,
       "sort_order": 1,
       "is_active": true,
       "square_note": "Long and short hair specialist. Hybrid artist.",
       "placeholder_fields": [
         "role",
-        "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "instagram": "stylesbyelyse",
+      "sources": [
+        "https://www.instagram.com/stylesbyelyse/",
+        "https://www.instagram.com/p/DW-AKnFlHLb/"
+      ],
+      "confidence": "confirmed"
     },
     {
       "slug": "adrian",
@@ -36,21 +41,27 @@
       "haircut_from": 50,
       "item_id": "YH7L6N2OL6D2VKKQTYLGCDAY",
       "specialties": [
-        "Fades",
-        "Beards",
-        "Line-ups"
+        "Scissor work",
+        "Texture & movement",
+        "Mod / shag / wolf cuts"
       ],
-      "bio": "Adrian works the Addison floor. Go-to for fades and beards.",
+      "bio": "Adrián Alberto Alva is an Addison artist whose feed is built on scissor work: textured cuts, 70s-inspired mods and soft layered wolf cuts. He keeps up his education, including a 2026 CHOP x Bodega class in Chicago.",
       "accepting_new_clients": true,
       "sort_order": 2,
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "instagram": "hausxalva",
+      "sources": [
+        "https://www.instagram.com/hausxalva/",
+        "https://www.instagram.com/p/DbFC2WjltTB/",
+        "https://www.instagram.com/p/DdjtYHpFgfD/",
+        "https://www.instagram.com/p/DdIUjTeFi45/"
+      ],
+      "confidence": "confirmed"
     },
     {
       "slug": "fabi",
@@ -62,20 +73,29 @@
       "item_id": "AN2U5RNAGZJQASIRIMLYO6XL",
       "instagram": "ellaesbarbera",
       "specialties": [
-        "Fades",
-        "Designs",
-        "Kids"
+        "Curly hair",
+        "Long length",
+        "Mullets"
       ],
-      "bio": "Fabi works the Addison floor. Go-to for fades and designs.",
+      "bio": "Fabi calls herself \"your emotional hair artist\" and is a curly-hair specialist on the Addison floor. She posts long-length and curly cuts, often before/afters, and captions in Spanish and English.",
       "accepting_new_clients": true,
       "sort_order": 3,
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
+      ],
+      "sources": [
+        "https://www.instagram.com/ellaesbarbera/",
+        "https://www.instagram.com/p/DL3dWfDO9dl/",
+        "https://www.instagram.com/p/DQHxHfhD8AW/",
+        "https://www.instagram.com/p/DOHgJ7mDU3j/"
+      ],
+      "confidence": "confirmed",
+      "languages": [
+        "English",
+        "Spanish"
       ]
     },
     {
@@ -86,21 +106,22 @@
       "role": "Apprentice",
       "haircut_from": 35,
       "item_id": "GP7OICKASS3DQAC247I72VST",
-      "specialties": [
-        "Fades",
-        "Kids"
-      ],
-      "bio": "Apprentice barber on the Addison floor. Go-to for fades and kids.",
+      "specialties": [],
+      "bio": "Jayden is a Wahl Barber Academy graduate cutting at Skull & Thrones Addison.",
       "accepting_new_clients": true,
       "sort_order": 4,
       "is_active": true,
       "placeholder_fields": [
         "role",
         "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "instagram": "cutsfromjay",
+      "sources": [
+        "https://www.instagram.com/cutsfromjay/"
+      ],
+      "confidence": "confirmed"
     },
     {
       "slug": "darian",
@@ -111,20 +132,26 @@
       "haircut_from": 50,
       "item_id": "RETPNFELD4Y3X65VHIKL3WBY",
       "specialties": [
-        "Tapers",
-        "Beards"
+        "All hair textures",
+        "Detail work"
       ],
-      "bio": "Darian works the Addison floor. Go-to for tapers and beards.",
+      "bio": "Darian Dorantes cuts at Skull & Thrones Addison (\"Hustle Humbly\"). His posts focus on versatility across every hair texture and attention to detail.",
       "accepting_new_clients": true,
       "sort_order": 5,
       "is_active": true,
       "placeholder_fields": [
         "role",
         "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "instagram": "dariandorantes",
+      "sources": [
+        "https://www.instagram.com/dariandorantes/",
+        "https://www.instagram.com/p/DaqHiCTFK5n/",
+        "https://www.instagram.com/p/DQ9lSgrDj3P/"
+      ],
+      "confidence": "confirmed"
     },
     {
       "slug": "reno",
@@ -134,11 +161,8 @@
       "role": "Barber",
       "haircut_from": 60,
       "item_id": "I56TJK2FOFIPPKGZG2SJMTHQ",
-      "specialties": [
-        "Skin fades",
-        "Designs"
-      ],
-      "bio": "Reno works the Addison floor. Go-to for skin fades and designs.",
+      "specialties": [],
+      "bio": "TODO client: bio for Reno (no Instagram account found).",
       "accepting_new_clients": false,
       "sort_order": 6,
       "is_active": true,
@@ -149,7 +173,9 @@
         "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "sources": [],
+      "confidence": "none"
     },
     {
       "slug": "jovani",
@@ -160,21 +186,26 @@
       "haircut_from": 50,
       "item_id": "MYAXT2YC2OF3RGKNCMQSGFPF",
       "specialties": [
-        "Fades",
-        "Kids",
-        "Beards"
+        "Tapers",
+        "Blends",
+        "Mullets"
       ],
-      "bio": "Jovani works the Addison floor. Go-to for fades and kids.",
+      "bio": "Jovani Feliciano is a licensed barber in Addison focused on precision and style, and he is accepting new clients. His feed includes blends and long-hair-to-taper-mullet transformations.",
       "accepting_new_clients": true,
       "sort_order": 7,
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "instagram": "jovanifeliciano",
+      "sources": [
+        "https://www.instagram.com/jovanifeliciano/",
+        "https://www.instagram.com/p/DYs4OSWT7XX/",
+        "https://www.instagram.com/p/DJHzEvMSl03/"
+      ],
+      "confidence": "confirmed"
     },
     {
       "slug": "anastacio",
@@ -185,20 +216,27 @@
       "haircut_from": 60,
       "item_id": "7R7UJ47T2F44GVJKH7NU6WNC",
       "specialties": [
-        "Scissor work",
-        "Classic cuts"
+        "Tapers",
+        "Textured tops",
+        "Fringes"
       ],
-      "bio": "Anastacio works the Addison floor. Go-to for scissor work and classic cuts.",
+      "bio": "Anastacio is an Addison barber whose motto is \"I don’t compete, I create.\" His posts are mostly tapers with texture: high and low tapers, messy tops and balanced fringes.",
       "accepting_new_clients": true,
       "sort_order": 8,
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "instagram": "anastaci_oo",
+      "sources": [
+        "https://www.instagram.com/anastaci_oo/",
+        "https://www.instagram.com/p/DbT8zUaDiaY/",
+        "https://www.instagram.com/p/DHclb7pOXFg/",
+        "https://www.instagram.com/p/DHkSF2etxwR/"
+      ],
+      "confidence": "confirmed"
     },
     {
       "slug": "ruben",
@@ -210,10 +248,9 @@
       "item_id": "BTOOSYPMAEG6PIBBRE75L5GH",
       "specialties": [
         "Classic cuts",
-        "Beards",
-        "Hot towel"
+        "Taper fades"
       ],
-      "bio": "One of the shop's veterans. Go-to for classic cuts and beards.",
+      "bio": "Ruben (@stoicbarber) is one of the shop’s veterans and books through skullandthrones.com. His feed leans classic: taper fades, clean shapes and shear work with Mizutani scissors.",
       "accepting_new_clients": false,
       "sort_order": 9,
       "is_active": true,
@@ -221,10 +258,16 @@
       "placeholder_fields": [
         "role",
         "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "instagram": "stoicbarber",
+      "sources": [
+        "https://www.instagram.com/stoicbarber/",
+        "https://www.instagram.com/p/DZkFL18gC84/",
+        "https://www.instagram.com/p/Db9qsXVggVF/"
+      ],
+      "confidence": "likely"
     },
     {
       "slug": "peter",
@@ -234,12 +277,9 @@
       "role": "Barber",
       "haircut_from": 50,
       "item_id": "L6DOT2SZ7CYQMOSFUKXCTTLH",
-      "instagram": "Droddhaaa",
-      "specialties": [
-        "Fades",
-        "Color"
-      ],
-      "bio": "Peter works the Addison floor. Go-to for fades and color.",
+      "instagram": "droddhaaa",
+      "specialties": [],
+      "bio": "Peter cuts at Skull & Thrones Addison and links his own Square booking page from Instagram.",
       "accepting_new_clients": true,
       "sort_order": 10,
       "is_active": true,
@@ -247,10 +287,14 @@
       "placeholder_fields": [
         "role",
         "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "sources": [
+        "https://www.instagram.com/droddhaaa/",
+        "https://www.instagram.com/p/DSKlFp_EyJ4/"
+      ],
+      "confidence": "confirmed"
     },
     {
       "slug": "juan",
@@ -261,20 +305,25 @@
       "haircut_from": 60,
       "item_id": "DVE3222JSCK3F4E36XHADN6Q",
       "specialties": [
-        "Tapers",
-        "Kids"
+        "Blurry fades",
+        "Freestyle designs"
       ],
-      "bio": "Juan works the Addison floor. Go-to for tapers and kids.",
+      "bio": "Juan M. Moreno is an Addison artist at Skull & Thrones. His recent work includes blurry fades, freestyle designs and women’s undercuts.",
       "accepting_new_clients": true,
       "sort_order": 11,
       "is_active": true,
       "placeholder_fields": [
         "role",
         "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "instagram": "jmoreno0424",
+      "sources": [
+        "https://www.instagram.com/jmoreno0424/",
+        "https://www.instagram.com/p/C7nXOMzOXwg/"
+      ],
+      "confidence": "likely"
     },
     {
       "slug": "eric-el-samurai",
@@ -285,11 +334,9 @@
       "haircut_from": 60,
       "item_id": "IG6Y73MXISY24MVYVEHSSFCQ",
       "specialties": [
-        "Scissor work",
-        "Long hair",
-        "Beards"
+        "Hair graphics / designs"
       ],
-      "bio": "20 years behind the chair. Full one-hour appointments. Go-to for scissor work and long hair.",
+      "bio": "Eric \"el Samurai\" Zamarripa brings 20 years behind the chair to the Addison shop. He has led a graphics (hair design) class at Skull & Thrones.",
       "accepting_new_clients": false,
       "sort_order": 12,
       "is_active": true,
@@ -297,10 +344,15 @@
       "placeholder_fields": [
         "role",
         "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "instagram": "eric.thesamurai",
+      "sources": [
+        "https://www.instagram.com/eric.thesamurai/",
+        "https://www.instagram.com/p/DQ9rGAuAGI6/"
+      ],
+      "confidence": "confirmed"
     },
     {
       "slug": "jackie",
@@ -311,20 +363,28 @@
       "haircut_from": 50,
       "item_id": "KJ3JCPRVP32IKO6LKXIZINL4",
       "specialties": [
-        "Color",
-        "Long hair"
+        "Braids",
+        "Beards",
+        "Mullets",
+        "Styling"
       ],
-      "bio": "Jackie works the Addison floor. Go-to for color and long hair.",
+      "bio": "Jackie Alva is a barber and braider at Skull & Thrones Addison, accepting new clients. Her feed covers beard detailing, mullets and finished styling.",
       "accepting_new_clients": true,
       "sort_order": 13,
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "instagram": "jackiefadeit",
+      "sources": [
+        "https://www.instagram.com/jackiefadeit/",
+        "https://www.instagram.com/p/DNiftE0Rdgy/",
+        "https://www.instagram.com/p/DFfd0HOxBSq/",
+        "https://www.instagram.com/p/DYsQWD9xrVT/"
+      ],
+      "confidence": "confirmed"
     },
     {
       "slug": "carlos",
@@ -334,21 +394,23 @@
       "role": "Barber",
       "haircut_from": 65,
       "item_id": "QKLFDTZSBKHTGSWG3U5WMSP6",
-      "specialties": [
-        "Fades",
-        "Beards"
-      ],
-      "bio": "Carlos works the Addison floor. Go-to for fades and beards.",
+      "specialties": [],
+      "bio": "Carlos M. is a barber at Skull & Thrones Hair Society, 1405 W Lake St in Addison.",
       "accepting_new_clients": true,
       "sort_order": 14,
       "is_active": true,
       "placeholder_fields": [
         "role",
         "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "instagram": "carloss_barber",
+      "sources": [
+        "https://www.instagram.com/carloss_barber/",
+        "https://www.instagram.com/p/DCuShlauJZQ/"
+      ],
+      "confidence": "confirmed"
     },
     {
       "slug": "rudy",
@@ -359,20 +421,28 @@
       "haircut_from": 60,
       "item_id": "WMWW4OSKI334OASEUQRV5OY2",
       "specialties": [
-        "Classic cuts",
-        "Kids"
+        "Drop fades",
+        "Tapers",
+        "Scissor work",
+        "Beards"
       ],
-      "bio": "Rudy works the Addison floor. Go-to for classic cuts and kids.",
+      "bio": "Rudy is a professional barber at Skull & Thrones Hair Society in Addison. He posts drop fades, tapers, scissor work and faded beards, and showcased at the shop’s Skull Session event.",
       "accepting_new_clients": true,
       "sort_order": 15,
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "instagram": "rudygotcuts",
+      "sources": [
+        "https://www.instagram.com/rudygotcuts/",
+        "https://www.instagram.com/p/DARbougPV8-/",
+        "https://www.instagram.com/p/DDF4Ke4usyQ/",
+        "https://www.instagram.com/p/DRD0yp9jhDe/"
+      ],
+      "confidence": "confirmed"
     },
     {
       "slug": "javier",
@@ -382,11 +452,8 @@
       "role": "Barber",
       "haircut_from": 60,
       "item_id": "PJDURCJVBAVPSBXAUP6VQEV4",
-      "specialties": [
-        "Fades",
-        "Beards"
-      ],
-      "bio": "Javier works the Elmhurst floor. Go-to for fades and beards.",
+      "specialties": [],
+      "bio": "TODO client: bio for Javier (no Instagram account found).",
       "accepting_new_clients": true,
       "sort_order": 1,
       "is_active": true,
@@ -396,7 +463,9 @@
         "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "sources": [],
+      "confidence": "none"
     },
     {
       "slug": "nick-celli",
@@ -407,20 +476,26 @@
       "haircut_from": 60,
       "item_id": "25FEVIHUXEJIZQE7HGFYTYPH",
       "specialties": [
-        "Scissor work",
-        "Classic cuts"
+        "Beards",
+        "Fades",
+        "Mid & longer lengths"
       ],
-      "bio": "Nick Celli works the Elmhurst floor. Go-to for scissor work and classic cuts.",
+      "bio": "Nick Celli is an Elmhurst artist who specializes in beards, fades and mid-to-longer lengths (\"Skills are cheap, passion is priceless\"). He posts often and is accepting new clients.",
       "accepting_new_clients": true,
       "sort_order": 2,
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "instagram": "celli_cutz",
+      "sources": [
+        "https://www.instagram.com/celli_cutz/",
+        "https://www.instagram.com/p/DGx3wnzparW/",
+        "https://www.instagram.com/p/DNBAtzquCyy/"
+      ],
+      "confidence": "confirmed"
     },
     {
       "slug": "valentina",
@@ -430,21 +505,26 @@
       "role": "Barber",
       "haircut_from": 50,
       "item_id": "5GLRERZEXKX2AXHI5KJR5GAV",
-      "specialties": [
-        "Color",
-        "Long hair",
-        "Scissor work"
-      ],
-      "bio": "Valentina works the Elmhurst floor. Go-to for color and long hair.",
+      "specialties": [],
+      "bio": "Valentina Ron is a barber at Skull & Thrones Elmhurst and links her own Square booking page from Instagram. She captions in Spanish and English.",
       "accepting_new_clients": true,
       "sort_order": 3,
       "is_active": true,
       "placeholder_fields": [
         "role",
         "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
+      ],
+      "instagram": "valenbarber_",
+      "sources": [
+        "https://www.instagram.com/valenbarber_/",
+        "https://www.instagram.com/p/Dci4zjuEfUr/"
+      ],
+      "confidence": "confirmed",
+      "languages": [
+        "English",
+        "Spanish"
       ]
     },
     {
@@ -456,20 +536,26 @@
       "haircut_from": 50,
       "item_id": "MFGYLL5AFGGE5P66FEHPPJB2",
       "specialties": [
-        "Fades",
-        "Kids"
+        "Drop fades",
+        "Flow cuts",
+        "Texture"
       ],
-      "bio": "David works the Elmhurst floor. Go-to for fades and kids.",
+      "bio": "David Rodriguez is an Elmhurst artist who joined Skull & Thrones in 2025. His posts are drop fades with texture, flow cuts and before/afters.",
       "accepting_new_clients": false,
       "sort_order": 4,
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "instagram": "davidmischief_",
+      "sources": [
+        "https://www.instagram.com/davidmischief_/",
+        "https://www.instagram.com/p/DRisJzEFxtk/",
+        "https://www.instagram.com/p/DKaRa0qOnNI/"
+      ],
+      "confidence": "confirmed"
     },
     {
       "slug": "alejandro",
@@ -481,22 +567,25 @@
       "item_id": "36F635MXDBRTJVBMC7XAP6ME",
       "instagram": "cuts.by.alejandro",
       "specialties": [
-        "Fades",
-        "Designs",
-        "Beards"
+        "Flow cuts",
+        "Slick backs",
+        "Clean cuts"
       ],
-      "bio": "Five years in — sharp fades and detail work. Go-to for fades and designs.",
+      "bio": "Alejandro Salazar cuts at Skull & Thrones Elmhurst. His feed is flow cuts, slick backs and clean refreshes.",
       "accepting_new_clients": true,
       "sort_order": 5,
       "is_active": true,
       "square_note": "5 years experience; real bio exists in Square",
       "placeholder_fields": [
         "role",
-        "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "sources": [
+        "https://www.instagram.com/cuts.by.alejandro/",
+        "https://www.instagram.com/p/DFBJkMtx1Lr/"
+      ],
+      "confidence": "confirmed"
     },
     {
       "slug": "christian",
@@ -507,21 +596,26 @@
       "haircut_from": 60,
       "item_id": "T4NNZ4UDRM4XSIJBQG6LNFTM",
       "specialties": [
-        "Scissor work",
-        "Modern styles"
+        "Fades & tapers",
+        "Designs",
+        "Color",
+        "Mid-length cuts"
       ],
-      "bio": "Shear work and modern styles. Go-to for scissor work and modern styles.",
+      "bio": "Christian is an Elmhurst barber with 3+ years of experience: clean fades, precision cuts and custom styles. His highlights cover low/mid tapers, burst fades, graphics/designs and color work.",
       "accepting_new_clients": true,
       "sort_order": 6,
       "is_active": true,
       "square_note": "Shear work, modern styles; real bio exists in Square",
       "placeholder_fields": [
         "role",
-        "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "instagram": "christianfadeit",
+      "sources": [
+        "https://www.instagram.com/christianfadeit/"
+      ],
+      "confidence": "confirmed"
     },
     {
       "slug": "angel-m",
@@ -531,11 +625,8 @@
       "role": "Apprentice",
       "haircut_from": 35,
       "item_id": "ECJVDSIFOU7UOT2VLHD54HRE",
-      "specialties": [
-        "Fades",
-        "Beards"
-      ],
-      "bio": "Angel M works the Elmhurst floor. Go-to for fades and beards.",
+      "specialties": [],
+      "bio": "TODO client: bio for Angel M (no Instagram account found).",
       "accepting_new_clients": true,
       "sort_order": 7,
       "is_active": true,
@@ -545,7 +636,9 @@
         "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "sources": [],
+      "confidence": "none"
     },
     {
       "slug": "alexsis",
@@ -556,20 +649,26 @@
       "haircut_from": 60,
       "item_id": "KEEGQN3I73ENOAGL5UDVA272",
       "specialties": [
-        "Long hair",
-        "Color"
+        "Blurry fades",
+        "Modern texture",
+        "Natural flow"
       ],
-      "bio": "Alexsis works the Elmhurst floor. Go-to for long hair and color.",
+      "bio": "Alexsis is an Elmhurst barber focused on modern texture, blurry fades and natural flow. Recent posts include clean buzz cuts and tapers with shape.",
       "accepting_new_clients": true,
       "sort_order": 8,
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "instagram": "alexsis.dlt",
+      "sources": [
+        "https://www.instagram.com/alexsis.dlt/",
+        "https://www.instagram.com/p/DPCGGqxDrLW/",
+        "https://www.instagram.com/p/DU07EVAjvJ-/"
+      ],
+      "confidence": "confirmed"
     },
     {
       "slug": "brandon",
@@ -581,19 +680,24 @@
       "item_id": "3LCO5MAREUX4XXLRT4SMYGRH",
       "specialties": [
         "Tapers",
-        "Kids"
+        "Textured cuts"
       ],
-      "bio": "Brandon works the Elmhurst floor. Go-to for tapers and kids.",
+      "bio": "Brandon is a licensed barber at Skull & Thrones; in mid-2025 he posted that he had been at the shop about a year and a half. His posts are tapered, messy and textured cuts styled with STMNT products.",
       "accepting_new_clients": true,
       "sort_order": 9,
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "instagram": "torafadez",
+      "sources": [
+        "https://www.instagram.com/torafadez/",
+        "https://www.instagram.com/p/DKhnJq2OGxj/",
+        "https://www.instagram.com/p/DMvwDH-ua99/"
+      ],
+      "confidence": "likely"
     },
     {
       "slug": "bella",
@@ -604,21 +708,26 @@
       "haircut_from": 60,
       "item_id": "PJLZAFYIIXKWMX7JBUWPUQEF",
       "specialties": [
-        "Scissor work",
-        "Kids",
-        "Color"
+        "Fades",
+        "Tapers",
+        "Scissor cuts"
       ],
-      "bio": "Bella works the Elmhurst floor. Go-to for scissor work and kids.",
+      "bio": "Bella Magistro is a licensed barber at Skull & Thrones Elmhurst. Her feed is smooth fades, tapers and flowing scissor cuts.",
       "accepting_new_clients": true,
       "sort_order": 10,
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "specialties",
-        "bio",
         "accepting_new_clients",
         "headshot"
-      ]
+      ],
+      "instagram": "blue_suede_fadez",
+      "sources": [
+        "https://www.instagram.com/blue_suede_fadez/",
+        "https://www.instagram.com/p/DPgwpSxDuBN/",
+        "https://www.instagram.com/p/Dc6twNqFetO/"
+      ],
+      "confidence": "confirmed"
     }
   ]
 }

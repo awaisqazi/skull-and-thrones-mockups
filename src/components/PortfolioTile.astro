@@ -11,7 +11,9 @@ const alt = t.image ? what : `Placeholder photo: ${t.style.toLowerCase()} by ${t
     ? <Image src={t.image} alt={alt} width={t.width} height={t.height} loading="lazy" />
     : <img src={t.src} alt={alt} width={t.width} height={t.height} loading="lazy" />}
   <button class="tile__zoom" type="button" aria-label={`Enlarge: ${what}`}></button>
-  {t.placeholder && <span class="ph-tag">Placeholder</span>}
+  {t.source_url
+    ? <a class="ph-tag tile__ig" href={t.source_url} target="_blank" rel="noopener" aria-label={`See this ${t.style.toLowerCase()} by ${t.barber_name} on Instagram`}>IG <span aria-hidden="true">↗</span></a>
+    : t.placeholder && <span class="ph-tag">Placeholder</span>}
   <figcaption class="tile__overlay">
     <span class="tile__cap">Cut by <b>{t.barber_name}</b> · {t.style}</span>
     <span class="tile__actions">
