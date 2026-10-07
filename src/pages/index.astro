@@ -16,7 +16,12 @@ const barbers = await getBarbers();
 const [first, second] = locations;
 const featured = await Promise.all(locations.map(async (l) => ({ l, items: await getPortfolio({ location: l.slug, featured: true }) })));
 const marquee = ['Skin fades', 'Scissor work', 'Beards', 'Kids cuts', 'Long hair', 'Color', 'Designs', 'Hot towel'];
-const igTiles = Array.from({ length: 6 }, (_, i) => placeholder(500, 500, `IG ${i}`));
+// Recent posts: src/data/instagram.json + matching src/assets/instagram/<id>.jpg (manual refresh for now; feed sync is a phase-2 item).
+import igPosts from '../data/instagram.json';
+const igFiles = import.meta.glob<{ default: ImageMetadata }>('/src/assets/instagram/*.{jpg,jpeg,png,webp}', { eager: true });
+const igImage = (id: string) => Object.entries(igFiles).find(([k]) => k.endsWith(`/${id}.jpg`) || k.endsWith(`/${id}.png`) || k.endsWith(`/${id}.webp`))?.[1].default;
+const igTiles = igPosts.slice(0, 6).map((p) => ({ ...p, image: igImage(p.id) }));
+while (igTiles.length < 6) igTiles.push({ id: `ph-${igTiles.length}`, url: SITE.instagram, caption: 'Instagram post (placeholder)', image: undefined });
 // Drop a photo at src/assets/hero.(jpg|png|webp) to replace the hero placeholder.
 const heroFiles = import.meta.glob<{ default: ImageMetadata }>('/src/assets/hero.{jpg,jpeg,png,webp}', { eager: true });
 const hero = Object.values(heroFiles)[0]?.default;
@@ -97,8 +102,13 @@ const hero = Object.values(heroFiles)[0]?.default;
       <a class="btn btn--light" href={SITE.instagram} target="_blank" rel="noopener">Follow <span class="arr" aria-hidden="true">↗</span></a>
     </div>
     <div class="ig">
-      {igTiles.map((src, i) => (
-        <a href={SITE.instagram} target="_blank" rel="noopener" aria-label={`Instagram post ${i + 1} (placeholder) — opens Instagram`}><img src={src} alt="" width="500" height="500" loading="lazy" /><span class="ph-tag">Placeholder</span></a>
+      {igTiles.map((p, i) => (
+        <a href={p.url} target="_blank" rel="noopener" aria-label={`${p.caption} — opens on Instagram`}>
+          {p.image
+            ? <Image src={p.image} alt={p.caption} width={500} height={500} fit="cover" position="attention" loading="lazy" />
+            : <img src={placeholder(500, 500, `IG ${i}`)} alt="" width="500" height="500" loading="lazy" />}
+          {!p.image && <span class="ph-tag">Placeholder</span>}
+        </a>
       ))}
     </div>
   </section>

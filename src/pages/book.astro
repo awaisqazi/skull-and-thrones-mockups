@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+import { localLocationPhoto } from '../lib/localImages';
 import Layout from '../layouts/Layout.astro';
 import { getLocations, getBarbers } from '../lib/data';
 import { placeholder } from '../lib/placeholder';
@@ -29,7 +31,9 @@ const shortHours = (l: (typeof locations)[number]) =>
         const ink = i === 0;
         return (
           <article class:list={['book-card', ink && 'book-card--ink on-dark']}>
-            <div class="media book-card__media"><img src={placeholder(1200, 675, `${l.name} front`)} alt={`Placeholder: ${l.name} shop front`} width="1200" height="675" loading="lazy" /><span class="ph-tag">Placeholder photo</span></div>
+            <div class="media book-card__media">{localLocationPhoto(l.slug)
+              ? <Image src={localLocationPhoto(l.slug)!} alt={`Inside Skull & Thrones ${l.name}`} width={1200} height={675} fit="cover" position="attention" loading="lazy" />
+              : <><img src={placeholder(1200, 675, `${l.name} front`)} alt={`Placeholder: ${l.name} shop front`} width="1200" height="675" loading="lazy" /><span class="ph-tag">Placeholder photo</span></>}</div>
             <div class="book-card__body">
               <div class="loc-card__top"><h2 class="big">{l.name}</h2><span class="status" data-open-status={l.slug} role="status">{l.hours_short}</span></div>
               <p class="muted">{l.address_line} · <a href={`tel:${l.phone_e164}`}>{l.phone}</a></p>

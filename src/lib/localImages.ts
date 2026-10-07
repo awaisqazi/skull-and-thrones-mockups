@@ -8,6 +8,7 @@
 import type { ImageMetadata } from 'astro';
 
 const headshotFiles = import.meta.glob<{ default: ImageMetadata }>('/src/assets/headshots/*.{jpg,jpeg,png,webp}', { eager: true });
+const locationFiles = import.meta.glob<{ default: ImageMetadata }>('/src/assets/locations/*.{jpg,jpeg,png,webp}', { eager: true });
 const portfolioFiles = import.meta.glob<{ default: ImageMetadata }>('/src/assets/portfolio/*.{jpg,jpeg,png,webp}', { eager: true });
 
 function index(files: Record<string, { default: ImageMetadata }>): Map<string, ImageMetadata> {
@@ -21,6 +22,9 @@ function index(files: Record<string, { default: ImageMetadata }>): Map<string, I
 
 const headshots = index(headshotFiles);
 const portfolio = index(portfolioFiles);
+const locationsIdx = index(locationFiles);
 
 export const localHeadshot = (slug: string): ImageMetadata | undefined => headshots.get(slug.toLowerCase());
 export const localPortfolioImage = (id: string): ImageMetadata | undefined => portfolio.get(id.toLowerCase());
+/** src/assets/locations/<location-slug>.jpg -> shop photo for that location (Google Business Profile photos for now). */
+export const localLocationPhoto = (slug: string): ImageMetadata | undefined => locationsIdx.get(slug.toLowerCase());
