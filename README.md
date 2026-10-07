@@ -77,3 +77,12 @@ at the bottom of that file. Schemas, `src/lib/data.ts` and the pages stay the sa
 
 Headshots, shop photos, portfolio photos, barber bios/specialties/roles/accepting flag, parking
 notes, the Google rating line (`src/lib/site.ts`, unverified) and the Facebook URL. See `../docs/NEEDED-FROM-CLIENT.md`.
+
+## Adding real photos (no code changes)
+
+Drop files into these folders and rebuild (or push; Actions rebuilds):
+
+- `src/assets/headshots/<barber-slug>.jpg` → that barber's headshot (slugs are in `src/data/barbers.json`, e.g. `nick-celli.jpg`).
+- `src/assets/portfolio/<id>.jpg` → that portfolio tile's photo (ids are in `src/data/portfolio.json`, e.g. `addison-01.jpg`; the matching Instagram post is in each entry's `source_url`).
+
+JPG, PNG or WebP all work. Keep sources under ~2000px on the long edge; Astro generates the responsive sizes. A remote `headshot` / `image` URL in the data (Supabase later) still takes priority over a local file.

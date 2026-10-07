@@ -1,15 +1,21 @@
 ---
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
+import { localPortfolioImage } from '../lib/localImages';
 import type { PortfolioItem } from '../lib/data';
 interface Props { item: PortfolioItem }
 const { item: t } = Astro.props;
 const what = `${t.style} by ${t.barber_name}`;
-const alt = t.image ? what : `Placeholder photo: ${t.style.toLowerCase()} by ${t.barber_name}`;
+const local = localPortfolioImage(t.id);
+const hasPhoto = Boolean(t.image || local);
+const alt = hasPhoto ? what : `Placeholder photo: ${t.style.toLowerCase()} by ${t.barber_name}`;
+const full = local ? (await getImage({ src: local, width: 1600, format: 'jpg' })).src : t.full;
 ---
-<figure class="tile" data-tags={t.tag} data-barber={t.barber} data-full={t.full}>
-  {t.image
-    ? <Image src={t.image} alt={alt} width={t.width} height={t.height} loading="lazy" />
-    : <img src={t.src} alt={alt} width={t.width} height={t.height} loading="lazy" />}
+<figure class="tile" data-tags={t.tag} data-barber={t.barber} data-full={full}>
+  {local
+    ? <Image src={local} alt={alt} width={t.width} height={t.height} loading="lazy" />
+    : t.image
+      ? <Image src={t.image} alt={alt} width={t.width} height={t.height} loading="lazy" />
+      : <img src={t.src} alt={alt} width={t.width} height={t.height} loading="lazy" />}
   <button class="tile__zoom" type="button" aria-label={`Enlarge: ${what}`}></button>
   {t.source_url
     ? <a class="ph-tag tile__ig" href={t.source_url} target="_blank" rel="noopener" aria-label={`See this ${t.style.toLowerCase()} by ${t.barber_name} on Instagram`}>IG <span aria-hidden="true">↗</span></a>

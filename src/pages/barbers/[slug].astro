@@ -1,6 +1,7 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import { Image } from 'astro:assets';
+import { localHeadshot } from '../../lib/localImages';
 import Layout from '../../layouts/Layout.astro';
 import BarberCard from '../../components/BarberCard.astro';
 import PortfolioGrid from '../../components/PortfolioGrid.astro';
@@ -43,10 +44,12 @@ const person = {
     <div class="rule-row"><a class="eyebrow profile__back" href={url(`barbers/#${loc.slug}`)}>← All barbers</a><a class="eyebrow profile__back" href={loc.href}>{loc.name} · {loc.street}</a></div>
     <div class="profile">
       <div class="media profile__media">
-        {b.headshot
-          ? <Image src={b.headshot} alt={`Headshot of ${b.name}`} width={900} height={1125} />
-          : <img src={b.headshot_src} alt={`Placeholder portrait for ${b.name}`} width="900" height="1125" fetchpriority="high" />}
-        {!b.headshot && <span class="ph-tag">Placeholder</span>}
+        {localHeadshot(b.slug)
+          ? <Image src={localHeadshot(b.slug)!} alt={`Headshot of ${b.name}`} width={900} height={1125} />
+          : b.headshot
+            ? <Image src={b.headshot} alt={`Headshot of ${b.name}`} width={900} height={1125} />
+            : <img src={b.headshot_src} alt={`Placeholder portrait for ${b.name}`} width="900" height="1125" fetchpriority="high" />}
+        {!(b.headshot || localHeadshot(b.slug)) && <span class="ph-tag">Placeholder</span>}
       </div>
       <div class="profile__body">
         <p class="eyebrow">{b.role} · {loc.name}</p>
