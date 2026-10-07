@@ -1,0 +1,22 @@
+---
+import { Image } from 'astro:assets';
+import type { PortfolioItem } from '../lib/data';
+interface Props { item: PortfolioItem }
+const { item: t } = Astro.props;
+const what = `${t.style} by ${t.barber_name}`;
+const alt = t.image ? what : `Placeholder photo: ${t.style.toLowerCase()} by ${t.barber_name}`;
+---
+<figure class="tile" data-tags={t.tag} data-barber={t.barber} data-full={t.full}>
+  {t.image
+    ? <Image src={t.image} alt={alt} width={t.width} height={t.height} loading="lazy" />
+    : <img src={t.src} alt={alt} width={t.width} height={t.height} loading="lazy" />}
+  <button class="tile__zoom" type="button" aria-label={`Enlarge: ${what}`}></button>
+  {t.placeholder && <span class="ph-tag">Placeholder</span>}
+  <figcaption class="tile__overlay">
+    <span class="tile__cap">Cut by <b>{t.barber_name}</b> · {t.style}</span>
+    <span class="tile__actions">
+      <a class="btn btn--accent btn--sm" href={t.booking_url} target="_blank" rel="noopener">Book {t.barber_first} <span class="arr" aria-hidden="true">↗</span></a>
+      <a class="btn btn--light btn--sm" href={t.barber_href}>View {t.barber_first}</a>
+    </span>
+  </figcaption>
+</figure>

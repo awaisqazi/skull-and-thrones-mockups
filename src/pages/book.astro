@@ -1,0 +1,74 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getLocations, getBarbers } from '../lib/data';
+import { placeholder } from '../lib/placeholder';
+import { url } from '../lib/url';
+
+const locations = await getLocations();
+const barbers = await getBarbers();
+const shortHours = (l: (typeof locations)[number]) =>
+  l.hours.map((h) => `${h.label.replace(/ – /, '–').replace('Saturday', 'Sat').replace('Sunday', 'Sun')} ${+h.opens.slice(0, 2) % 12 || 12}–${+h.closes.slice(0, 2) % 12 || 12}`).join(' · ');
+---
+<Layout
+  title="Book an appointment"
+  description="Book online at Skull & Thrones Addison or Elmhurst through Square — pick your barber or take the next available chair."
+  current="book"
+  page="book"
+>
+  <section class="page-hero wrap" aria-labelledby="book-title">
+    <div class="rule-row"><span class="eyebrow">Online booking via Square</span><span class="eyebrow">Two shops · separate calendars</span></div>
+    <h1 class="giant" id="book-title">Book</h1>
+    <div class="page-hero__row"><p class="lead">Pick a shop. Square handles the rest — choose your barber, a time, done.</p></div>
+  </section>
+
+  <section class="wrap" aria-label="Choose a location">
+    <div class="loc-grid">
+      {locations.map((l, i) => {
+        const team = barbers.filter((b) => b.location === l.slug);
+        const from = Math.min(...team.map((b) => b.haircut_from));
+        const ink = i === 0;
+        return (
+          <article class:list={['book-card', ink && 'book-card--ink on-dark']}>
+            <div class="media book-card__media"><img src={placeholder(1200, 675, `${l.name} front`)} alt={`Placeholder: ${l.name} shop front`} width="1200" height="675" loading="lazy" /><span class="ph-tag">Placeholder photo</span></div>
+            <div class="book-card__body">
+              <div class="loc-card__top"><h2 class="big">{l.name}</h2><span class="status" data-open-status={l.slug} role="status">{l.hours_short}</span></div>
+              <p class="muted">{l.address_line} · <a href={`tel:${l.phone_e164}`}>{l.phone}</a></p>
+              <p>{team.length} barbers · haircuts from ${from} · {shortHours(l)}</p>
+              <div class="btn-row">
+                <a class:list={['btn btn--lg', ink && 'btn--accent']} href={l.square_booking_url} target="_blank" rel="noopener"><span class="dot" aria-hidden="true"></span>Book {l.name} <span class="arr" aria-hidden="true">↗</span></a>
+                <a class:list={['btn btn--lg', ink ? 'btn--ghost' : 'btn--light']} href={url(`barbers/#${l.slug}`)}>See barbers</a>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </section>
+
+  <section class="section wrap" aria-labelledby="any-title">
+    <div class="any-band">
+      <div><p class="eyebrow" style="color:var(--ink)">No preference?</p><h2 class="big" id="any-title">Any artist.<br />Next chair.</h2></div>
+      <div class="btn-row">
+        {locations.map((l, i) => <a class:list={['btn btn--lg', i > 0 && 'btn--light']} href={l.any_artist_url} target="_blank" rel="noopener">Next available · {l.name} ↗</a>)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section--tight wrap" aria-labelledby="how-title">
+    <div class="sec-head"><span class="sec-num">How it works</span><div><h2 class="h2" id="how-title">Three taps to the chair.</h2></div></div>
+    <ol class="steps">
+      <li class="step"><span class="step__num" aria-hidden="true">01</span><h3>Pick your shop</h3><p>Addison and Elmhurst run separate books — choose the one you're heading to.</p></li>
+      <li class="step"><span class="step__num" aria-hidden="true">02</span><h3>Pick your barber</h3><p>Every Book button on this site opens that barber's own Square page. Or take "Any artist".</p></li>
+      <li class="step"><span class="step__num" aria-hidden="true">03</span><h3>Pick a time</h3><p>Confirm and you'll get a text reminder from Square.</p></li>
+    </ol>
+  </section>
+
+  <section class="section--tight wrap" aria-labelledby="names-title">
+    <div class="sec-head"><span class="sec-num">Know who you want?</span><div><h2 class="h2" id="names-title">Find your barber.</h2><p>Open a profile to see their work and book them.</p></div></div>
+    <div class="name-groups">
+      {locations.map((l) => (
+        <div><h3 class="eyebrow">{l.name}</h3><div class="name-list">{barbers.filter((b) => b.location === l.slug).map((b) => <a class="chip chip--link" href={b.href}>{b.name}</a>)}</div></div>
+      ))}
+    </div>
+  </section>
+</Layout>

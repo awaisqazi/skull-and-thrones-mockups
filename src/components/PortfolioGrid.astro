@@ -1,0 +1,35 @@
+---
+/**
+ * Portfolio tiles. layout="masonry" (with filter chips) or layout="strip" (home teaser).
+ * Clicking a tile opens the shared #lightbox (src/components/Lightbox.astro).
+ */
+import PortfolioTile from './PortfolioTile.astro';
+import { TAGS, type PortfolioItem } from '../lib/data';
+
+interface Props {
+  id: string;
+  items: PortfolioItem[];
+  layout?: 'masonry' | 'strip';
+  filters?: boolean;
+  emptyText?: string;
+}
+const { id, items, layout = 'masonry', filters = layout === 'masonry', emptyText = 'No work in this category posted yet.' } = Astro.props;
+const used = new Set(items.map((i) => i.tag));
+const tags = TAGS.filter((t) => used.has(t.key));
+---
+{layout === 'strip' ? (
+  <div class="strip" id={id}>{items.map((t) => <PortfolioTile item={t} />)}</div>
+) : (
+  <div id={id}>
+    {filters && tags.length > 1 && (
+      <div class="filters" role="group" aria-label="Filter by service" data-filters={id}>
+        <button class="chip chip--filter" type="button" data-filter="all" aria-pressed="true">All</button>
+        {tags.map((t) => <button class="chip chip--filter" type="button" data-filter={t.key} aria-pressed="false">{t.label}</button>)}
+      </div>
+    )}
+    <div data-filterable>
+      <div class="masonry">{items.map((t) => <PortfolioTile item={t} />)}</div>
+      <p class="empty" hidden={items.length > 0}>{emptyText}</p>
+    </div>
+  </div>
+)}

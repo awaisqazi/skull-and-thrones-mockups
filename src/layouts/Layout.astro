@@ -1,0 +1,131 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import MobileBookBar from '../components/MobileBookBar.astro';
+import Lightbox from '../components/Lightbox.astro';
+import { getImage } from 'astro:assets';
+import ogSource from '../assets/og.png';
+import { getLocations, getHoursPayload } from '../lib/data';
+import { SITE } from '../lib/site';
+import { url } from '../lib/url';
+
+export type NavKey = 'home' | 'team' | 'portfolio' | 'book' | 'contact' | 'none';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Primary-nav item to mark aria-current */
+  current?: NavKey;
+  /** Initial body[data-loc] (location-scoped content) */
+  loc?: 'addison' | 'elmhurst';
+  page?: string;
+  noindex?: boolean;
+  ogType?: 'website' | 'profile';
+}
+
+const { title, description, current = 'none', loc = 'addison', page = 'page', noindex = false, ogType = 'website' } = Astro.props;
+const fullTitle = title.includes('Skull & Thrones') ? title : `${title} · ${SITE.name}`;
+const site = Astro.site ?? new URL('https://awaisqazi.github.io');
+const canonical = new URL(Astro.url.pathname, site).href;
+const og = await getImage({ src: ogSource, width: 1200, height: 630, format: 'png' });
+const ogImage = new URL(og.src, site).href;
+
+const locations = await getLocations();
+const orgId = new URL(url('#organization'), site).href;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': orgId,
+      name: SITE.name,
+      alternateName: SITE.alt_name,
+      slogan: SITE.slogan,
+      url: new URL(url(''), site).href,
+      logo: ogImage,
+      email: SITE.email,
+      sameAs: [SITE.instagram],
+    },
+    ...locations.map((l) => ({
+      '@type': 'HairSalon',
+      '@id': new URL(url(`${l.slug}/#salon`), site).href,
+      name: `${SITE.name} — ${l.name}`,
+      url: new URL(l.href, site).href,
+      image: ogImage,
+      parentOrganization: { '@id': orgId },
+      telephone: l.phone_e164,
+      email: SITE.email,
+      priceRange: '$$',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: l.street,
+        addressLocality: l.city,
+        addressRegion: l.region,
+        postalCode: l.postal_code,
+        addressCountry: 'US',
+      },
+      openingHoursSpecification: l.hours.map((h) => ({
+        '@type': 'OpeningHoursSpecification',
+        dayOfWeek: h.days.map((d) => ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d]),
+        opens: h.opens,
+        closes: h.closes,
+      })),
+      hasMap: l.maps_url,
+      sameAs: [SITE.instagram],
+      potentialAction: {
+        '@type': 'ReserveAction',
+        target: { '@type': 'EntryPoint', urlTemplate: l.square_booking_url, actionPlatform: ['https://schema.org/DesktopWebPlatform', 'https://schema.org/MobileWebPlatform'] },
+        result: { '@type': 'Reservation', name: `Haircut at ${SITE.name} ${l.name}` },
+      },
+    })),
+  ],
+};
+const hours = await getHoursPayload();
+---
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{fullTitle}</title>
+<meta name="description" content={description}>
+<link rel="canonical" href={canonical}>
+{noindex && <meta name="robots" content="noindex, follow">}
+<meta name="theme-color" content="#EAEAEA">
+<link rel="icon" href={url('favicon.svg')} type="image/svg+xml">
+<link rel="sitemap" href={url('sitemap-index.xml')}>
+<meta property="og:type" content={ogType}>
+<meta property="og:site_name" content={SITE.name}>
+<meta property="og:title" content={fullTitle}>
+<meta property="og:description" content={description}>
+<meta property="og:url" content={canonical}>
+<meta property="og:image" content={ogImage}>
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content={fullTitle}>
+<meta name="twitter:description" content={description}>
+<meta name="twitter:image" content={ogImage}>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Inter+Tight:wght@400;500;600;700&display=swap">
+<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+<script type="application/json" id="st-hours" set:html={JSON.stringify(hours)} />
+<slot name="head" />
+</head>
+<body data-loc={loc} data-page={page}>
+<a class="skip" href="#main">Skip to content</a>
+<Nav current={current} />
+<main id="main">
+  <slot />
+</main>
+<Footer />
+<MobileBookBar />
+<Lightbox />
+<script>
+  import '../scripts/app.ts';
+</script>
+</body>
+</html>

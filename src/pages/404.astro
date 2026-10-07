@@ -1,0 +1,20 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getLocations } from '../lib/data';
+import { url } from '../lib/url';
+const locations = await getLocations();
+---
+<Layout title="Page not found" description="That page doesn't exist. Find a barber, see the work, or book at Skull & Thrones Addison or Elmhurst." page="404" noindex>
+  <section class="page-hero wrap" aria-labelledby="nf-title">
+    <div class="rule-row"><span class="eyebrow">Error 404</span><span class="eyebrow">Wrong chair</span></div>
+    <h1 class="giant" id="nf-title"><span>Lost?</span></h1>
+    <div class="page-hero__row">
+      <p class="lead">That page isn't here — it may have moved when the site was rebuilt. Try one of these instead.</p>
+      <div class="btn-row">
+        <a class="btn btn--lg" href={url('')}>Home</a>
+        <a class="btn btn--light btn--lg" href={url('barbers/')}>The team</a>
+        {locations.map((l) => <a class="btn btn--light btn--lg" href={l.square_booking_url} target="_blank" rel="noopener">Book {l.name} <span class="arr" aria-hidden="true">↗</span></a>)}
+      </div>
+    </div>
+  </section>
+</Layout>

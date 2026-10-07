@@ -1,0 +1,41 @@
+---
+/**
+ * Address, phone, hours table and booking CTA for one shop.
+ * "Open now" + the "Today" row are painted client-side (src/scripts/app.ts) in shop time.
+ */
+import { fmtTime, type Location } from '../lib/data';
+import { SITE } from '../lib/site';
+
+interface Props {
+  location: Location;
+  ink?: boolean;
+  /** Contact page: embedded map + parking/email details */
+  details?: boolean;
+  headingLevel?: 'h2' | 'h3';
+}
+const { location: l, ink = false, details = false, headingLevel: H = 'h3' } = Astro.props;
+---
+<article class:list={['loc-card', ink && 'loc-card--ink on-dark']} id={details ? l.slug : undefined}>
+  <div class="loc-card__top"><H class="big">{l.name}</H><span class="status" data-open-status={l.slug} role="status">{l.hours_short}</span></div>
+  <address>{l.street}<br />{l.city}, {l.region} {l.postal_code}</address>
+  <a class="loc-card__phone" href={`tel:${l.phone_e164}`}>{l.phone}</a>
+  <table class="hours">
+    <caption class="eyebrow">Hours</caption>
+    <tbody>
+      {l.hours.map((h) => <tr data-days={h.days.join(',')}><th scope="row">{h.label}</th><td>{fmtTime(h.opens)} – {fmtTime(h.closes)}</td></tr>)}
+    </tbody>
+  </table>
+  {details && (
+    <>
+    <iframe class="map" src={l.maps_embed_url} title={`Map of ${SITE.name} ${l.name}, ${l.address_line}`} loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    <dl class="kv">
+      {l.parking && <><dt class="eyebrow">Parking</dt><dd>{l.parking}</dd></>}
+      <dt class="eyebrow">Email</dt><dd><a href={`mailto:${SITE.email}`}>{SITE.email}</a></dd>
+    </dl>
+    </>
+  )}
+  <div class="btn-row">
+    <a class:list={['btn', ink && 'btn--accent']} href={l.square_booking_url} target="_blank" rel="noopener"><span class="dot" aria-hidden="true"></span>Book {l.name}</a>
+    <a class:list={['btn', ink ? 'btn--ghost' : 'btn--light']} href={l.maps_dir_url} target="_blank" rel="noopener">Directions <span class="arr" aria-hidden="true">↗</span></a>
+  </div>
+</article>

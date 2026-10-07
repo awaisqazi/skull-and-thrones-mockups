@@ -1,0 +1,15 @@
+---
+/** Location tablist that drives a <BarberGrid prefix=…> (WAI-ARIA tabs; #addison / #elmhurst in the URL). */
+import { getLocations, getBarbers } from '../lib/data';
+interface Props { prefix: string; size?: 'lg' }
+const { prefix, size } = Astro.props;
+const locations = await getLocations();
+const barbers = await getBarbers();
+---
+<div class:list={['tabs', size === 'lg' && 'tabs--lg']} role="tablist" aria-label="Choose a location" data-sync="loc" data-hash>
+  {locations.map((l, i) => (
+    <button class="tab" type="button" role="tab" id={`${prefix}-tab-${l.slug}`} data-key={l.slug} aria-controls={`${prefix}-${l.slug}`} aria-selected={i === 0 ? 'true' : 'false'}>
+      {l.name} <span class="tab__count">{barbers.filter((b) => b.location === l.slug).length}</span>
+    </button>
+  ))}
+</div>

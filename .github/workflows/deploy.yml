@@ -1,0 +1,48 @@
+name: Deploy site to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+  # Later (CMS): Supabase fires a repository_dispatch on content changes.
+  # repository_dispatch:
+  #   types: [cms-update]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  # Project site: https://awaisqazi.github.io/skull-and-thrones-mockups/
+  # Custom domain: set BASE_PATH to "/" and SITE_URL to "https://skullandthrones.com".
+  BASE_PATH: /skull-and-thrones-mockups
+  SITE_URL: https://awaisqazi.github.io
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build with Astro and upload the Pages artifact
+        uses: withastro/action@v3
+        with:
+          # This workflow assumes the Astro project is the repo root. If the repo root is the
+          # parent folder instead, move this file to <root>/.github/workflows/ and set `path: site`.
+          path: .
+          node-version: 22
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

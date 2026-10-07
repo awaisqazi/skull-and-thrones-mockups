@@ -1,0 +1,89 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { Image } from 'astro:assets';
+import Layout from '../../layouts/Layout.astro';
+import BarberCard from '../../components/BarberCard.astro';
+import PortfolioGrid from '../../components/PortfolioGrid.astro';
+import { getBarbers, getLocationMap, getPortfolio, type Barber } from '../../lib/data';
+import { igUrl } from '../../lib/site';
+import { url } from '../../lib/url';
+
+export const getStaticPaths = (async () => {
+  const barbers = await getBarbers();
+  return barbers.map((barber) => ({ params: { slug: barber.slug }, props: { barber } }));
+}) satisfies GetStaticPaths;
+
+interface Props { barber: Barber }
+const { barber: b } = Astro.props;
+const loc = (await getLocationMap())[b.location];
+const work = await getPortfolio({ barber: b.slug });
+const others = (await getBarbers(b.location)).filter((x) => x.slug !== b.slug).slice(0, 4);
+const isPlaceholder = (f: string) => b.placeholder_fields.includes(f);
+const site = Astro.site ?? new URL('https://awaisqazi.github.io');
+const person = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: b.name,
+  jobTitle: b.role,
+  url: new URL(b.href, site).href,
+  worksFor: { '@id': new URL(url(`${loc.slug}/#salon`), site).href },
+  ...(b.instagram ? { sameAs: [igUrl(b.instagram)] } : {}),
+};
+---
+<Layout
+  title={`${b.name} — ${b.role} at ${loc.name}`}
+  description={`Book ${b.name} at Skull & Thrones ${loc.name}. ${b.specialties.slice(0, 3).join(', ')}. Haircuts from $${b.haircut_from}.`}
+  current="team"
+  page="barber"
+  loc={b.location}
+  ogType="profile"
+>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(person)} />
+  <section class="page-hero wrap" aria-labelledby="panel-name">
+    <div class="rule-row"><a class="eyebrow profile__back" href={url(`barbers/#${loc.slug}`)}>← All barbers</a><a class="eyebrow profile__back" href={loc.href}>{loc.name} · {loc.street}</a></div>
+    <div class="profile">
+      <div class="media profile__media">
+        {b.headshot
+          ? <Image src={b.headshot} alt={`Headshot of ${b.name}`} width={900} height={1125} />
+          : <img src={b.headshot_src} alt={`Placeholder portrait for ${b.name}`} width="900" height="1125" fetchpriority="high" />}
+        {!b.headshot && <span class="ph-tag">Placeholder</span>}
+      </div>
+      <div class="profile__body">
+        <p class="eyebrow">{b.role} · {loc.name}</p>
+        <h1 class="panel__name" id="panel-name">{b.name}</h1>
+        <p class="panel__price">Haircuts from <b>${b.haircut_from}</b></p>
+        {b.accepting_new_clients && <span class="status" data-state="open">Taking new clients</span>}
+        {b.specialties.length > 0 && <ul class="chips" aria-label="Specialties">{b.specialties.map((s) => <li class="chip">{s}</li>)}</ul>}
+        {b.bio && <p class="panel__bio">{b.bio}</p>}
+        {b.instagram && <a class="link" href={igUrl(b.instagram)} target="_blank" rel="noopener"><span>@{b.instagram}</span> ↗</a>}
+        <div class="btn-row">
+          <a class="btn btn--accent btn--lg" href={b.booking_url} target="_blank" rel="noopener"><span>Book with {b.first_name}</span> <span class="arr" aria-hidden="true">↗</span></a>
+          <a class="btn btn--light btn--lg" href={work.length ? '#work' : url(`${loc.slug}/#portfolio`)}>See their work</a>
+        </div>
+        {(isPlaceholder('bio') || isPlaceholder('headshot')) && (
+          <p class="note">Book opens {b.first_name}'s own Square booking page at {loc.name}. Bio, specialties and photo are placeholders until the client supplies them.</p>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <section class="section--tight wrap" id="work" aria-labelledby="work-title">
+    <div class="sec-head">
+      <span class="sec-num">Work</span>
+      <div><h2 class="h2" id="work-title">Cuts by {b.first_name}.</h2><p>{work.length ? `Recent work from ${b.first_name}'s chair at ${loc.name}.` : `No photos posted yet — see the rest of the ${loc.name} floor.`}</p></div>
+      <a class="link" href={url(`${loc.slug}/#portfolio`)}>All {loc.name} work <span class="arr" aria-hidden="true">→</span></a>
+    </div>
+    {work.length > 0 && <PortfolioGrid id="barber-work" items={work} filters={work.length > 3} emptyText={`Nothing in this category from ${b.first_name} yet.`} />}
+  </section>
+
+  {others.length > 0 && (
+    <section class="section--tight wrap" aria-labelledby="more-title">
+      <div class="sec-head">
+        <span class="sec-num">Also at {loc.name}</span>
+        <div><h2 class="h2" id="more-title">More chairs.</h2></div>
+        <a class="link" href={url(`barbers/#${loc.slug}`)}>Whole team <span class="arr" aria-hidden="true">→</span></a>
+      </div>
+      <div class="grid">{others.map((o) => <BarberCard barber={o} locationName={loc.name} />)}</div>
+    </section>
+  )}
+</Layout>

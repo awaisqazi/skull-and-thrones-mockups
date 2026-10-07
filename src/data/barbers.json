@@ -1,0 +1,624 @@
+{
+  "_note": "Seeded from docs/barbers.json (Square booking pages, 2026-10-07). booking_url = location.square_booking_url + '/' + item_id (built in src/lib/data.ts). Fields listed in placeholder_fields are invented for the mockup and must be replaced with client-supplied copy. Item IDs change if a barber's Square service is deleted/recreated.",
+  "barbers": [
+    {
+      "slug": "elyse-lc",
+      "name": "Elyse LC",
+      "location": "addison",
+      "tier": "barber",
+      "role": "Hybrid artist",
+      "haircut_from": 50,
+      "item_id": "DBRRZN5WC3Y3RTSNMMW5EJGN",
+      "specialties": [
+        "Long hair",
+        "Scissor work",
+        "Fades"
+      ],
+      "bio": "Long & short hair specialist and hybrid artist — clipper and shear. Go-to for long hair and scissor work.",
+      "accepting_new_clients": true,
+      "sort_order": 1,
+      "is_active": true,
+      "square_note": "Long and short hair specialist. Hybrid artist.",
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "adrian",
+      "name": "Adrian",
+      "location": "addison",
+      "tier": "barber",
+      "role": "Barber",
+      "haircut_from": 50,
+      "item_id": "YH7L6N2OL6D2VKKQTYLGCDAY",
+      "specialties": [
+        "Fades",
+        "Beards",
+        "Line-ups"
+      ],
+      "bio": "Adrian works the Addison floor. Go-to for fades and beards.",
+      "accepting_new_clients": true,
+      "sort_order": 2,
+      "is_active": true,
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "fabi",
+      "name": "Fabi",
+      "location": "addison",
+      "tier": "barber",
+      "role": "Barber",
+      "haircut_from": 50,
+      "item_id": "AN2U5RNAGZJQASIRIMLYO6XL",
+      "instagram": "ellaesbarbera",
+      "specialties": [
+        "Fades",
+        "Designs",
+        "Kids"
+      ],
+      "bio": "Fabi works the Addison floor. Go-to for fades and designs.",
+      "accepting_new_clients": true,
+      "sort_order": 3,
+      "is_active": true,
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "jayden-sanchez",
+      "name": "Jayden Sanchez",
+      "location": "addison",
+      "tier": "apprentice",
+      "role": "Apprentice",
+      "haircut_from": 35,
+      "item_id": "GP7OICKASS3DQAC247I72VST",
+      "specialties": [
+        "Fades",
+        "Kids"
+      ],
+      "bio": "Apprentice barber on the Addison floor. Go-to for fades and kids.",
+      "accepting_new_clients": true,
+      "sort_order": 4,
+      "is_active": true,
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "darian",
+      "name": "Darian",
+      "location": "addison",
+      "tier": "barber",
+      "role": "Barber",
+      "haircut_from": 50,
+      "item_id": "RETPNFELD4Y3X65VHIKL3WBY",
+      "specialties": [
+        "Tapers",
+        "Beards"
+      ],
+      "bio": "Darian works the Addison floor. Go-to for tapers and beards.",
+      "accepting_new_clients": true,
+      "sort_order": 5,
+      "is_active": true,
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "reno",
+      "name": "Reno",
+      "location": "addison",
+      "tier": "barber",
+      "role": "Barber",
+      "haircut_from": 60,
+      "item_id": "I56TJK2FOFIPPKGZG2SJMTHQ",
+      "specialties": [
+        "Skin fades",
+        "Designs"
+      ],
+      "bio": "Reno works the Addison floor. Go-to for skin fades and designs.",
+      "accepting_new_clients": false,
+      "sort_order": 6,
+      "is_active": true,
+      "square_note": "Staff name in Square is Rene",
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "jovani",
+      "name": "Jovani",
+      "location": "addison",
+      "tier": "barber",
+      "role": "Barber",
+      "haircut_from": 50,
+      "item_id": "MYAXT2YC2OF3RGKNCMQSGFPF",
+      "specialties": [
+        "Fades",
+        "Kids",
+        "Beards"
+      ],
+      "bio": "Jovani works the Addison floor. Go-to for fades and kids.",
+      "accepting_new_clients": true,
+      "sort_order": 7,
+      "is_active": true,
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "anastacio",
+      "name": "Anastacio",
+      "location": "addison",
+      "tier": "barber",
+      "role": "Barber",
+      "haircut_from": 60,
+      "item_id": "7R7UJ47T2F44GVJKH7NU6WNC",
+      "specialties": [
+        "Scissor work",
+        "Classic cuts"
+      ],
+      "bio": "Anastacio works the Addison floor. Go-to for scissor work and classic cuts.",
+      "accepting_new_clients": true,
+      "sort_order": 8,
+      "is_active": true,
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "ruben",
+      "name": "Ruben",
+      "location": "addison",
+      "tier": "veteran",
+      "role": "Veteran barber",
+      "haircut_from": 50,
+      "item_id": "BTOOSYPMAEG6PIBBRE75L5GH",
+      "specialties": [
+        "Classic cuts",
+        "Beards",
+        "Hot towel"
+      ],
+      "bio": "One of the shop's veterans. Go-to for classic cuts and beards.",
+      "accepting_new_clients": false,
+      "sort_order": 9,
+      "is_active": true,
+      "square_note": "Veteran",
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "peter",
+      "name": "Peter",
+      "location": "addison",
+      "tier": "barber",
+      "role": "Barber",
+      "haircut_from": 50,
+      "item_id": "L6DOT2SZ7CYQMOSFUKXCTTLH",
+      "instagram": "Droddhaaa",
+      "specialties": [
+        "Fades",
+        "Color"
+      ],
+      "bio": "Peter works the Addison floor. Go-to for fades and color.",
+      "accepting_new_clients": true,
+      "sort_order": 10,
+      "is_active": true,
+      "square_note": "Staff name in Square is Pedro",
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "juan",
+      "name": "Juan",
+      "location": "addison",
+      "tier": "barber",
+      "role": "Barber",
+      "haircut_from": 60,
+      "item_id": "DVE3222JSCK3F4E36XHADN6Q",
+      "specialties": [
+        "Tapers",
+        "Kids"
+      ],
+      "bio": "Juan works the Addison floor. Go-to for tapers and kids.",
+      "accepting_new_clients": true,
+      "sort_order": 11,
+      "is_active": true,
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "eric-el-samurai",
+      "name": "Eric el Samurai",
+      "location": "addison",
+      "tier": "master",
+      "role": "Master barber · 20 yrs",
+      "haircut_from": 60,
+      "item_id": "IG6Y73MXISY24MVYVEHSSFCQ",
+      "specialties": [
+        "Scissor work",
+        "Long hair",
+        "Beards"
+      ],
+      "bio": "20 years behind the chair. Full one-hour appointments. Go-to for scissor work and long hair.",
+      "accepting_new_clients": false,
+      "sort_order": 12,
+      "is_active": true,
+      "square_note": "20 years of experience",
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "jackie",
+      "name": "Jackie",
+      "location": "addison",
+      "tier": "barber",
+      "role": "Barber",
+      "haircut_from": 50,
+      "item_id": "KJ3JCPRVP32IKO6LKXIZINL4",
+      "specialties": [
+        "Color",
+        "Long hair"
+      ],
+      "bio": "Jackie works the Addison floor. Go-to for color and long hair.",
+      "accepting_new_clients": true,
+      "sort_order": 13,
+      "is_active": true,
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "carlos",
+      "name": "Carlos",
+      "location": "addison",
+      "tier": "barber",
+      "role": "Barber",
+      "haircut_from": 65,
+      "item_id": "QKLFDTZSBKHTGSWG3U5WMSP6",
+      "specialties": [
+        "Fades",
+        "Beards"
+      ],
+      "bio": "Carlos works the Addison floor. Go-to for fades and beards.",
+      "accepting_new_clients": true,
+      "sort_order": 14,
+      "is_active": true,
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "rudy",
+      "name": "Rudy",
+      "location": "addison",
+      "tier": "barber",
+      "role": "Barber",
+      "haircut_from": 60,
+      "item_id": "WMWW4OSKI334OASEUQRV5OY2",
+      "specialties": [
+        "Classic cuts",
+        "Kids"
+      ],
+      "bio": "Rudy works the Addison floor. Go-to for classic cuts and kids.",
+      "accepting_new_clients": true,
+      "sort_order": 15,
+      "is_active": true,
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "javier",
+      "name": "Javier",
+      "location": "elmhurst",
+      "tier": "barber",
+      "role": "Barber",
+      "haircut_from": 60,
+      "item_id": "PJDURCJVBAVPSBXAUP6VQEV4",
+      "specialties": [
+        "Fades",
+        "Beards"
+      ],
+      "bio": "Javier works the Elmhurst floor. Go-to for fades and beards.",
+      "accepting_new_clients": true,
+      "sort_order": 1,
+      "is_active": true,
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "nick-celli",
+      "name": "Nick Celli",
+      "location": "elmhurst",
+      "tier": "barber",
+      "role": "Barber",
+      "haircut_from": 60,
+      "item_id": "25FEVIHUXEJIZQE7HGFYTYPH",
+      "specialties": [
+        "Scissor work",
+        "Classic cuts"
+      ],
+      "bio": "Nick Celli works the Elmhurst floor. Go-to for scissor work and classic cuts.",
+      "accepting_new_clients": true,
+      "sort_order": 2,
+      "is_active": true,
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "valentina",
+      "name": "Valentina",
+      "location": "elmhurst",
+      "tier": "barber",
+      "role": "Barber",
+      "haircut_from": 50,
+      "item_id": "5GLRERZEXKX2AXHI5KJR5GAV",
+      "specialties": [
+        "Color",
+        "Long hair",
+        "Scissor work"
+      ],
+      "bio": "Valentina works the Elmhurst floor. Go-to for color and long hair.",
+      "accepting_new_clients": true,
+      "sort_order": 3,
+      "is_active": true,
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "david",
+      "name": "David",
+      "location": "elmhurst",
+      "tier": "barber",
+      "role": "Barber",
+      "haircut_from": 50,
+      "item_id": "MFGYLL5AFGGE5P66FEHPPJB2",
+      "specialties": [
+        "Fades",
+        "Kids"
+      ],
+      "bio": "David works the Elmhurst floor. Go-to for fades and kids.",
+      "accepting_new_clients": false,
+      "sort_order": 4,
+      "is_active": true,
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "alejandro",
+      "name": "Alejandro",
+      "location": "elmhurst",
+      "tier": "barber",
+      "role": "Barber · 5 yrs",
+      "haircut_from": 50,
+      "item_id": "36F635MXDBRTJVBMC7XAP6ME",
+      "instagram": "cuts.by.alejandro",
+      "specialties": [
+        "Fades",
+        "Designs",
+        "Beards"
+      ],
+      "bio": "Five years in — sharp fades and detail work. Go-to for fades and designs.",
+      "accepting_new_clients": true,
+      "sort_order": 5,
+      "is_active": true,
+      "square_note": "5 years experience; real bio exists in Square",
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "christian",
+      "name": "Christian",
+      "location": "elmhurst",
+      "tier": "barber",
+      "role": "Shear specialist",
+      "haircut_from": 60,
+      "item_id": "T4NNZ4UDRM4XSIJBQG6LNFTM",
+      "specialties": [
+        "Scissor work",
+        "Modern styles"
+      ],
+      "bio": "Shear work and modern styles. Go-to for scissor work and modern styles.",
+      "accepting_new_clients": true,
+      "sort_order": 6,
+      "is_active": true,
+      "square_note": "Shear work, modern styles; real bio exists in Square",
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "angel-m",
+      "name": "Angel M",
+      "location": "elmhurst",
+      "tier": "apprentice",
+      "role": "Apprentice",
+      "haircut_from": 35,
+      "item_id": "ECJVDSIFOU7UOT2VLHD54HRE",
+      "specialties": [
+        "Fades",
+        "Beards"
+      ],
+      "bio": "Angel M works the Elmhurst floor. Go-to for fades and beards.",
+      "accepting_new_clients": true,
+      "sort_order": 7,
+      "is_active": true,
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "alexsis",
+      "name": "Alexsis",
+      "location": "elmhurst",
+      "tier": "barber",
+      "role": "Barber",
+      "haircut_from": 60,
+      "item_id": "KEEGQN3I73ENOAGL5UDVA272",
+      "specialties": [
+        "Long hair",
+        "Color"
+      ],
+      "bio": "Alexsis works the Elmhurst floor. Go-to for long hair and color.",
+      "accepting_new_clients": true,
+      "sort_order": 8,
+      "is_active": true,
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "brandon",
+      "name": "Brandon",
+      "location": "elmhurst",
+      "tier": "barber",
+      "role": "Barber",
+      "haircut_from": 60,
+      "item_id": "3LCO5MAREUX4XXLRT4SMYGRH",
+      "specialties": [
+        "Tapers",
+        "Kids"
+      ],
+      "bio": "Brandon works the Elmhurst floor. Go-to for tapers and kids.",
+      "accepting_new_clients": true,
+      "sort_order": 9,
+      "is_active": true,
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    },
+    {
+      "slug": "bella",
+      "name": "Bella",
+      "location": "elmhurst",
+      "tier": "barber",
+      "role": "Barber",
+      "haircut_from": 60,
+      "item_id": "PJLZAFYIIXKWMX7JBUWPUQEF",
+      "specialties": [
+        "Scissor work",
+        "Kids",
+        "Color"
+      ],
+      "bio": "Bella works the Elmhurst floor. Go-to for scissor work and kids.",
+      "accepting_new_clients": true,
+      "sort_order": 10,
+      "is_active": true,
+      "placeholder_fields": [
+        "role",
+        "specialties",
+        "bio",
+        "accepting_new_clients",
+        "headshot"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+---
+/**
+ * Barber cards. With `prefix`: one tabpanel per location, driven by <LocationTabs prefix={prefix}>.
+ * With `location`: a single grid for that shop (location hub pages).
+ */
+import BarberCard from './BarberCard.astro';
+import AnyArtistCard from './AnyArtistCard.astro';
+import { getLocations, getBarbers, type LocationSlug } from '../lib/data';
+
+interface Props { prefix?: string; location?: LocationSlug; anyArtist?: boolean }
+const { prefix = 'grid', location, anyArtist = true } = Astro.props;
+const locations = (await getLocations()).filter((l) => !location || l.slug === location);
+const barbers = await getBarbers();
+---
+{location
+  ? locations.map((l) => (
+      <div class="grid">
+        {anyArtist && <AnyArtistCard location={l} />}
+        {barbers.filter((b) => b.location === l.slug).map((b) => <BarberCard barber={b} locationName={l.name} />)}
+      </div>
+    ))
+  : locations.map((l, i) => (
+      <div class="tabpanel" role="tabpanel" id={`${prefix}-${l.slug}`} aria-labelledby={`${prefix}-tab-${l.slug}`} tabindex="0" hidden={i !== 0}>
+        <h3 class="sr-only">{l.name} barbers</h3>
+        <div class="grid">
+          {anyArtist && <AnyArtistCard location={l} />}
+          {barbers.filter((b) => b.location === l.slug).map((b) => <BarberCard barber={b} locationName={l.name} headingLevel="h3" />)}
+        </div>
+      </div>
+    ))}

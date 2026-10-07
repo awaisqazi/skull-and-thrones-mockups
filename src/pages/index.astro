@@ -1,0 +1,98 @@
+---
+import Layout from '../layouts/Layout.astro';
+import LocationTabs from '../components/LocationTabs.astro';
+import BarberGrid from '../components/BarberGrid.astro';
+import PortfolioGrid from '../components/PortfolioGrid.astro';
+import LocationCard from '../components/LocationCard.astro';
+import { getLocations, getBarbers, getPortfolio } from '../lib/data';
+import { placeholder } from '../lib/placeholder';
+import { SITE } from '../lib/site';
+import { url } from '../lib/url';
+
+const locations = await getLocations();
+const barbers = await getBarbers();
+const [first, second] = locations;
+const featured = await Promise.all(locations.map(async (l) => ({ l, items: await getPortfolio({ location: l.slug, featured: true }) })));
+const marquee = ['Skin fades', 'Scissor work', 'Beards', 'Kids cuts', 'Long hair', 'Color', 'Designs', 'Hot towel'];
+const igTiles = Array.from({ length: 6 }, (_, i) => placeholder(500, 500, `IG ${i}`));
+---
+<Layout
+  title="Barbershop in Addison & Elmhurst, IL · Skull & Thrones"
+  description={`Skull & Thrones (S&T Hair Society): ${barbers.length} barbers across Addison and Elmhurst, IL. Find your barber, see their work, book online.`}
+  current="home"
+  page="home"
+>
+  <section class="hero wrap" aria-labelledby="hero-title">
+    <div class="rule-row"><span class="eyebrow">S&amp;T Hair Society</span><span class="eyebrow">Addison · Elmhurst, IL</span></div>
+    <h1 class="giant hero__word" id="hero-title"><span>Skull &amp;</span><span>Thrones</span></h1>
+    <div class="hero__grid">
+      <div class="hero__copy">
+        <p class="hero__tag">Progress through<br />creativity.</p>
+        <p class="lead muted">Two shops, {barbers.length} barbers, every one with their own style. Find your barber, see their work, and book in under a minute.</p>
+        <div class="btn-row">
+          {first && <a class="btn btn--lg" href={first.square_booking_url} target="_blank" rel="noopener"><span class="dot" aria-hidden="true"></span>Book {first.name}</a>}
+          {second && <a class="btn btn--light btn--lg" href={second.square_booking_url} target="_blank" rel="noopener">Book {second.name} <span class="arr" aria-hidden="true">↗</span></a>}
+        </div>
+        {/* TODO verify: rating/review count supplied by coordinator, not yet checked against the live Google profile */}
+        <p class="rating"><span class="rating__stars" aria-hidden="true">★★★★★</span><span><b>{SITE.rating.value}</b> on Google · {SITE.rating.count} reviews</span></p>
+        <ul class="hero__status" aria-label="Shop status">
+          {locations.map((l) => <li>{l.name} <span class="status" data-open-status={l.slug} role="status">{l.hours_short}</span></li>)}
+        </ul>
+      </div>
+      <div class="media hero__media">
+        <img src={placeholder(1600, 1100, 'Hero shop')} alt="Placeholder: interior of the shop" width="1600" height="1100" fetchpriority="high" />
+        <span class="ph-tag">Placeholder photo</span>
+        <a class="badge" href={url('book/')} aria-label="Book an appointment">
+          <svg viewBox="0 0 100 100" aria-hidden="true"><defs><path id="ring" d="M50 50m-38 0a38 38 0 1 1 76 0a38 38 0 1 1-76 0" /></defs><text font-family="Inter Tight, sans-serif" font-size="9" font-weight="700" fill="#111"><textPath href="#ring" textLength="236" lengthAdjust="spacing">BOOK NOW · PICK YOUR CHAIR · </textPath></text></svg>
+          <b aria-hidden="true">S&amp;T</b>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee" aria-hidden="true"><div class="marquee__track"><div>{marquee.map((w) => <span>{w}</span>)}</div><div class="marquee__dup">{marquee.map((w) => <span>{w}</span>)}</div></div></div>
+
+  <section class="section wrap" id="barbers" aria-labelledby="barbers-title">
+    <div class="sec-head">
+      <span class="sec-num">01 — Team</span>
+      <div><h2 class="h2" id="barbers-title">Pick your chair.</h2><p>Every barber, both shops. Tap a card for their bio and work, or hit Book to go straight to Square.</p></div>
+      <LocationTabs prefix="home" />
+    </div>
+    <BarberGrid prefix="home" />
+  </section>
+
+  <section class="section--tight wrap" aria-labelledby="work-title">
+    <div class="sec-head">
+      <span class="sec-num">02 — Work</span>
+      <div><h2 class="h2" id="work-title">Fresh off the chair.</h2><p>Recent cuts from the <span data-loc-name>{first?.name}</span> floor. Every photo links to the barber who did it.</p></div>
+      <a class="link" href={url(`${first?.slug}/#portfolio`)} data-loc-href={url('{loc}/#portfolio')}><span data-loc-text="See all {Loc} work">See all {first?.name} work</span> <span class="arr" aria-hidden="true">→</span></a>
+    </div>
+    {featured.map(({ l, items }) => (
+      <div data-loc-only={l.slug}><PortfolioGrid id={`work-${l.slug}`} items={items} layout="strip" /></div>
+    ))}
+  </section>
+
+  <section class="section wrap" id="locations" aria-labelledby="loc-title">
+    <div class="sec-head">
+      <span class="sec-num">03 — Visit</span>
+      <div><h2 class="h2" id="loc-title">Two shops. Same standard.</h2></div>
+      <a class="link" href={url('contact/')}>Maps &amp; parking <span class="arr" aria-hidden="true">→</span></a>
+    </div>
+    <div class="loc-grid">
+      {locations.map((l, i) => <LocationCard location={l} ink={i === 0} />)}
+    </div>
+  </section>
+
+  <section class="section--tight wrap" aria-labelledby="ig-title">
+    <div class="sec-head">
+      <span class="sec-num">04 — Social</span>
+      <div><h2 class="h2" id="ig-title">@{SITE.instagram_handle}</h2><p>Daily cuts, transformations and shop life.</p></div>
+      <a class="btn btn--light" href={SITE.instagram} target="_blank" rel="noopener">Follow <span class="arr" aria-hidden="true">↗</span></a>
+    </div>
+    <div class="ig">
+      {igTiles.map((src, i) => (
+        <a href={SITE.instagram} target="_blank" rel="noopener" aria-label={`Instagram post ${i + 1} (placeholder) — opens Instagram`}><img src={src} alt="" width="500" height="500" loading="lazy" /><span class="ph-tag">Placeholder</span></a>
+      ))}
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,49 @@
+{
+  "_note": "Both shops. Hours: days use 0 = Sunday … 6 = Saturday, times are 24h shop-local (America/Chicago). square_booking_url is the location's Square services page; per-barber URLs append /{item_id}. Parking text is PLACEHOLDER until the client confirms.",
+  "locations": [
+    {
+      "slug": "addison",
+      "name": "Addison",
+      "sort_order": 1,
+      "street": "1405 W Lake Street",
+      "city": "Addison",
+      "region": "IL",
+      "postal_code": "60101",
+      "phone": "(630) 613-8134",
+      "phone_e164": "+16306138134",
+      "hours": [
+        { "label": "Mon – Fri", "days": [1, 2, 3, 4, 5], "opens": "10:00", "closes": "19:00" },
+        { "label": "Saturday", "days": [6], "opens": "08:00", "closes": "16:00" },
+        { "label": "Sunday", "days": [0], "opens": "09:00", "closes": "15:00" }
+      ],
+      "hours_short": "Mon–Fri 10–7",
+      "square_booking_url": "https://book.squareup.com/appointments/j4bvyc6hjb6dmt/location/D11BVA91E8V3N/services",
+      "any_artist_item_id": "UPKLK2CAHWYINF22WNWPSCY4",
+      "map_query": "1405 W Lake Street, Addison, IL 60101",
+      "parking": "Details to confirm with client (lot / street / meters).",
+      "placeholder_fields": ["parking"]
+    },
+    {
+      "slug": "elmhurst",
+      "name": "Elmhurst",
+      "sort_order": 2,
+      "street": "183 N. York St.",
+      "city": "Elmhurst",
+      "region": "IL",
+      "postal_code": "60126",
+      "phone": "(331) 315-6055",
+      "phone_e164": "+13313156055",
+      "hours": [
+        { "label": "Mon – Fri", "days": [1, 2, 3, 4, 5], "opens": "10:00", "closes": "19:00" },
+        { "label": "Saturday", "days": [6], "opens": "08:00", "closes": "16:00" },
+        { "label": "Sunday", "days": [0], "opens": "09:00", "closes": "15:00" }
+      ],
+      "hours_short": "Mon–Fri 10–7",
+      "square_booking_url": "https://book.squareup.com/appointments/ryfrr2g9lvsdsp/location/L65DF5AG5BDAN/services",
+      "any_artist_item_id": "YWLSORKMSZEAIER66TICZXKB",
+      "map_query": "183 N. York St., Elmhurst, IL 60126",
+      "parking": "Details to confirm with client (lot / street / meters).",
+      "placeholder_fields": ["parking"]
+    }
+  ]
+}

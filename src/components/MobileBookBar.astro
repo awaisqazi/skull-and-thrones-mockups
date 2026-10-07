@@ -1,0 +1,8 @@
+---
+import { getLocations } from '../lib/data';
+const [first, second] = await getLocations();
+---
+<div class="bookbar" role="region" aria-label="Book an appointment">
+  {first && <a class="btn" href={first.square_booking_url} target="_blank" rel="noopener"><span class="dot" aria-hidden="true"></span>Book {first.name}</a>}
+  {second && <a class="btn btn--accent" href={second.square_booking_url} target="_blank" rel="noopener">Book {second.name} <span class="arr" aria-hidden="true">↗</span></a>}
+</div>

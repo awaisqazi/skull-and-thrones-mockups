@@ -1,0 +1,42 @@
+---
+import Logo from './Logo.astro';
+import { getLocations } from '../lib/data';
+import { url } from '../lib/url';
+import type { NavKey } from '../layouts/Layout.astro';
+
+interface Props { current: NavKey }
+const { current } = Astro.props;
+const locations = await getLocations();
+const links: { key: NavKey; label: string; href: string }[] = [
+  { key: 'team', label: 'Team', href: url('barbers/') },
+  { key: 'portfolio', label: 'Portfolio', href: url('addison/#portfolio') },
+  { key: 'book', label: 'Book', href: url('book/') },
+  { key: 'contact', label: 'Contact', href: url('contact/') },
+];
+const menu = [{ key: 'home' as NavKey, label: 'Home', href: url('') }, ...links];
+const cur = (k: NavKey) => (k === current ? 'page' : undefined);
+---
+<header class="nav">
+  <nav class="nav__group" aria-label="Primary">
+    <a class="nav__logo" href={url('')} aria-current={cur('home')} aria-label="Skull &amp; Thrones — home"><Logo /><span>S&amp;T Hair Society</span></a>
+    <ul class="nav__links">
+      {links.map((l) => <li><a class="nav__link" href={l.href} aria-current={cur(l.key)}>{l.label}</a></li>)}
+    </ul>
+    <button class="nav__menu" type="button" data-pop aria-expanded="false" aria-controls="menu-pop"><i aria-hidden="true"></i>Menu</button>
+    <div class="pop pop--left" id="menu-pop" hidden>
+      {menu.map((l) => <a class="pop__link" href={l.href} aria-current={cur(l.key)}>{l.label} <span aria-hidden="true">→</span></a>)}
+    </div>
+  </nav>
+  <div class="nav__actions">
+    <a class="btn btn--light nav__dir" href={url('contact/')}>Directions <span class="arr" aria-hidden="true">↗</span></a>
+    <div class="pop-wrap">
+      <button class="btn nav__book" type="button" data-pop aria-expanded="false" aria-controls="book-pop"><span class="dot" aria-hidden="true"></span>Book now</button>
+      <div class="pop" id="book-pop" hidden>
+        <p class="eyebrow pop__label">Choose a shop</p>
+        {locations.map((l) => (
+          <a class="pop__link" href={l.square_booking_url} target="_blank" rel="noopener"><span>{l.name}<small>{l.street}</small></span><span class="arr" aria-hidden="true">↗</span></a>
+        ))}
+      </div>
+    </div>
+  </div>
+</header>

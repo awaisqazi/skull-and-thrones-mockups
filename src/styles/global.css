@@ -1,5 +1,6 @@
-/* Skull & Thrones — design-direction mockups
-   Tokens per docs/PROJECT-BRIEF.md. No framework, no build step. */
+/* Skull & Thrones — global styles.
+   Ported 1:1 from mockups/shared/styles.css (tokens per docs/PROJECT-BRIEF.md).
+   Additions for the Astro build live in section 16 at the end. */
 
 /* ---------- 1. Tokens ---------- */
 :root {
@@ -534,6 +535,22 @@ body:has(dialog[open]) { overflow: hidden; }
 .lightbox .btn--light { --b: rgba(255, 255, 255, .1); --c: #fff; border-color: rgba(255, 255, 255, .25); }
 .lightbox .btn--light:hover { background: #fff; color: var(--ink); }
 .lightbox__count { font-variant-numeric: tabular-nums; color: #9A9A9A; font-size: 13px; }
+
+/* ---------- 16. Astro build additions ---------- */
+/* Barber card name is now a link to /barbers/{slug}/ (stretched over the card) */
+a.card__open { color: inherit; text-decoration: none; }
+
+/* Barber profile page (replaces the mockup's slide-over panel) */
+.profile { display: grid; gap: 28px; margin-top: clamp(4px, 1vw, 12px); }
+@media (min-width: 900px) { .profile { grid-template-columns: 5fr 7fr; gap: 32px; align-items: start; } }
+.profile__media { aspect-ratio: 4 / 5; }
+@media (min-width: 900px) { .profile__media { position: sticky; top: 88px; } }
+.profile__body { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+.profile__body .panel__name { font-size: clamp(64px, 10vw, 152px); }
+.profile__body .panel__bio { max-width: 52ch; }
+.profile__body .btn-row { align-self: stretch; padding-top: 18px; border-top: 1px solid var(--line); }
+.profile__back { text-decoration: none; color: var(--ink); }
+.profile__back:hover { text-decoration: underline; text-underline-offset: 3px; }
 
 /* ---------- 15. Motion preferences ---------- */
 @media (prefers-reduced-motion: reduce) {

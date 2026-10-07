@@ -1,0 +1,67 @@
+---
+import type { GetStaticPaths } from 'astro';
+import Layout from '../layouts/Layout.astro';
+import BarberGrid from '../components/BarberGrid.astro';
+import PortfolioGrid from '../components/PortfolioGrid.astro';
+import LocationCard from '../components/LocationCard.astro';
+import { getLocations, getBarbers, getPortfolio, type Location } from '../lib/data';
+
+export const getStaticPaths = (async () => {
+  const locations = await getLocations();
+  return locations.map((location) => ({ params: { location: location.slug }, props: { location } }));
+}) satisfies GetStaticPaths;
+
+interface Props { location: Location }
+const { location: l } = Astro.props;
+const locations = await getLocations();
+const team = await getBarbers(l.slug);
+const work = await getPortfolio({ location: l.slug });
+---
+<Layout
+  title={`${l.name} barbers & portfolio`}
+  description={`Skull & Thrones ${l.name}, ${l.address_line}: ${team.length} barbers, their latest cuts, hours and online booking. Call ${l.phone}.`}
+  current="portfolio"
+  page="location"
+  loc={l.slug}
+>
+  <section class="page-hero wrap" aria-labelledby="loc-title">
+    <div class="rule-row">
+      <span class="eyebrow">{l.street} · {l.city}, {l.region}</span>
+      <nav class="tabs" aria-label="Location">
+        {locations.map((x) => <a class="tab" href={x.href} data-hash-link aria-current={x.slug === l.slug ? 'page' : undefined}>{x.name}</a>)}
+      </nav>
+    </div>
+    <h1 class="giant" id="loc-title">{l.name}</h1>
+    <div class="page-hero__row">
+      <p class="lead">{team.length} barbers on the {l.name} floor. Tap any photo to see who did it — and book them.</p>
+      <div class="tabs tabs--lg" role="tablist" aria-label="View" data-hash>
+        <button class="tab" type="button" role="tab" id="pv-tab-barbers" data-key="barbers" aria-controls="pv-barbers" aria-selected="true">Barbers <span class="tab__count">{team.length}</span></button>
+        <button class="tab" type="button" role="tab" id="pv-tab-portfolio" data-key="portfolio" aria-controls="pv-portfolio" aria-selected="false">Portfolio <span class="tab__count">{work.length}</span></button>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" role="tabpanel" id="pv-barbers" aria-labelledby="pv-tab-barbers">
+    <h2 class="sr-only">{l.name} barbers</h2>
+    <BarberGrid location={l.slug} />
+  </section>
+  <section class="wrap" role="tabpanel" id="pv-portfolio" aria-labelledby="pv-tab-portfolio" hidden>
+    <h2 class="sr-only">{l.name} portfolio</h2>
+    <PortfolioGrid id="loc-work" items={work} emptyText={`No work in this category posted at ${l.name} yet.`} />
+  </section>
+
+  <section class="section wrap" aria-labelledby="visit-title">
+    <div class="sec-head"><span class="sec-num">Visit</span><div><h2 class="h2" id="visit-title">Find the shop.</h2></div></div>
+    <div class="loc-grid">
+      <LocationCard location={l} ink />
+      <div class="loc-card">
+        <iframe class="map" src={l.maps_embed_url} title={`Map of Skull & Thrones ${l.name}, ${l.address_line}`} loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <dl class="kv">
+          {l.parking && <><dt class="eyebrow">Parking</dt><dd>{l.parking}</dd></>}
+          <dt class="eyebrow">Phone</dt><dd><a href={`tel:${l.phone_e164}`}>{l.phone}</a></dd>
+        </dl>
+        <div class="btn-row"><a class="btn btn--light" href={l.maps_dir_url} target="_blank" rel="noopener">Directions <span class="arr" aria-hidden="true">↗</span></a></div>
+      </div>
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,27 @@
+---
+import Layout from '../layouts/Layout.astro';
+import LocationCard from '../components/LocationCard.astro';
+import { getLocations } from '../lib/data';
+import { SITE } from '../lib/site';
+const locations = await getLocations();
+---
+<Layout
+  title="Contact & hours"
+  description="Addresses, phone numbers, hours and maps for Skull & Thrones in Addison (1405 W Lake St) and Elmhurst (183 N. York St.), IL."
+  current="contact"
+  page="contact"
+>
+  <section class="page-hero wrap" aria-labelledby="contact-title">
+    <div class="rule-row"><span class="eyebrow">Contact &amp; hours</span><span class="eyebrow">Times shown in Central Time</span></div>
+    <h1 class="giant" id="contact-title">Visit us</h1>
+    <div class="page-hero__row">
+      <p class="lead">Two shops in the west suburbs, same hours seven days a week. Call either shop or book online anytime.</p>
+      <div class="btn-row"><a class="btn btn--light" href={`mailto:${SITE.email}`}>Email us</a><a class="btn btn--light" href={SITE.instagram} target="_blank" rel="noopener">Instagram <span class="arr" aria-hidden="true">↗</span></a></div>
+    </div>
+  </section>
+  <section class="wrap" aria-label="Locations">
+    <div class="loc-grid">
+      {locations.map((l) => <LocationCard location={l} details />)}
+    </div>
+  </section>
+</Layout>

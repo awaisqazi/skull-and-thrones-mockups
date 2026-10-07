@@ -1,0 +1,26 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import LocationTabs from '../../components/LocationTabs.astro';
+import BarberGrid from '../../components/BarberGrid.astro';
+import { getBarbers, getLocations } from '../../lib/data';
+const barbers = await getBarbers();
+const locations = await getLocations();
+---
+<Layout
+  title="The Team"
+  description="Meet the barbers at Skull & Thrones Addison and Elmhurst — specialties, bios, Instagram and online booking."
+  current="team"
+  page="team"
+>
+  <section class="page-hero wrap" aria-labelledby="team-title">
+    <div class="rule-row"><span class="eyebrow">{barbers.length} barbers · {locations.length} shops</span><span class="eyebrow">Tap a card for the full profile</span></div>
+    <h1 class="giant" id="team-title">The team</h1>
+    <div class="page-hero__row">
+      <p class="lead">Fade specialists, shear artists, beard guys, kid-friendly chairs. Find the one that fits your hair — then book them directly.</p>
+      <LocationTabs prefix="team" size="lg" />
+    </div>
+  </section>
+  <section class="wrap" aria-label="Barbers">
+    <BarberGrid prefix="team" />
+  </section>
+</Layout>

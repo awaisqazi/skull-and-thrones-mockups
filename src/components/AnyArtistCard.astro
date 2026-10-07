@@ -1,0 +1,13 @@
+---
+import type { Location } from '../lib/data';
+interface Props { location: Location }
+const { location: l } = Astro.props;
+---
+<article class="card card--any on-dark">
+  <div class="card__any">
+    <p class="eyebrow">No preference?</p>
+    <p class="any__word">Any<br />artist</p>
+    <p>First open chair at {l.name}. Fastest way in.</p>
+    <a class="btn btn--accent btn--sm" href={l.any_artist_url} target="_blank" rel="noopener">Next available <span class="arr" aria-hidden="true">↗</span></a>
+  </div>
+</article>

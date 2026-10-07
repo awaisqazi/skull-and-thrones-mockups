@@ -1,0 +1,27 @@
+---
+import { getLocations } from '../lib/data';
+import { SITE } from '../lib/site';
+import { url } from '../lib/url';
+const locations = await getLocations();
+const year = new Date().getFullYear();
+---
+<footer class="footer on-dark">
+  <div class="wrap">
+    <p class="giant footer__word" aria-hidden="true"><span>Skull <em>&amp;</em></span><span>Thrones</span></p>
+    <div class="footer__grid">
+      {locations.map((l) => (
+        <div>
+          <h2 class="eyebrow">{l.name}</h2>
+          <div class="footer__list">
+            <address>{l.street}<br />{l.city}, {l.region} {l.postal_code}</address>
+            <a class="footer__phone" href={`tel:${l.phone_e164}`}>{l.phone}</a>
+            <a href={l.maps_dir_url} target="_blank" rel="noopener">Directions ↗</a>
+          </div>
+        </div>
+      ))}
+      <div><h2 class="eyebrow">Say hi</h2><div class="footer__list"><a href={`mailto:${SITE.email}`}>{SITE.email}</a><a href={SITE.instagram} target="_blank" rel="noopener">Instagram ↗</a><a href={SITE.facebook} target="_blank" rel="noopener">Facebook ↗</a></div></div>
+      <div><h2 class="eyebrow">Site</h2><div class="footer__list"><a href={url('barbers/')}>Team</a><a href={url("addison/#portfolio")}>Portfolio</a><a href={url('book/')}>Book</a><a href={url('contact/')}>Contact &amp; hours</a></div></div>
+    </div>
+    <div class="footer__base"><span>© <span data-year>{year}</span> S&amp;T Hair Society · Addison &amp; Elmhurst, IL</span><span>Progress through creativity.</span></div>
+  </div>
+</footer>
