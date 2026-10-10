@@ -1,0 +1,29 @@
+---
+/**
+ * One product (home strip + /shop/ grid). Remote Shopify CDN image as a plain <img>
+ * (not Astro's optimizer: the CDN already resizes via &width=N, and nothing is copied into the Pages build).
+ */
+import type { Product } from '../lib/data';
+
+interface Props { product: Product; sizes: string; tag?: 'li' | 'article' }
+const { product: p, sizes, tag: Tag = 'article' } = Astro.props;
+// Wide banner packshots (product centred on a wide white canvas, e.g. STMNT) fill the square better cropped.
+const wide = p.image_width / p.image_height > 1.4;
+---
+<Tag class="pcard" data-tags={p.vendor_slug}>
+  <a class:list={['pcard__media', wide && 'pcard__media--wide']} href={p.url} target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
+    <img src={p.src} srcset={p.srcset} sizes={sizes} alt={p.alt} width={p.image_width} height={p.image_height} loading="lazy" decoding="async" />
+  </a>
+  <div class="pcard__body">
+    <p class="pcard__vendor">{p.vendor}</p>
+    <h3 class="pcard__title"><a href={p.url} target="_blank" rel="noopener">{p.display_title}</a></h3>
+    <div class="pcard__foot">
+      <p class="pcard__price">
+        <b>{p.price_label}</b>
+        {p.compare_label && <s><span class="sr-only">was </span>{p.compare_label}</s>}
+      </p>
+      {/* checkout route switch: buy_url (src/data/products.json) is the Bodega product page today; later a Buy Button / Square checkout link. */}
+      <a class="btn btn--sm pcard__buy" href={p.buy_url} target="_blank" rel="noopener" aria-label={`Buy ${p.display_title} on Bodega (opens in a new tab)`}>Buy <span class="arr" aria-hidden="true">↗</span></a>
+    </div>
+  </div>
+</Tag>

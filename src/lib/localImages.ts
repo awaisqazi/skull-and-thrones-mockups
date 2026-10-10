@@ -28,3 +28,9 @@ export const localHeadshot = (slug: string): ImageMetadata | undefined => headsh
 export const localPortfolioImage = (id: string): ImageMetadata | undefined => portfolio.get(id.toLowerCase());
 /** src/assets/locations/<location-slug>.jpg -> shop photo for that location (Google Business Profile photos for now). */
 export const localLocationPhoto = (slug: string): ImageMetadata | undefined => locationsIdx.get(slug.toLowerCase());
+
+/** src/assets/culture/<item-id>.jpg (or the file named in the item's `image`) -> /culture/ collage photo. */
+const cultureFiles = import.meta.glob<{ default: ImageMetadata }>('/src/assets/culture/*.{jpg,jpeg,png,webp}', { eager: true });
+const cultureIdx = index(cultureFiles);
+export const localCultureImage = (idOrFile: string): ImageMetadata | undefined =>
+  cultureIdx.get(idOrFile.toLowerCase().replace(/^.*\//, '').replace(/\.(jpg|jpeg|png|webp)$/i, ''));

@@ -25,13 +25,22 @@ function setLoc(key: string) {
 }
 if (params.get('location')) setLoc(params.get('location')!);
 
+/* ---------- Remembered shop (localStorage "st-location"; wrapped: storage can be blocked) ---------- */
+const STORE_KEY = 'st-location';
+const recall = () => { try { return localStorage.getItem(STORE_KEY); } catch { return null; } };
+const remember = (key: string) => { try { localStorage.setItem(STORE_KEY, key); } catch { /* private mode */ } };
+
 /* ---------- Tabs (WAI-ARIA tabs pattern) ---------- */
-type TabList = HTMLElement & { _select?: (key: string) => void };
+type SelectOpts = { focus?: boolean; user?: boolean };
+type TabList = HTMLElement & { _select?: (key: string, opts?: SelectOpts) => void };
 function initTabs(list: TabList) {
   const tabs = $$<HTMLButtonElement>('[role="tab"]', list);
   const usesHash = list.hasAttribute('data-hash');
   const syncLoc = list.dataset.sync === 'loc';
-  const select = (tab: HTMLButtonElement, opts: { focus?: boolean; user?: boolean } = {}) => {
+  // Home page: no tab is pre-selected; a "Choose your shop" prompt shows until the visitor picks.
+  const neutral = list.hasAttribute('data-neutral');
+  const chooser = document.getElementById(list.dataset.chooser || '');
+  const select = (tab: HTMLButtonElement, opts: SelectOpts = {}) => {
     tabs.forEach((t) => {
       const on = t === tab;
       t.setAttribute('aria-selected', String(on));
@@ -42,13 +51,15 @@ function initTabs(list: TabList) {
     if (opts.focus) tab.focus();
     const key = tab.dataset.key || '';
     if (syncLoc) setLoc(key);
+    if (chooser) chooser.hidden = true;
+    if (opts.user && syncLoc) remember(key);
     if (opts.user && usesHash) history.replaceState(null, '', location.pathname + location.search + '#' + key);
     // Links that should carry the current view across pages (e.g. Addison ↔ Elmhurst on the same tab)
     if (usesHash) $$<HTMLAnchorElement>('[data-hash-link]').forEach((a) => { a.hash = key; });
   };
-  list._select = (key) => {
+  list._select = (key, opts) => {
     const t = tabs.find((x) => x.dataset.key === key);
-    if (t) select(t);
+    if (t) select(t, opts);
   };
   tabs.forEach((t) => t.addEventListener('click', () => select(t, { user: true })));
   list.addEventListener('keydown', (e) => {
@@ -61,10 +72,34 @@ function initTabs(list: TabList) {
   });
   const fromHash = usesHash && tabs.find((t) => t.dataset.key === location.hash.slice(1));
   const fromQuery = syncLoc && tabs.find((t) => t.dataset.key === params.get('location'));
-  const initial = fromHash || fromQuery || tabs.find((t) => t.getAttribute('aria-selected') === 'true') || tabs[0];
+  const stored = syncLoc ? recall() : null;
+  const fromStore = stored && tabs.find((t) => t.dataset.key === stored);
+  // A shared #addison / #elmhurst link always wins over the remembered shop.
+  const chosen = fromHash || fromQuery || fromStore;
+  if (chosen) return select(chosen);
+  if (neutral) {
+    // Nothing selected (aria-selected="false" on every tab, all panels hidden). The first tab
+    // keeps tabindex 0 so the tablist is still reachable with Tab; arrow keys then select.
+    tabs.forEach((t, i) => {
+      t.setAttribute('aria-selected', 'false');
+      t.tabIndex = i === 0 ? 0 : -1;
+      const panel = document.getElementById(t.getAttribute('aria-controls') || '');
+      if (panel) panel.hidden = true;
+    });
+    if (chooser) chooser.hidden = false;
+    return;
+  }
+  const initial = tabs.find((t) => t.getAttribute('aria-selected') === 'true') || tabs[0];
   if (initial) select(initial);
 }
 $$<TabList>('[role="tablist"]').forEach(initTabs);
+// "Choose your shop" buttons: select that tab as if clicked (writes the hash + remembers it), then
+// move focus to the selected tab, since the prompt the visitor was on disappears.
+$$<HTMLButtonElement>('[data-choose]').forEach((b) => b.addEventListener('click', () => {
+  const tab = $$<HTMLButtonElement>('[role="tab"]').find((t) => t.getAttribute('aria-controls') === b.getAttribute('aria-controls'));
+  const list = tab?.closest<TabList>('[role="tablist"]');
+  list?._select?.(tab!.dataset.key || '', { user: true, focus: true });
+}));
 window.addEventListener('hashchange', () => {
   $$<TabList>('[role="tablist"][data-hash]').forEach((l) => l._select?.(location.hash.slice(1)));
 });
@@ -99,12 +134,13 @@ $$('[data-close]').forEach((b) => b.addEventListener('click', () => b.closest('d
 $$('[data-filters]').forEach((group) => {
   const scope = document.getElementById(group.dataset.filters || '') || document;
   const btns = $$<HTMLButtonElement>('[data-filter]', group);
+  const item = group.dataset.filterItem || '.tile'; // /shop/ uses data-filter-item=".pcard"
   const apply = (f: string) => {
     btns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === f)));
-    $$('.tile', scope).forEach((t) => { t.hidden = !(f === 'all' || (t.dataset.tags || '').split(' ').includes(f)); });
+    $$(item, scope).forEach((t) => { t.hidden = !(f === 'all' || (t.dataset.tags || '').split(' ').includes(f)); });
     $$('[data-filterable]', scope).forEach((c) => {
       const empty = $('.empty', c);
-      if (empty) empty.hidden = $$('.tile:not([hidden])', c).length > 0;
+      if (empty) empty.hidden = $$(`${item}:not([hidden])`, c).length > 0;
     });
   };
   btns.forEach((b) => b.addEventListener('click', () => apply(b.dataset.filter || 'all')));
@@ -129,13 +165,16 @@ function showTile(i: number) {
   const lbView = $<HTMLAnchorElement>('[data-lb="view"]', lb)!;
   if (book) { lbBook.href = book.href; lbBook.textContent = book.textContent; }
   if (view) { lbView.href = view.href; lbView.textContent = view.textContent; }
+  // Culture tiles carry at most one link (the Instagram post) and no barber: hide unused buttons.
+  lbBook.hidden = !book;
+  lbView.hidden = !view;
   $('[data-lb="count"]', lb)!.textContent = `${lbIdx + 1} / ${lbList.length}`;
 }
 if (lb) {
   $$('.tile__zoom').forEach((b) => b.addEventListener('click', () => {
     const tile = b.closest<HTMLElement>('.tile')!;
     const scope = tile.closest('[data-filterable], .strip') || document;
-    lbList = $$('.tile', scope).filter((t) => !t.hidden && t.offsetParent !== null);
+    lbList = $$('.tile', scope).filter((t) => !t.hidden && t.offsetParent !== null && $('.tile__zoom', t) !== null);
     showTile(lbList.indexOf(tile));
     lb.showModal();
   }));
@@ -188,3 +227,26 @@ paintStatus();
 setInterval(paintStatus, 60000);
 
 $$('[data-year]').forEach((el) => { el.textContent = String(new Date().getFullYear()); });
+
+/* ---------- Product strip (home): prev/next scroll by one card; swipe is native scroll-snap ---------- */
+$$('[data-pstrip]').forEach((strip) => {
+  const nav = $(`[data-pstrip-nav="${strip.id}"]`);
+  const prev = nav && $<HTMLButtonElement>('[data-pstrip-prev]', nav);
+  const next = nav && $<HTMLButtonElement>('[data-pstrip-next]', nav);
+  const step = () => {
+    const card = strip.firstElementChild as HTMLElement | null;
+    const gap = parseFloat(getComputedStyle(strip).columnGap) || 0;
+    return card ? card.getBoundingClientRect().width + gap : strip.clientWidth;
+  };
+  const sync = () => {
+    const max = strip.scrollWidth - strip.clientWidth - 2;
+    if (prev) prev.disabled = strip.scrollLeft <= 2;
+    if (next) next.disabled = strip.scrollLeft >= max;
+  };
+  const behavior: ScrollBehavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+  prev?.addEventListener('click', () => strip.scrollBy({ left: -step(), behavior }));
+  next?.addEventListener('click', () => strip.scrollBy({ left: step(), behavior }));
+  strip.addEventListener('scroll', sync, { passive: true });
+  window.addEventListener('resize', sync);
+  sync();
+});

@@ -1,5 +1,5 @@
 {
-  "_note": "Seeded from docs/barbers.json (Square booking pages, 2026-10-07). booking_url = location.square_booking_url + '/' + item_id (built in src/lib/data.ts). Fields listed in placeholder_fields are invented for the mockup and must be replaced with client-supplied copy. Item IDs change if a barber's Square service is deleted/recreated. Instagram handles, bios, specialties, sources and confidence were filled 2026-10-07 from public Instagram (see docs/instagram-findings.md). confidence: confirmed = profile names Skull & Thrones and/or links this barber's own Square item; likely = name matches roster but profile does not name the location; none = no account found. Specialties = [] means no evidence yet.",
+  "_note": "Seeded from docs/barbers.json (Square booking pages, 2026-10-07). booking_url = location.square_booking_url + '/' + item_id (built in src/lib/data.ts). Fields listed in placeholder_fields are invented for the mockup and must be replaced with client-supplied copy. Item IDs change if a barber's Square service is deleted/recreated. Instagram handles, bios, specialties, sources and confidence were filled 2026-10-07 from public Instagram (see docs/instagram-findings.md). confidence: confirmed = profile names Skull & Thrones and/or links this barber's own Square item; likely = name matches roster but profile does not name the location; none = no account found. Specialties = [] means no evidence yet. accepting_new_clients (2026-10-10): set true for all 25 because we have no evidence any barber is closed to new clients; it is a shop-set statement (\"Accepting new clients\" / \"Booked up\" on the card), NOT live Square availability, and the client must set it per barber in the CMS. next_opening (optional, absent here) is where the phase-2 Square availability job will write e.g. \"Tue 2pm\". When SQUARE_TOKEN_ADDISON and SQUARE_TOKEN_ELMHURST are set, the build merges this file with each shop's Square catalog by item_id (src/lib/roster.ts).",
   "barbers": [
     {
       "slug": "elyse-lc",
@@ -22,7 +22,6 @@
       "square_note": "Long and short hair specialist. Hybrid artist.",
       "placeholder_fields": [
         "role",
-        "accepting_new_clients",
         "headshot"
       ],
       "instagram": "stylesbyelyse",
@@ -52,7 +51,6 @@
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "accepting_new_clients",
         "headshot"
       ],
       "instagram": "hausxalva",
@@ -85,7 +83,6 @@
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "accepting_new_clients",
         "headshot"
       ],
       "sources": [
@@ -117,7 +114,6 @@
       "placeholder_fields": [
         "role",
         "specialties",
-        "accepting_new_clients",
         "headshot"
       ],
       "instagram": "cutsfromjay",
@@ -146,7 +142,6 @@
       "placeholder_fields": [
         "role",
         "specialties",
-        "accepting_new_clients",
         "headshot"
       ],
       "instagram": "dariandorantes",
@@ -168,7 +163,7 @@
       "item_id": "I56TJK2FOFIPPKGZG2SJMTHQ",
       "specialties": [],
       "bio": "TODO client: bio for Reno (no Instagram account found).",
-      "accepting_new_clients": false,
+      "accepting_new_clients": true,
       "sort_order": 6,
       "is_active": true,
       "square_note": "Staff name in Square is Rene",
@@ -176,7 +171,6 @@
         "role",
         "specialties",
         "bio",
-        "accepting_new_clients",
         "headshot"
       ],
       "sources": [],
@@ -201,7 +195,6 @@
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "accepting_new_clients",
         "headshot"
       ],
       "instagram": "jovanifeliciano",
@@ -232,7 +225,6 @@
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "accepting_new_clients",
         "headshot"
       ],
       "instagram": "anastaci_oo",
@@ -258,14 +250,13 @@
         "Taper fades"
       ],
       "bio": "Ruben (@stoicbarber) is one of the shop’s veterans and books through skullandthrones.com. His feed leans classic: taper fades, clean shapes and shear work with Mizutani scissors.",
-      "accepting_new_clients": false,
+      "accepting_new_clients": true,
       "sort_order": 9,
       "is_active": true,
       "square_note": "Veteran",
       "placeholder_fields": [
         "role",
         "specialties",
-        "accepting_new_clients",
         "headshot"
       ],
       "instagram": "stoicbarber",
@@ -295,7 +286,6 @@
       "placeholder_fields": [
         "role",
         "specialties",
-        "accepting_new_clients",
         "headshot"
       ],
       "sources": [
@@ -324,7 +314,6 @@
       "placeholder_fields": [
         "role",
         "specialties",
-        "accepting_new_clients",
         "headshot"
       ],
       "instagram": "jmoreno0424",
@@ -347,14 +336,13 @@
         "Hair graphics / designs"
       ],
       "bio": "Eric \"el Samurai\" Zamarripa brings 20 years behind the chair to the Addison shop. He has led a graphics (hair design) class at Skull & Thrones.",
-      "accepting_new_clients": false,
+      "accepting_new_clients": true,
       "sort_order": 12,
       "is_active": true,
       "square_note": "20 years of experience",
       "placeholder_fields": [
         "role",
         "specialties",
-        "accepting_new_clients",
         "headshot"
       ],
       "instagram": "eric.thesamurai",
@@ -385,7 +373,6 @@
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "accepting_new_clients",
         "headshot"
       ],
       "instagram": "jackiefadeit",
@@ -414,7 +401,6 @@
       "placeholder_fields": [
         "role",
         "specialties",
-        "accepting_new_clients",
         "headshot"
       ],
       "instagram": "carloss_barber",
@@ -445,7 +431,6 @@
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "accepting_new_clients",
         "headshot"
       ],
       "instagram": "rudygotcuts",
@@ -475,7 +460,6 @@
         "role",
         "specialties",
         "bio",
-        "accepting_new_clients",
         "headshot"
       ],
       "sources": [],
@@ -500,7 +484,6 @@
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "accepting_new_clients",
         "headshot"
       ],
       "instagram": "celli_cutz",
@@ -528,7 +511,6 @@
       "placeholder_fields": [
         "role",
         "specialties",
-        "accepting_new_clients",
         "headshot"
       ],
       "instagram": "valenbarber_",
@@ -557,12 +539,11 @@
         "Texture"
       ],
       "bio": "David Rodriguez is an Elmhurst artist who joined Skull & Thrones in 2025. His posts are drop fades with texture, flow cuts and before/afters.",
-      "accepting_new_clients": false,
+      "accepting_new_clients": true,
       "sort_order": 4,
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "accepting_new_clients",
         "headshot"
       ],
       "instagram": "davidmischief_",
@@ -595,7 +576,6 @@
       "square_note": "5 years experience; real bio exists in Square",
       "placeholder_fields": [
         "role",
-        "accepting_new_clients",
         "headshot"
       ],
       "sources": [
@@ -626,7 +606,6 @@
       "square_note": "Shear work, modern styles; real bio exists in Square",
       "placeholder_fields": [
         "role",
-        "accepting_new_clients",
         "headshot"
       ],
       "instagram": "christianfadeit",
@@ -653,7 +632,6 @@
         "role",
         "specialties",
         "bio",
-        "accepting_new_clients",
         "headshot"
       ],
       "sources": [],
@@ -678,7 +656,6 @@
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "accepting_new_clients",
         "headshot"
       ],
       "instagram": "alexsis.dlt",
@@ -708,7 +685,6 @@
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "accepting_new_clients",
         "headshot"
       ],
       "instagram": "torafadez",
@@ -739,7 +715,6 @@
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "accepting_new_clients",
         "headshot"
       ],
       "instagram": "blue_suede_fadez",

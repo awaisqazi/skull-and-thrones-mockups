@@ -1,0 +1,48 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ProductCard from '../components/ProductCard.astro';
+import { getProducts, getLocations, productVendors } from '../lib/data';
+
+const products = await getProducts();
+const vendors = productVendors(products);
+const locations = await getLocations();
+---
+<Layout
+  title="Shop"
+  description="Shop the pomades, pastes, clippers and shears the Skull & Thrones barbers use. Orders ship from Bodega; the same products are stocked at both shops."
+  current="shop"
+  page="shop"
+>
+  <section class="page-hero wrap" aria-labelledby="shop-title">
+    <div class="rule-row"><span class="eyebrow">{products.length} products · {vendors.length} brands</span><span class="eyebrow">Sold by Bodega</span></div>
+    <h1 class="giant" id="shop-title">Shop</h1>
+    <div class="page-hero__row">
+      <p class="lead">The tools we use, ready when you are. Orders ship from Bodega, and the same products are stocked at both shops if you'd rather grab them at your next cut.</p>
+      <a class="link" href="https://www.bybodega.com/" target="_blank" rel="noopener">Visit bybodega.com <span class="arr" aria-hidden="true">↗</span></a>
+    </div>
+  </section>
+
+  <section class="wrap" aria-label="Products">
+    <div class="filters" data-filters="shop-grid" data-filter-item=".pcard" role="group" aria-label="Filter by brand">
+      <button class="chip chip--filter" type="button" data-filter="all" aria-pressed="true">All <span class="tab__count">{products.length}</span></button>
+      {vendors.map((v) => <button class="chip chip--filter" type="button" data-filter={v.slug} aria-pressed="false">{v.label} <span class="tab__count">{v.count}</span></button>)}
+    </div>
+    <div id="shop-grid">
+      <div data-filterable>
+        <div class="pgrid">
+          {products.map((p) => <ProductCard product={p} sizes="(min-width: 1100px) 330px, (min-width: 700px) 30vw, 46vw" />)}
+        </div>
+        <p class="empty" hidden>Nothing from this brand right now.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap" aria-labelledby="shop-book-title">
+    <div class="any-band">
+      <div><p class="eyebrow" style="color:var(--ink)">Due for a cut?</p><h2 class="big" id="shop-book-title">Book the<br />chair.</h2></div>
+      <div class="btn-row">
+        {locations.map((l, i) => <a class:list={['btn btn--lg', i > 0 && 'btn--light']} href={l.square_booking_url} target="_blank" rel="noopener">Book {l.name} <span class="arr" aria-hidden="true">↗</span></a>)}
+      </div>
+    </div>
+  </section>
+</Layout>

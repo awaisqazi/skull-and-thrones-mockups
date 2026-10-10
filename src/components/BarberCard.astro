@@ -1,6 +1,6 @@
 ---
 import { Image } from 'astro:assets';
-import type { Barber } from '../lib/data';
+import { ACCEPTING, type Barber } from '../lib/data';
 import { localHeadshot } from '../lib/localImages';
 
 interface Props { barber: Barber; locationName: string; headingLevel?: 'h2' | 'h3' }
@@ -8,21 +8,27 @@ const { barber: b, locationName, headingLevel: H = 'h3' } = Astro.props;
 const local = localHeadshot(b.slug);
 const hasPhoto = Boolean(b.headshot || local);
 const alt = hasPhoto ? `Headshot of ${b.name}` : `Placeholder headshot for ${b.name}`;
+const flag = b.accepting_new_clients ? ACCEPTING.yes : ACCEPTING.no;
 ---
-<article class="card" data-slug={b.slug} data-loc={b.location}>
+<article class="card" data-slug={b.slug} data-loc={b.location} data-needs-profile={b.needs_profile ? '' : undefined}>
   <div class="card__media" data-initials={b.initials}>
     {local
       ? <Image src={local} alt={alt} width={600} height={750} loading="lazy" />
       : b.headshot
         ? <Image src={b.headshot} alt={alt} width={600} height={750} loading="lazy" />
         : <img src={b.headshot_src} alt={alt} width="600" height="750" loading="lazy" />}
-    {b.accepting_new_clients && <span class="accepting"><i class="dot" aria-hidden="true"></i><span>Taking new clients</span></span>}
+    <div class="card__flags">
+      {b.accepting_new_clients
+        ? <span class="accepting" title={flag.tip}><i class="dot" aria-hidden="true"></i><span>{flag.label}</span></span>
+        : <span class="accepting accepting--off" title={flag.tip}><span>{flag.label}</span></span>}
+      {b.next_opening && <span class="next-opening">Next opening {b.next_opening}</span>}
+    </div>
     {!hasPhoto && <span class="ph-tag">Placeholder</span>}
   </div>
   <div class="card__body">
     <H class="card__name"><a class="card__open" href={b.href}>{b.name}</a></H>
     <p class="card__role">{b.role}</p>
-    <p class="card__price">Haircuts from <b>${b.haircut_from}</b></p>
+    {b.haircut_from != null && <p class="card__price">Haircuts from <b>${b.haircut_from}</b></p>}
     {b.specialties.length > 0 && (
       <ul class="chips" aria-label="Specialties">{b.specialties.map((s) => <li class="chip">{s}</li>)}</ul>
     )}

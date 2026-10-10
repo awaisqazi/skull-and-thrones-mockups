@@ -1,0 +1,36 @@
+---
+/**
+ * One /culture/ collage tile. Reuses the portfolio .tile styles + filter/lightbox scripts:
+ * data-tags drives the filter chips; only tiles with a real photo get the zoom button (lightbox).
+ * Photo source order: remote `image` URL > src/assets/culture/<image or id> > placeholder.
+ */
+import { Image, getImage } from 'astro:assets';
+import { localCultureImage } from '../lib/localImages';
+import type { CultureItem } from '../lib/data';
+
+interface Props { item: CultureItem; size?: 'big' | 'wide' | 'tall' | 'std' }
+const { item: t, size = 'std' } = Astro.props;
+const local = (t.image && !t.remote ? localCultureImage(t.image) : undefined) ?? localCultureImage(t.id);
+const hasPhoto = Boolean(local || t.remote);
+const alt = hasPhoto ? t.caption : `Placeholder photo: ${t.caption}`;
+const full = local ? (await getImage({ src: local, width: 1600, format: 'jpg', quality: 82 })).src : (t.remote ?? undefined);
+const igLabel = `See this on Instagram: ${t.caption}`;
+---
+<figure class:list={['tile', 'collage__item', `collage__item--${size}`]} data-tags={t.category} data-full={full}>
+  {local
+    ? <Image src={local} alt={alt} width={size === 'std' ? 800 : 1200} fit="cover" position="attention" loading="lazy" />
+    : t.remote
+      ? <img src={t.remote} alt={alt} loading="lazy" />
+      : <img src={t.placeholder_src} alt={alt} width="800" height="800" loading="lazy" />}
+  {hasPhoto && <button class="tile__zoom" type="button" aria-label={`Enlarge: ${t.caption}`}></button>}
+  {!hasPhoto && (t.source_url
+    ? <a class="ph-tag tile__ig" href={t.source_url} target="_blank" rel="noopener" aria-label={igLabel}>IG <span aria-hidden="true">↗</span></a>
+    : <span class="ph-tag">Photo coming</span>)}
+  <figcaption class="tile__overlay">
+    <span class="collage__meta">{t.category}{t.date_label && <> · <time datetime={t.date}>{t.date_label}</time></>}</span>
+    <span class="tile__cap">{t.caption}</span>
+    {hasPhoto && t.source_url && (
+      <span class="tile__actions"><a class="btn btn--accent btn--sm" href={t.source_url} target="_blank" rel="noopener">See the post <span class="arr" aria-hidden="true">↗</span></a></span>
+    )}
+  </figcaption>
+</figure>

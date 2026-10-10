@@ -27,7 +27,7 @@ const shortHours = (l: (typeof locations)[number]) =>
     <div class="loc-grid">
       {locations.map((l, i) => {
         const team = barbers.filter((b) => b.location === l.slug);
-        const from = Math.min(...team.map((b) => b.haircut_from));
+        const from = Math.min(...team.flatMap((b) => (b.haircut_from != null ? [b.haircut_from] : [])));
         const ink = i === 0;
         return (
           <article class:list={['book-card', ink && 'book-card--ink on-dark']}>
@@ -37,7 +37,7 @@ const shortHours = (l: (typeof locations)[number]) =>
             <div class="book-card__body">
               <div class="loc-card__top"><h2 class="big">{l.name}</h2><span class="status" data-open-status={l.slug} role="status">{l.hours_short}</span></div>
               <p class="muted">{l.address_line} · <a href={`tel:${l.phone_e164}`}>{l.phone}</a></p>
-              <p>{team.length} barbers · haircuts from ${from} · {shortHours(l)}</p>
+              <p>{team.length} barbers · {Number.isFinite(from) && <>haircuts from ${from} · </>} {shortHours(l)}</p>
               <div class="btn-row">
                 <a class:list={['btn btn--lg', ink && 'btn--accent']} href={l.square_booking_url} target="_blank" rel="noopener"><span class="dot" aria-hidden="true"></span>Book {l.name} <span class="arr" aria-hidden="true">↗</span></a>
                 <a class:list={['btn btn--lg', ink ? 'btn--ghost' : 'btn--light']} href={url(`barbers/#${l.slug}`)}>See barbers</a>

@@ -5,7 +5,7 @@ import { localHeadshot } from '../../lib/localImages';
 import Layout from '../../layouts/Layout.astro';
 import BarberCard from '../../components/BarberCard.astro';
 import PortfolioGrid from '../../components/PortfolioGrid.astro';
-import { getBarbers, getLocationMap, getPortfolio, type Barber } from '../../lib/data';
+import { ACCEPTING, getBarbers, getLocationMap, getPortfolio, type Barber } from '../../lib/data';
 import { igUrl } from '../../lib/site';
 import { url } from '../../lib/url';
 
@@ -33,7 +33,7 @@ const person = {
 ---
 <Layout
   title={`${b.name} — ${b.role} at ${loc.name}`}
-  description={`Book ${b.name} at Skull & Thrones ${loc.name}. ${b.specialties.slice(0, 3).join(', ')}. Haircuts from $${b.haircut_from}.`}
+  description={`Book ${b.name} at Skull & Thrones ${loc.name}. ${b.specialties.slice(0, 3).join(', ')}. ${b.haircut_from != null ? ` Haircuts from $${b.haircut_from}.` : ''}`}
   current="team"
   page="barber"
   loc={b.location}
@@ -54,8 +54,11 @@ const person = {
       <div class="profile__body">
         <p class="eyebrow">{b.role} · {loc.name}</p>
         <h1 class="panel__name" id="panel-name">{b.name}</h1>
-        <p class="panel__price">Haircuts from <b>${b.haircut_from}</b></p>
-        {b.accepting_new_clients && <span class="status" data-state="open">Taking new clients</span>}
+        {b.haircut_from != null && <p class="panel__price">Haircuts from <b>${b.haircut_from}</b></p>}
+        {b.accepting_new_clients
+          ? <span class="status" data-state="open" title={ACCEPTING.yes.tip}>{ACCEPTING.yes.label}</span>
+          : <span class="status" title={ACCEPTING.no.tip}>{ACCEPTING.no.label}</span>}
+        {b.next_opening && <p class="panel__price">Next opening <b>{b.next_opening}</b></p>}
         {b.specialties.length > 0 && <ul class="chips" aria-label="Specialties">{b.specialties.map((s) => <li class="chip">{s}</li>)}</ul>}
         {b.bio && <p class="panel__bio">{b.bio}</p>}
         {b.instagram && <a class="link" href={igUrl(b.instagram)} target="_blank" rel="noopener"><span>@{b.instagram}</span> ↗</a>}

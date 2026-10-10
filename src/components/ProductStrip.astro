@@ -1,0 +1,35 @@
+---
+/**
+ * Home-page "Shop the tools we use" strip: featured products from src/data/products.json,
+ * horizontally scrolling (CSS scroll-snap), prev/next buttons wired in src/scripts/app.ts ([data-pstrip]).
+ */
+import ProductCard from './ProductCard.astro';
+import { getFeaturedProducts } from '../lib/data';
+import { url } from '../lib/url';
+
+const products = await getFeaturedProducts();
+const id = 'pstrip-home';
+---
+{products.length > 0 && (
+  <section class="section--tight wrap pstrip-sec" aria-labelledby="shop-strip-title">
+    <div class="sec-head pstrip-head">
+      <span class="sec-num">Shop</span>
+      <div>
+        <p class="eyebrow">Shop the tools we use</p>
+        <h2 class="big pstrip-head__title" id="shop-strip-title">Take the chair home.</h2>
+        <p>The products and tools on our stations, sold through Bodega. Order online, it ships to you.</p>
+      </div>
+      <div class="pstrip-head__aside">
+        <a class="link" href="https://www.bybodega.com/" target="_blank" rel="noopener">See everything at Bodega <span class="arr" aria-hidden="true">↗</span></a>
+        <div class="pstrip__nav" data-pstrip-nav={id}>
+          <button class="pstrip__btn" type="button" data-pstrip-prev aria-controls={id} aria-label="Previous products" disabled>←</button>
+          <button class="pstrip__btn" type="button" data-pstrip-next aria-controls={id} aria-label="Next products">→</button>
+        </div>
+      </div>
+    </div>
+    <ul class="pstrip" id={id} data-pstrip tabindex="0" aria-label="Featured products">
+      {products.map((p) => <ProductCard product={p} tag="li" sizes="(min-width: 1100px) 340px, (min-width: 700px) 40vw, 72vw" />)}
+    </ul>
+    <p class="pstrip-foot"><a class="link" href={url('shop/')}>Shop all products <span class="arr" aria-hidden="true">→</span></a></p>
+  </section>
+)}

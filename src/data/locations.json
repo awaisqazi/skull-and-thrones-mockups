@@ -1,5 +1,5 @@
 {
-  "_note": "Both shops. Hours: days use 0 = Sunday … 6 = Saturday, times are 24h shop-local (America/Chicago). square_booking_url is the location's Square services page; per-barber URLs append /{item_id}. Parking text is PLACEHOLDER until the client confirms. instagram/notes verified from @skullandthrones on 2026-10-07; there is one shared Instagram account for both shops. Walk-in policy, gift cards and prices were NOT found on Instagram.",
+  "_note": "Both shops. Hours: days use 0 = Sunday … 6 = Saturday, times are 24h shop-local (America/Chicago). square_booking_url is the location's Square services page; per-barber URLs append /{item_id}. square_location_id is the Square location id inside that URL; the build uses it to list each shop's Square catalog (SQUARE_TOKEN_ADDISON / SQUARE_TOKEN_ELMHURST). Parking text is PLACEHOLDER until the client confirms. instagram/notes verified from @skullandthrones on 2026-10-07; there is one shared Instagram account for both shops. Walk-in policy, gift cards and prices were NOT found on Instagram.",
   "locations": [
     {
       "slug": "addison",
@@ -43,6 +43,7 @@
       ],
       "hours_short": "Mon–Fri 10–7",
       "square_booking_url": "https://book.squareup.com/appointments/j4bvyc6hjb6dmt/location/D11BVA91E8V3N/services",
+      "square_location_id": "D11BVA91E8V3N",
       "any_artist_item_id": "UPKLK2CAHWYINF22WNWPSCY4",
       "map_query": "1405 W Lake Street, Addison, IL 60101",
       "parking": "Details to confirm with client (lot / street / meters).",
@@ -96,6 +97,7 @@
       ],
       "hours_short": "Mon–Fri 10–7",
       "square_booking_url": "https://book.squareup.com/appointments/ryfrr2g9lvsdsp/location/L65DF5AG5BDAN/services",
+      "square_location_id": "L65DF5AG5BDAN",
       "any_artist_item_id": "YWLSORKMSZEAIER66TICZXKB",
       "map_query": "183 N. York St., Elmhurst, IL 60126",
       "parking": "Details to confirm with client (lot / street / meters).",

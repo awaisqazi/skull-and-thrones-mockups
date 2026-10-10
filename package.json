@@ -8,7 +8,9 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "node --test src/lib/roster.test.ts",
+    "check:square": "node scripts/check-square.mjs"
   },
   "dependencies": {
     "astro": "^5.18.2",

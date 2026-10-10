@@ -6,6 +6,7 @@ import LocationTabs from '../components/LocationTabs.astro';
 import BarberGrid from '../components/BarberGrid.astro';
 import PortfolioGrid from '../components/PortfolioGrid.astro';
 import LocationCard from '../components/LocationCard.astro';
+import ProductStrip from '../components/ProductStrip.astro';
 import { getLocations, getBarbers, getPortfolio } from '../lib/data';
 import { placeholder } from '../lib/placeholder';
 import { SITE } from '../lib/site';
@@ -68,9 +69,9 @@ const hero = Object.values(heroFiles)[0]?.default;
     <div class="sec-head">
       <span class="sec-num">01 — Team</span>
       <div><h2 class="h2" id="barbers-title">Pick your chair.</h2><p>Every barber, both shops. Tap a card for their bio and work, or hit Book to go straight to Square.</p></div>
-      <LocationTabs prefix="home" />
+      <LocationTabs prefix="home" neutral />
     </div>
-    <BarberGrid prefix="home" />
+    <BarberGrid prefix="home" neutral />
   </section>
 
   <section class="section--tight wrap" aria-labelledby="work-title">
@@ -83,6 +84,8 @@ const hero = Object.values(heroFiles)[0]?.default;
       <div data-loc-only={l.slug}><PortfolioGrid id={`work-${l.slug}`} items={items} layout="strip" /></div>
     ))}
   </section>
+
+  <ProductStrip />
 
   <section class="section wrap" id="locations" aria-labelledby="loc-title">
     <div class="sec-head">

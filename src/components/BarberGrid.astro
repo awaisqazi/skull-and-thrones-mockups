@@ -2,15 +2,23 @@
 /**
  * Barber cards. With `prefix`: one tabpanel per location, driven by <LocationTabs prefix={prefix}>.
  * With `location`: a single grid for that shop (location hub pages).
+ * With `prefix` + `neutral` (home page): no shop is favoured. Until the visitor picks one, a
+ * "Choose your shop" prompt replaces the grid (see LocationTabs for the ARIA note).
+ *   No-JS fallback: the prompt's buttons need JS, so it stays hidden and BOTH grids render
+ *   stacked under visible shop headings (nobody is favoured and every barber is reachable).
+ *   With JS, the inline script right after the panels applies #hash / ?location= / remembered
+ *   choice before first paint (no flash of both grids); app.ts then takes over.
  */
 import BarberCard from './BarberCard.astro';
 import AnyArtistCard from './AnyArtistCard.astro';
 import { getLocations, getBarbers, type LocationSlug } from '../lib/data';
 
-interface Props { prefix?: string; location?: LocationSlug; anyArtist?: boolean }
-const { prefix = 'grid', location, anyArtist = true } = Astro.props;
+interface Props { prefix?: string; location?: LocationSlug; anyArtist?: boolean; neutral?: boolean }
+const { prefix = 'grid', location, anyArtist = true, neutral = false } = Astro.props;
 const locations = (await getLocations()).filter((l) => !location || l.slug === location);
 const barbers = await getBarbers();
+const slugs = locations.map((l) => l.slug);
+const count = (slug: string) => barbers.filter((b) => b.location === slug).length;
 ---
 {location
   ? locations.map((l) => (
@@ -19,12 +27,50 @@ const barbers = await getBarbers();
         {barbers.filter((b) => b.location === l.slug).map((b) => <BarberCard barber={b} locationName={l.name} />)}
       </div>
     ))
-  : locations.map((l, i) => (
-      <div class="tabpanel" role="tabpanel" id={`${prefix}-${l.slug}`} aria-labelledby={`${prefix}-tab-${l.slug}`} tabindex="0" hidden={i !== 0}>
-        <h3 class="sr-only">{l.name} barbers</h3>
-        <div class="grid">
-          {anyArtist && <AnyArtistCard location={l} />}
-          {barbers.filter((b) => b.location === l.slug).map((b) => <BarberCard barber={b} locationName={l.name} headingLevel="h3" />)}
+  : (
+    <div class:list={[neutral && 'loc-choose']} id={neutral ? `${prefix}-choose` : undefined}>
+      {neutral && (
+        <div class="chooser" id={`${prefix}-chooser`} role="group" aria-labelledby={`${prefix}-chooser-title`} hidden>
+          <h3 class="chooser__title" id={`${prefix}-chooser-title`}>Choose your shop</h3>
+          <p class="chooser__lead">Pick a shop and we'll show you its barbers. You can switch any time.</p>
+          <div class="chooser__opts">
+            {locations.map((l) => (
+              <button class="chooser__opt" type="button" data-choose={l.slug} aria-controls={`${prefix}-${l.slug}`}>
+                <span class="chooser__name">{l.name}</span>
+                <span class="chooser__meta">{count(l.slug)} barbers</span>
+                <span class="chooser__addr">{l.address_line}</span>
+                <span class="chooser__go" aria-hidden="true">→</span>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
-    ))}
+      )}
+      {locations.map((l, i) => (
+        <div class="tabpanel" role="tabpanel" id={`${prefix}-${l.slug}`} aria-labelledby={`${prefix}-tab-${l.slug}`} tabindex="0" hidden={!neutral && i !== 0}>
+          <h3 class:list={[neutral ? 'tabpanel__head' : 'sr-only']}>{l.name} barbers</h3>
+          <div class="grid">
+            {anyArtist && <AnyArtistCard location={l} />}
+            {barbers.filter((b) => b.location === l.slug).map((b) => <BarberCard barber={b} locationName={l.name} headingLevel="h3" />)}
+          </div>
+        </div>
+      ))}
+      {neutral && (
+        <script is:inline define:vars={{ prefix, slugs }}>
+          var wrap = document.getElementById(prefix + '-choose');
+          var ok = function (k) { return slugs.indexOf(k) > -1; };
+          var pick = location.hash.slice(1);
+          if (!ok(pick)) pick = new URLSearchParams(location.search).get('location');
+          if (!ok(pick)) { try { pick = localStorage.getItem('st-location'); } catch (e) { pick = null; } }
+          if (!ok(pick)) pick = null;
+          wrap.setAttribute('data-js', '');
+          slugs.forEach(function (k) {
+            var panel = document.getElementById(prefix + '-' + k);
+            var tab = document.getElementById(prefix + '-tab-' + k);
+            if (panel) panel.hidden = k !== pick;
+            if (tab) tab.setAttribute('aria-selected', String(k === pick));
+          });
+          document.getElementById(prefix + '-chooser').hidden = !!pick;
+        </script>
+      )}
+    </div>
+  )}

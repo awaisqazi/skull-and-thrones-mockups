@@ -16,6 +16,8 @@ export type Location = CollectionEntry<'locations'>['data'] & {
   href: string;
 };
 export type Barber = CollectionEntry<'barbers'>['data'] & {
+  /** Phase 2 (Square availability job), e.g. "Tue 2pm"; null = not shown. Shop-set accepting_new_clients is separate. */
+  next_opening: string | null;
   booking_url: string;
   href: string;
   first_name: string;
@@ -31,6 +33,15 @@ export type PortfolioItem = CollectionEntry<'portfolio'>['data'] & {
   barber_href: string;
   booking_url: string;
 };
+
+/**
+ * Copy for `accepting_new_clients`: a shop-set statement (CMS toggle) about whether the barber
+ * takes NEW customers. It is not live Square availability; that arrives later as `next_opening`.
+ */
+export const ACCEPTING = {
+  yes: { label: 'Accepting new clients', tip: 'Set by the shop: this barber is taking new clients. Open times show in Square when you book.' },
+  no: { label: 'Booked up', tip: 'Set by the shop: this barber is not taking new clients right now. Existing clients can still book in Square.' },
+} as const;
 
 /** Square: per-barber deep link = location services page + '/' + item id. */
 export function buildBookingUrl(base: string, itemId: string): string {
@@ -73,6 +84,7 @@ export async function getBarbers(location?: LocationSlug): Promise<Barber[]> {
       first_name: data.name.split(' ')[0]!,
       initials: initialsOf(data.name),
       headshot_src: data.headshot ?? placeholder(600, 750, data.name),
+      next_opening: data.next_opening ?? null,
     }))
     .sort((a, b) => locs[a.location].sort_order - locs[b.location].sort_order || a.sort_order - b.sort_order);
 }
@@ -134,4 +146,104 @@ export async function getHoursPayload() {
       return [l.slug, { name: l.name, hours: week }];
     }),
   );
+}
+
+/* ---------- Behind the scenes (/culture/) ---------- */
+export type CultureCategory = CollectionEntry<'culture'>['data']['category'];
+export type CultureItem = CollectionEntry<'culture'>['data'] & {
+  id: string;
+  /** Remote image URL, or null (local file in src/assets/culture/ or placeholder; resolved in CultureTile). */
+  remote: string | null;
+  /** Placeholder tile data URI (used when there is no photo yet). */
+  placeholder_src: string;
+  /** "Nov 2025" / null */
+  date_label: string | null;
+};
+export type CultureStat = CollectionEntry<'cultureStats'>['data'] & { id: string };
+
+/** Filter chips on /culture/ ('shop' items show under All only). */
+export const CULTURE_CATEGORIES = [
+  { key: 'education', label: 'Education' },
+  { key: 'events', label: 'Events' },
+  { key: 'community', label: 'Community' },
+] as const;
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+export async function getCultureItems(opts: { category?: CultureCategory } = {}): Promise<CultureItem[]> {
+  const rows = await getCollection('culture', ({ data }) => !opts.category || data.category === opts.category);
+  return rows
+    .map(({ id, data }) => {
+      const [y, m] = (data.date ?? '').split('-');
+      return {
+        ...data,
+        id,
+        remote: data.image && /^https?:\/\//.test(data.image) ? data.image : null,
+        placeholder_src: placeholder(data.featured ? 1200 : 800, data.featured ? 1200 : 800, '', id),
+        date_label: y && m ? `${MONTHS[Number(m) - 1]} ${y}` : null,
+      };
+    })
+    .sort((a, b) => a.sort_order - b.sort_order);
+}
+
+export async function getCultureStats(): Promise<CultureStat[]> {
+  return (await getCollection('cultureStats')).map(({ id, data }) => ({ ...data, id }));
+}
+
+/* ---------- Products (Bodega / bybodega.com, synced by scripts/sync-products.mjs) ---------- */
+export type Product = CollectionEntry<'products'>['data'] & {
+  /** Title without the leading brand name, ALL-CAPS titles title-cased ("WAHL CORDLESS MAGIC CLIP" → "Cordless Magic Clip"). */
+  display_title: string;
+  vendor_slug: string;
+  price_label: string;
+  compare_label: string | null;
+  /** Shopify CDN resized copies (the CDN resizes on `width`, and serves WebP/AVIF when the browser accepts it). */
+  src: string;
+  srcset: string;
+};
+
+const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+/** Shopify CDN: append width=N to the image URL for a resized copy (never ship the multi-MB originals). */
+export const shopifyImg = (src: string, width: number) => `${src}${src.includes('?') ? '&' : '?'}width=${width}`;
+const titleCase = (s: string) => s.toLowerCase().replace(/(^|[\s\-/(])([a-z])/g, (_, p: string, c: string) => p + c.toUpperCase());
+
+function displayTitle(title: string, vendor: string): string {
+  let t = title.trim();
+  for (const prefix of [vendor, vendor.split(/\s+/)[0]!]) {
+    if (t.toLowerCase().startsWith(prefix.toLowerCase() + ' ')) { t = t.slice(prefix.length).trim(); break; }
+  }
+  return /[a-z]/.test(t) ? t : titleCase(t);
+}
+const usd = (p: string) => `$${p}`;
+
+export async function getProducts(opts: { featured?: boolean; vendor?: string } = {}): Promise<Product[]> {
+  const rows = await getCollection('products', ({ data }) =>
+    data.available && (!opts.featured || data.featured) && (!opts.vendor || slugify(data.vendor) === opts.vendor),
+  );
+  return rows
+    .map(({ data }) => ({
+      ...data,
+      // checkout route switch: buy_url comes straight from products.json (today = Bodega product page).
+      // Switching to a Shopify Buy Button or Square Online checkout only changes that field (see README "Products").
+      display_title: displayTitle(data.title, data.vendor),
+      vendor_slug: slugify(data.vendor),
+      price_label: usd(data.price),
+      compare_label: data.compare_at_price ? usd(data.compare_at_price) : null,
+      src: shopifyImg(data.image, 600),
+      srcset: [300, 600, 900].map((w) => `${shopifyImg(data.image, w)} ${w}w`).join(', '),
+    }))
+    .sort((a, b) => a.sort_order - b.sort_order);
+}
+
+export const getFeaturedProducts = () => getProducts({ featured: true });
+
+/** Vendor filter chips for /shop/: [{ slug, label, count }], A–Z. */
+export function productVendors(list: Product[]) {
+  const map = new Map<string, { slug: string; label: string; count: number }>();
+  for (const p of list) {
+    const v = map.get(p.vendor_slug) ?? { slug: p.vendor_slug, label: p.vendor, count: 0 };
+    v.count++;
+    map.set(p.vendor_slug, v);
+  }
+  return [...map.values()].sort((a, b) => a.label.localeCompare(b.label, 'en', { sensitivity: 'base' }));
 }

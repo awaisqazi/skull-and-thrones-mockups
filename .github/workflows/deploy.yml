@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
   workflow_dispatch: {}
+  # Nightly rebuild (09:00 UTC = 3/4 AM Chicago) so barbers added/removed in Square appear by
+  # morning. Only does anything once the SQUARE_TOKEN_* secrets exist (see README "Square roster").
+  schedule:
+    - cron: '0 9 * * *'
   # Later (CMS): Supabase fires a repository_dispatch on content changes.
   # repository_dispatch:
   #   types: [cms-update]
@@ -26,8 +30,18 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # Square roster (src/content.config.ts). Unset secrets = empty strings = build uses
+      # src/data/barbers.json as before. Build-time only; never exposed to the browser.
+      SQUARE_TOKEN_ADDISON: ${{ secrets.SQUARE_TOKEN_ADDISON }}
+      SQUARE_TOKEN_ELMHURST: ${{ secrets.SQUARE_TOKEN_ELMHURST }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Unit tests (roster merge, Square client; no network)
+        run: npm test
       - name: Build with Astro and upload the Pages artifact
         uses: withastro/action@v3
         with:

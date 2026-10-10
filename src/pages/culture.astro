@@ -1,0 +1,125 @@
+---
+/**
+ * /culture/ — "Behind the scenes": education, seminars, events, shop life (client request R3, 2026-10-09 call).
+ * Content: src/data/culture.json (culture_items + stats) via getCultureItems() / getCultureStats().
+ * Filter chips and the lightbox reuse the portfolio scripts in src/scripts/app.ts.
+ */
+import Layout from '../layouts/Layout.astro';
+import CultureTile from '../components/CultureTile.astro';
+import { getCultureItems, getCultureStats, getLocations, CULTURE_CATEGORIES } from '../lib/data';
+import { SITE } from '../lib/site';
+import { url } from '../lib/url';
+
+const items = await getCultureItems();
+const stats = await getCultureStats();
+const locations = await getLocations();
+const used = new Set(items.map((i) => i.category));
+const chips = CULTURE_CATEGORIES.filter((c) => used.has(c.key));
+
+const BODEGA_EVENTS = 'https://www.bybodega.com/pages/events';
+// Next class listed on Bodega's Events page (checked 2026-10-10). Hidden automatically once the date has passed at build time.
+const NEXT_CLASS = { title: 'Kevin Luchmun x Niko East', date: '2026-11-09', label: 'Nov 9, 2026' };
+const showNext = new Date(`${NEXT_CLASS.date}T23:59:59-06:00`) >= new Date();
+
+// Display-word tiles dropped into the collage after these item positions (CoCreate-style giant words).
+const words: Record<number, { word: string; tag: string; tone: 'ink' | 'accent' | 'paper' }> = {
+  1: { word: 'Education', tag: 'education', tone: 'ink' },
+  4: { word: 'Seminars', tag: 'events', tone: 'accent' },
+  8: { word: 'Familia', tag: 'community', tone: 'paper' },
+};
+// Featured items are the big 2x2 tiles; every fourth regular tile runs tall so the grid reads as a collage.
+let regular = 0;
+const sized = items.map((item) => ({ item, size: item.featured ? 'big' as const : regular++ % 4 === 2 ? 'tall' as const : 'std' as const }));
+const splitStat = (v: string) => v.match(/^([\d,.]+)(.*)$/)?.slice(1) ?? [v, ''];
+---
+<Layout
+  title="Behind the scenes | Skull & Thrones"
+  description="Education, seminars and events at Skull & Thrones: visiting educators, in-shop classes, showcases and the people behind the chairs in Addison and Elmhurst, IL."
+  current="culture"
+  page="culture"
+>
+  <section class="page-hero wrap" aria-labelledby="culture-title">
+    <div class="rule-row"><span class="eyebrow">Education · Seminars · Events</span><span class="eyebrow">Addison · Elmhurst, IL</span></div>
+    <h1 class="giant culture__word" id="culture-title"><span>Behind</span><span>the scenes</span></h1>
+    <div class="page-hero__row">
+      <p class="lead">Barbers are artists here. Here's the part you don't see from the chair.</p>
+      <div class="btn-row">
+        <a class="btn" href="#learn">Learn with us</a>
+        <a class="btn btn--light" href={SITE.instagram} target="_blank" rel="noopener">Instagram <span class="arr" aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section--tight wrap" aria-labelledby="stats-title">
+    <div class="sec-head">
+      <span class="sec-num">01 — Numbers</span>
+      <div><h2 class="h2" id="stats-title">The hours behind the cut.</h2></div>
+    </div>
+    <div class="stats on-dark">
+      <dl class="stats__list">
+        {stats.map((s) => {
+          const [num, suffix] = splitStat(s.value);
+          return <div class="stat"><dt class="stat__label">{s.label}</dt><dd class="stat__num">{num}{suffix && <em>{suffix}</em>}</dd></div>;
+        })}
+      </dl>
+      <p class="stats__src">Experience, client and hours figures from <a href={stats[0]?.source} target="_blank" rel="noopener">our 2024 post <span aria-hidden="true">↗</span></a></p>
+    </div>
+  </section>
+
+  <section class="section--tight wrap" aria-labelledby="gallery-title">
+    <div class="sec-head">
+      <span class="sec-num">02 — Gallery</span>
+      <div><h2 class="h2" id="gallery-title">Look at all the things we do.</h2><p>Classes, seminars, showcases and shop life from both floors. Tap a tile for the story.</p></div>
+    </div>
+    <div id="culture-grid">
+      {chips.length > 1 && (
+        <div class="filters" role="group" aria-label="Filter by category" data-filters="culture-grid">
+          <button class="chip chip--filter" type="button" data-filter="all" aria-pressed="true">All</button>
+          {chips.map((c) => <button class="chip chip--filter" type="button" data-filter={c.key} aria-pressed="false">{c.label}</button>)}
+        </div>
+      )}
+      <div data-filterable>
+        <div class="collage">
+          {sized.map(({ item, size }, i) => (
+            <>
+              <CultureTile item={item} size={size} />
+              {words[i] && (
+                <div class:list={['tile', 'collage__item', 'collage__item--wide', 'collage__word', `collage__word--${words[i].tone}`]} data-tags={words[i].tag} aria-hidden="true">
+                  <span>{words[i].word}</span>
+                </div>
+              )}
+            </>
+          ))}
+        </div>
+        <p class="empty" hidden={items.length > 0}>Nothing posted in this category yet.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section--tight wrap" id="learn" aria-labelledby="learn-title">
+    <div class="sec-head">
+      <span class="sec-num">03 — Learn</span>
+      <div><h2 class="h2" id="learn-title">Seats are open.</h2></div>
+    </div>
+    <div class="learn">
+      <p class="big learn__word">Learn<br />with us.</p>
+      <div class="learn__body">
+        <p class="lead">Our artists keep training with visiting educators, and those classes run through Bodega, our sister education and supply house, where any barber can grab a seat.</p>
+        {showNext && <p class="learn__next"><span class="eyebrow">Next class</span><b>{NEXT_CLASS.title}</b> <time datetime={NEXT_CLASS.date}>{NEXT_CLASS.label}</time></p>}
+        <div class="btn-row">
+          <a class="btn btn--lg" href={BODEGA_EVENTS} target="_blank" rel="noopener"><span class="dot" aria-hidden="true"></span>Bodega events <span class="arr" aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap" aria-labelledby="cta-title">
+    <div class="any-band">
+      <div><p class="eyebrow" style="color:var(--ink)">All that practice goes into your cut</p><h2 class="big" id="cta-title">Take a<br />seat.</h2></div>
+      <div class="btn-row">
+        {locations.map((l, i) => <a class:list={['btn btn--lg', i > 0 && 'btn--light']} href={l.square_booking_url} target="_blank" rel="noopener">Book {l.name} <span class="arr" aria-hidden="true">↗</span></a>)}
+        <a class="btn btn--light btn--lg" href={url('barbers/')}>Find your barber</a>
+      </div>
+    </div>
+  </section>
+</Layout>
