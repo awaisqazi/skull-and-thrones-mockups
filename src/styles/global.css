@@ -536,8 +536,8 @@ body:has(dialog[open]) { overflow: hidden; }
   padding: 14px var(--gutter);
 }
 .lightbox__foot { padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
-.lightbox__stage { position: relative; display: grid; place-items: center; min-height: 0; overflow: hidden; padding: 4px var(--gutter); }
-.lightbox__stage img { width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; border-radius: var(--r-card); } /* QA R-04: the 1fr stage row owns the height */
+.lightbox__stage { position: relative; display: grid; grid-template-rows: minmax(0, 1fr); grid-template-columns: minmax(0, 1fr); place-items: center; min-height: 0; overflow: hidden; padding: 4px var(--gutter); } /* explicit 1fr track so the img's percentage max-height resolves (an implicit auto row is indefinite) */
+.lightbox__stage img { width: auto; height: auto; max-width: 100%; max-height: 100%; max-height: min(100%, calc(100dvh - 180px)); object-fit: contain; border-radius: var(--r-card); } /* QA R-04: fits inside the stage track at every viewport; the dvh clamp is a fallback */
 .lightbox__nav { position: absolute; top: 50%; transform: translateY(-50%); }
 .lightbox__nav--prev { left: var(--gutter); }
 .lightbox__nav--next { right: var(--gutter); }
