@@ -13,12 +13,16 @@ const { item: t, size = 'std' } = Astro.props;
 const local = (t.image && !t.remote ? localCultureImage(t.image) : undefined) ?? localCultureImage(t.id);
 const hasPhoto = Boolean(local || t.remote);
 const alt = hasPhoto ? t.caption : `Placeholder photo: ${t.caption}`;
-const full = local ? (await getImage({ src: local, width: 1600, format: 'jpg', quality: 82 })).src : (t.remote ?? undefined);
+// Lightbox copy: 1200 px WebP (QA P2-12; was a 1600 px JPEG).
+const full = local ? (await getImage({ src: local, width: 1200, format: 'webp', quality: 78 })).src : (t.remote ?? undefined);
+const big = size !== 'std'; // tall tiles are 2 cells high, so a cover-cropped photo renders ~2 cells wide too
+const imgWidth = 800; // QA R-02: collage thumbs capped at 800w; the 1200w copy is only for the lightbox
+const imgSizes = big ? '(min-width: 1100px) 48vw, (min-width: 700px) 64vw, 100vw' : '(min-width: 1100px) 24vw, (min-width: 700px) 32vw, 48vw';
 const igLabel = `See this on Instagram: ${t.caption}`;
 ---
 <figure class:list={['tile', 'collage__item', `collage__item--${size}`]} data-tags={t.category} data-full={full}>
   {local
-    ? <Image src={local} alt={alt} width={size === 'std' ? 800 : 1200} fit="cover" position="attention" loading="lazy" />
+    ? <Image src={local} alt={alt} width={imgWidth} widths={[400, 600, 800]} sizes={imgSizes} quality={70} fit="cover" position="attention" loading="lazy" />
     : t.remote
       ? <img src={t.remote} alt={alt} loading="lazy" />
       : <img src={t.placeholder_src} alt={alt} width="800" height="800" loading="lazy" />}

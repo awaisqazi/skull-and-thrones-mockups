@@ -6,6 +6,13 @@ import { getProducts, getLocations, productVendors } from '../lib/data';
 const products = await getProducts();
 const vendors = productVendors(products);
 const locations = await getLocations();
+// QA P2-09: render the first FIRST cards; the rest wait in a <template> (inert: no DOM, no image requests)
+// until "Show all" or any brand filter is pressed (src/scripts/app.ts [data-more]).
+const FIRST = 24;
+const shown = products.slice(0, FIRST);
+const later = products.slice(FIRST);
+// Cards are 2/3/4 per row and the packshot sits at 80 % of the card width.
+const sizes = '(min-width: 1100px) 270px, (min-width: 700px) 25vw, 38vw';
 ---
 <Layout
   title="Shop"
@@ -22,18 +29,26 @@ const locations = await getLocations();
     </div>
   </section>
 
-  <section class="wrap" aria-label="Products">
-    <div class="filters" data-filters="shop-grid" data-filter-item=".pcard" role="group" aria-label="Filter by brand">
+  <section class="wrap" aria-labelledby="products-title">
+    <h2 class="sr-only" id="products-title">Products</h2>
+    <div class="filters" data-filters="shop-grid" data-filter-item=".pcard" data-expand="shop-more" role="group" aria-label="Filter by brand">
       <button class="chip chip--filter" type="button" data-filter="all" aria-pressed="true">All <span class="tab__count">{products.length}</span></button>
       {vendors.map((v) => <button class="chip chip--filter" type="button" data-filter={v.slug} aria-pressed="false">{v.label} <span class="tab__count">{v.count}</span></button>)}
     </div>
     <div id="shop-grid">
       <div data-filterable>
-        <div class="pgrid">
-          {products.map((p) => <ProductCard product={p} sizes="(min-width: 1100px) 330px, (min-width: 700px) 30vw, 46vw" />)}
+        <div class="pgrid" id="shop-pgrid">
+          {shown.map((p) => <ProductCard product={p} sizes={sizes} />)}
         </div>
+        {later.length > 0 && <template id="shop-more" data-into="shop-pgrid">{later.map((p) => <ProductCard product={p} sizes={sizes} />)}</template>}
         <p class="empty" hidden>Nothing from this brand right now.</p>
       </div>
+      {later.length > 0 && (
+        <div class="more-row" data-more-row="shop-more">
+          <button class="btn btn--light btn--lg" type="button" data-more="shop-more" hidden>Show all {products.length} products</button>
+          <noscript><a class="btn btn--light btn--lg" href="https://www.bybodega.com/" target="_blank" rel="noopener">See all {products.length} at bybodega.com ↗</a></noscript>
+        </div>
+      )}
     </div>
   </section>
 

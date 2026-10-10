@@ -18,7 +18,7 @@ const used = new Set(items.map((i) => i.tag));
 const tags = TAGS.filter((t) => used.has(t.key));
 ---
 {layout === 'strip' ? (
-  <div class="strip" id={id}>{items.map((t) => <PortfolioTile item={t} />)}</div>
+  <div class="strip" id={id}>{items.map((t) => <PortfolioTile item={t} sizes="(min-width: 1100px) 15vw, (min-width: 700px) 30vw, 46vw" />)}</div>
 ) : (
   <div id={id}>
     {filters && tags.length > 1 && (

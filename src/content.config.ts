@@ -120,8 +120,8 @@ const barbers = defineCollection({
     instagram: z.string().optional(),
     /** Remote headshot URL (Supabase Storage later). Absent = generated placeholder tile. */
     headshot: z.string().url().optional(),
-    /** Where the current headshot came from; 'instagram-profile' means interim until the shop supplies real headshots. */
-    headshot_source: z.enum(['client', 'instagram-profile']).optional(),
+    /** Where the current headshot came from; 'instagram-profile' / 'instagram-post' (a crop from a shop or collab post) mean interim until the shop supplies real headshots. */
+    headshot_source: z.enum(['client', 'instagram-profile', 'instagram-post']).optional(),
     specialties: z.array(z.string()).default([]),
     bio: z.string().default(''),
     /** Shop-set statement "Accepting new clients" (false = "Booked up"). NOT live Square availability. */

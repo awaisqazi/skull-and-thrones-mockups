@@ -76,7 +76,17 @@ function initTabs(list: TabList) {
   const fromStore = stored && tabs.find((t) => t.dataset.key === stored);
   // A shared #addison / #elmhurst link always wins over the remembered shop.
   const chosen = fromHash || fromQuery || fromStore;
-  if (chosen) return select(chosen);
+  if (chosen) {
+    select(chosen);
+    // QA P3-07: a shared /#elmhurst or /barbers/#addison link should land on the team, not the hero
+    // (there is no element with that id, so the browser does not scroll by itself). Skip on back/forward
+    // so the restored scroll position wins.
+    const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+    if (chosen === fromHash && syncLoc && nav?.type !== 'back_forward') {
+      (list.closest('.sec-head') || list).scrollIntoView({ block: 'start', behavior: 'instant' as ScrollBehavior });
+    }
+    return;
+  }
   if (neutral) {
     // Nothing selected (aria-selected="false" on every tab, all panels hidden). The first tab
     // keeps tabindex 0 so the tablist is still reachable with Tab; arrow keys then select.
@@ -130,10 +140,30 @@ document.addEventListener('keydown', (e) => {
 /* ---------- Dialog helpers ---------- */
 $$('[data-close]').forEach((b) => b.addEventListener('click', () => b.closest('dialog')?.close()));
 
+/* ---------- "Show all" (/shop/): extra cards wait in a <template> until asked for (QA P2-09) ---------- */
+function expandMore(id: string): Element | null {
+  const tpl = document.getElementById(id) as HTMLTemplateElement | null;
+  if (!tpl || tpl.dataset.done) return null;
+  tpl.dataset.done = '';
+  const first = tpl.content.firstElementChild;
+  document.getElementById(tpl.dataset.into || '')?.append(tpl.content);
+  $(`[data-more-row="${id}"]`)?.remove();
+  return first;
+}
+$$<HTMLButtonElement>('[data-more]').forEach((b) => {
+  b.hidden = false;
+  b.addEventListener('click', () => {
+    // The button disappears, so move focus to the first card that was just added.
+    const first = expandMore(b.dataset.more || '');
+    if (first) $<HTMLElement>('.pcard__title a', first)?.focus();
+  });
+});
+
 /* ---------- Portfolio filters ---------- */
 $$('[data-filters]').forEach((group) => {
   const scope = document.getElementById(group.dataset.filters || '') || document;
   const btns = $$<HTMLButtonElement>('[data-filter]', group);
+  const expand = group.dataset.expand; // a brand filter must see every card, so expand the "Show all" template first
   const item = group.dataset.filterItem || '.tile'; // /shop/ uses data-filter-item=".pcard"
   const apply = (f: string) => {
     btns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === f)));
@@ -143,7 +173,10 @@ $$('[data-filters]').forEach((group) => {
       if (empty) empty.hidden = $$(`${item}:not([hidden])`, c).length > 0;
     });
   };
-  btns.forEach((b) => b.addEventListener('click', () => apply(b.dataset.filter || 'all')));
+  btns.forEach((b) => b.addEventListener('click', () => {
+    if (expand && b.dataset.filter !== 'all') expandMore(expand);
+    apply(b.dataset.filter || 'all');
+  }));
   apply('all');
 });
 
@@ -227,6 +260,46 @@ paintStatus();
 setInterval(paintStatus, 60000);
 
 $$('[data-year]').forEach((el) => { el.textContent = String(new Date().getFullYear()); });
+
+/* ---------- Click-to-load maps (QA P1-04): nothing is requested from Google until "Load map" ---------- */
+$$('[data-map]').forEach((card) => {
+  const btn = $<HTMLButtonElement>('[data-map-load]', card);
+  const art = $('.mapcard__art', card);
+  if (!btn || !art) return;
+  btn.hidden = false;
+  btn.addEventListener('click', () => {
+    const f = document.createElement('iframe');
+    f.className = 'mapcard__frame';
+    f.src = card.dataset.map || '';
+    f.title = card.dataset.mapTitle || 'Map';
+    f.referrerPolicy = 'no-referrer-when-downgrade';
+    f.allowFullscreen = true;
+    art.replaceChildren(f);
+    art.removeAttribute('aria-hidden');
+    card.classList.add('is-loaded');
+    btn.remove();
+    f.focus();
+  });
+});
+
+/* ---------- Sticky nav: solid backdrop once the page scrolls, so content never shows between the pills (QA P2-07) ---------- */
+const navBar = $('.nav');
+if (navBar) {
+  const onScroll = () => navBar.classList.toggle('is-scrolled', window.scrollY > 8);
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+}
+
+/* ---------- Home: the bottom booking bar steps aside while the hero's own Book buttons are on screen (QA P3-11) ---------- */
+const bookbar = $('.bookbar');
+const heroCtas = $('.hero .btn-row');
+if (bookbar && heroCtas && 'IntersectionObserver' in window) {
+  new IntersectionObserver(([e]) => {
+    const away = Boolean(e?.isIntersecting);
+    bookbar.classList.toggle('bookbar--away', away);
+    bookbar.toggleAttribute('inert', away);
+  }, { rootMargin: '0px 0px -80px 0px' }).observe(heroCtas);
+}
 
 /* ---------- Product strip (home): prev/next scroll by one card; swipe is native scroll-snap ---------- */
 $$('[data-pstrip]').forEach((strip) => {

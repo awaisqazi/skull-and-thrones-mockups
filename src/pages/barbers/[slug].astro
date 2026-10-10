@@ -20,6 +20,17 @@ const loc = (await getLocationMap())[b.location];
 const work = await getPortfolio({ barber: b.slug });
 const others = (await getBarbers(b.location)).filter((x) => x.slug !== b.slug).slice(0, 4);
 const isPlaceholder = (f: string) => b.placeholder_fields.includes(f);
+const local = localHeadshot(b.slug);
+const hasPhoto = Boolean(local || b.headshot);
+// Copy flagged as placeholder, or anything that reads like a developer note ("TODO client: …"), never renders publicly.
+const isDevNote = (s: string) => /\b(TODO|FIXME|TBD)\b|\bclient:/i.test(s);
+const bio = b.bio && !isPlaceholder('bio') && !isDevNote(b.bio) ? b.bio.trim() : '';
+const description = [
+  `Book ${b.name} at Skull & Thrones ${loc.name}.`,
+  b.specialties.length ? `${b.specialties.slice(0, 3).join(', ')}.` : null,
+  b.haircut_from != null ? `Haircuts from $${b.haircut_from}.` : null,
+].filter(Boolean).join(' ');
+const headshotSizes = '(min-width: 900px) 40vw, 100vw';
 const site = Astro.site ?? new URL('https://awaisqazi.github.io');
 const person = {
   '@context': 'https://schema.org',
@@ -33,7 +44,7 @@ const person = {
 ---
 <Layout
   title={`${b.name} — ${b.role} at ${loc.name}`}
-  description={`Book ${b.name} at Skull & Thrones ${loc.name}. ${b.specialties.slice(0, 3).join(', ')}. ${b.haircut_from != null ? ` Haircuts from $${b.haircut_from}.` : ''}`}
+  description={description}
   current="team"
   page="barber"
   loc={b.location}
@@ -43,13 +54,12 @@ const person = {
   <section class="page-hero wrap" aria-labelledby="panel-name">
     <div class="rule-row"><a class="eyebrow profile__back" href={url(`barbers/#${loc.slug}`)}>← All barbers</a><a class="eyebrow profile__back" href={loc.href}>{loc.name} · {loc.street}</a></div>
     <div class="profile">
-      <div class="media profile__media">
-        {localHeadshot(b.slug)
-          ? <Image src={localHeadshot(b.slug)!} alt={`Headshot of ${b.name}`} width={900} height={1125} />
+      <div class:list={['media profile__media', !hasPhoto && 'profile__media--initials']} data-initials={b.initials}>
+        {local
+          ? <Image src={local} alt={`Headshot of ${b.name}`} width={900} height={1125} widths={[450, 700, 900]} sizes={headshotSizes} loading="eager" fetchpriority="high" />
           : b.headshot
-            ? <Image src={b.headshot} alt={`Headshot of ${b.name}`} width={900} height={1125} />
-            : <img src={b.headshot_src} alt={`Placeholder portrait for ${b.name}`} width="900" height="1125" fetchpriority="high" />}
-        {!(b.headshot || localHeadshot(b.slug)) && <span class="ph-tag">Placeholder</span>}
+            ? <Image src={b.headshot} alt={`Headshot of ${b.name}`} width={900} height={1125} widths={[450, 700, 900]} sizes={headshotSizes} loading="eager" fetchpriority="high" />
+            : <span class="sr-only">Photo of {b.name} coming soon</span>}
       </div>
       <div class="profile__body">
         <p class="eyebrow">{b.role} · {loc.name}</p>
@@ -60,15 +70,13 @@ const person = {
           : <span class="status" title={ACCEPTING.no.tip}>{ACCEPTING.no.label}</span>}
         {b.next_opening && <p class="panel__price">Next opening <b>{b.next_opening}</b></p>}
         {b.specialties.length > 0 && <ul class="chips" aria-label="Specialties">{b.specialties.map((s) => <li class="chip">{s}</li>)}</ul>}
-        {b.bio && <p class="panel__bio">{b.bio}</p>}
+        {bio && <p class="panel__bio">{bio}</p>}
         {b.instagram && <a class="link" href={igUrl(b.instagram)} target="_blank" rel="noopener"><span>@{b.instagram}</span> ↗</a>}
         <div class="btn-row">
           <a class="btn btn--accent btn--lg" href={b.booking_url} target="_blank" rel="noopener"><span>Book with {b.first_name}</span> <span class="arr" aria-hidden="true">↗</span></a>
           <a class="btn btn--light btn--lg" href={work.length ? '#work' : url(`${loc.slug}/#portfolio`)}>See their work</a>
         </div>
-        {(isPlaceholder('bio') || isPlaceholder('headshot')) && (
-          <p class="note">Book opens {b.first_name}'s own Square booking page at {loc.name}. {isPlaceholder('bio') ? 'Bio, specialties and photo are placeholders until the client supplies them.' : 'Bio and specialties are drawn from their public Instagram; photo is a placeholder until the client supplies one.'}</p>
-        )}
+        {!hasPhoto && <p class="note">Book opens {b.first_name}'s own Square booking page at {loc.name}. Photo coming soon.</p>}
       </div>
     </div>
   </section>

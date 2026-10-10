@@ -16,8 +16,8 @@ export const SITE = {
   // TODO: exact Facebook page URL from client (brief lists "skull&throneshairsociety").
   facebook: 'https://www.facebook.com/',
   timezone: 'America/Chicago',
-  // TODO verify: rating/review count supplied by coordinator, not checked against Google yet.
-  rating: { value: '4.9', count: '~1,000' },
+  // Figures came from the coordinator's spec; set verified: true only after checking the live Google Business Profile.
+  rating: { value: '4.9', count: '~1,000', verified: false },
 } as const;
 
 export const igUrl = (handle: string) => `https://www.instagram.com/${handle}/`;

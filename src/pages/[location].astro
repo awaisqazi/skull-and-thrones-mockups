@@ -4,7 +4,8 @@ import Layout from '../layouts/Layout.astro';
 import BarberGrid from '../components/BarberGrid.astro';
 import PortfolioGrid from '../components/PortfolioGrid.astro';
 import LocationCard from '../components/LocationCard.astro';
-import { getLocations, getBarbers, getPortfolio, type Location } from '../lib/data';
+import MapFacade from '../components/MapFacade.astro';
+import { getLocations, getBarbers, getPortfolio, publicParking, type Location } from '../lib/data';
 
 export const getStaticPaths = (async () => {
   const locations = await getLocations();
@@ -16,6 +17,7 @@ const { location: l } = Astro.props;
 const locations = await getLocations();
 const team = await getBarbers(l.slug);
 const work = await getPortfolio({ location: l.slug });
+const parking = publicParking(l);
 ---
 <Layout
   title={`${l.name} barbers & portfolio`}
@@ -45,19 +47,27 @@ const work = await getPortfolio({ location: l.slug });
     <h2 class="sr-only">{l.name} barbers</h2>
     <BarberGrid location={l.slug} />
   </section>
-  <section class="wrap" role="tabpanel" id="pv-portfolio" aria-labelledby="pv-tab-portfolio" hidden>
+  <section class="wrap" role="tabpanel" id="pv-portfolio" aria-labelledby="pv-tab-portfolio">
     <h2 class="sr-only">{l.name} portfolio</h2>
     <PortfolioGrid id="loc-work" items={work} emptyText={`No work in this category posted at ${l.name} yet.`} />
   </section>
+  {/* No JS: both panels stay visible (stacked). With JS: show the #hash panel before first paint; app.ts takes over. */}
+  <script is:inline>
+    (function () {
+      var p = location.hash === '#portfolio';
+      document.getElementById('pv-portfolio').hidden = !p;
+      document.getElementById('pv-barbers').hidden = p;
+    })();
+  </script>
 
   <section class="section wrap" aria-labelledby="visit-title">
     <div class="sec-head"><span class="sec-num">Visit</span><div><h2 class="h2" id="visit-title">Find the shop.</h2></div></div>
     <div class="loc-grid">
       <LocationCard location={l} ink />
       <div class="loc-card">
-        <iframe class="map" src={l.maps_embed_url} title={`Map of Skull & Thrones ${l.name}, ${l.address_line}`} loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <MapFacade location={l} />
         <dl class="kv">
-          {l.parking && <><dt class="eyebrow">Parking</dt><dd>{l.parking}</dd></>}
+          {parking && <><dt class="eyebrow">Parking</dt><dd>{parking}</dd></>}
           <dt class="eyebrow">Phone</dt><dd><a href={`tel:${l.phone_e164}`}>{l.phone}</a></dd>
         </dl>
         <div class="btn-row"><a class="btn btn--light" href={l.maps_dir_url} target="_blank" rel="noopener">Directions <span class="arr" aria-hidden="true">↗</span></a></div>

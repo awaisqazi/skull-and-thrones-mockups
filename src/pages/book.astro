@@ -32,7 +32,7 @@ const shortHours = (l: (typeof locations)[number]) =>
         return (
           <article class:list={['book-card', ink && 'book-card--ink on-dark']}>
             <div class="media book-card__media">{localLocationPhoto(l.slug)
-              ? <Image src={localLocationPhoto(l.slug)!} alt={`Inside Skull & Thrones ${l.name}`} width={1200} height={675} fit="cover" position="attention" loading="lazy" />
+              ? <Image src={localLocationPhoto(l.slug)!} alt={`Inside Skull & Thrones ${l.name}`} width={1200} height={675} widths={[600, 900, 1200]} sizes="(min-width: 900px) 48vw, 100vw" fit="cover" position="attention" loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} />
               : <><img src={placeholder(1200, 675, `${l.name} front`)} alt={`Placeholder: ${l.name} shop front`} width="1200" height="675" loading="lazy" /><span class="ph-tag">Placeholder photo</span></>}</div>
             <div class="book-card__body">
               <div class="loc-card__top"><h2 class="big">{l.name}</h2><span class="status" data-open-status={l.slug} role="status">{l.hours_short}</span></div>

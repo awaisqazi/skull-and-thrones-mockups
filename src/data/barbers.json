@@ -21,8 +21,7 @@
       "is_active": true,
       "square_note": "Long and short hair specialist. Hybrid artist.",
       "placeholder_fields": [
-        "role",
-        "headshot"
+        "role"
       ],
       "instagram": "stylesbyelyse",
       "sources": [
@@ -50,8 +49,7 @@
       "sort_order": 2,
       "is_active": true,
       "placeholder_fields": [
-        "role",
-        "headshot"
+        "role"
       ],
       "instagram": "hausxalva",
       "sources": [
@@ -82,8 +80,7 @@
       "sort_order": 3,
       "is_active": true,
       "placeholder_fields": [
-        "role",
-        "headshot"
+        "role"
       ],
       "sources": [
         "https://www.instagram.com/ellaesbarbera/",
@@ -113,8 +110,7 @@
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "specialties",
-        "headshot"
+        "specialties"
       ],
       "instagram": "cutsfromjay",
       "sources": [
@@ -141,8 +137,7 @@
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "specialties",
-        "headshot"
+        "specialties"
       ],
       "instagram": "dariandorantes",
       "sources": [
@@ -162,7 +157,10 @@
       "haircut_from": 60,
       "item_id": "I56TJK2FOFIPPKGZG2SJMTHQ",
       "specialties": [],
-      "bio": "TODO client: bio for Reno (no Instagram account found).",
+      "bio": "",
+      "instagram": "renobarber",
+      "headshot_source": "instagram-post",
+      "headshot_credit": "Interim crop from @dariandorantes x @skullandthrones FAMILIA S&T post (carousel photo 8, tagged @renobarber): https://www.instagram.com/p/DaTKl2QCXVh/",
       "accepting_new_clients": true,
       "sort_order": 6,
       "is_active": true,
@@ -170,11 +168,13 @@
       "placeholder_fields": [
         "role",
         "specialties",
-        "bio",
-        "headshot"
+        "bio"
       ],
-      "sources": [],
-      "confidence": "none"
+      "sources": [
+        "https://www.instagram.com/p/Cv7p0IALkUZ/",
+        "https://www.instagram.com/p/DaTKl2QCXVh/"
+      ],
+      "confidence": "confirmed"
     },
     {
       "slug": "jovani",
@@ -194,8 +194,7 @@
       "sort_order": 7,
       "is_active": true,
       "placeholder_fields": [
-        "role",
-        "headshot"
+        "role"
       ],
       "instagram": "jovanifeliciano",
       "sources": [
@@ -224,8 +223,7 @@
       "sort_order": 8,
       "is_active": true,
       "placeholder_fields": [
-        "role",
-        "headshot"
+        "role"
       ],
       "instagram": "anastaci_oo",
       "sources": [
@@ -256,8 +254,7 @@
       "square_note": "Veteran",
       "placeholder_fields": [
         "role",
-        "specialties",
-        "headshot"
+        "specialties"
       ],
       "instagram": "stoicbarber",
       "sources": [
@@ -285,8 +282,7 @@
       "square_note": "Staff name in Square is Pedro",
       "placeholder_fields": [
         "role",
-        "specialties",
-        "headshot"
+        "specialties"
       ],
       "sources": [
         "https://www.instagram.com/droddhaaa/",
@@ -313,8 +309,7 @@
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "specialties",
-        "headshot"
+        "specialties"
       ],
       "instagram": "jmoreno0424",
       "sources": [
@@ -342,8 +337,7 @@
       "square_note": "20 years of experience",
       "placeholder_fields": [
         "role",
-        "specialties",
-        "headshot"
+        "specialties"
       ],
       "instagram": "eric.thesamurai",
       "sources": [
@@ -372,8 +366,7 @@
       "sort_order": 13,
       "is_active": true,
       "placeholder_fields": [
-        "role",
-        "headshot"
+        "role"
       ],
       "instagram": "jackiefadeit",
       "sources": [
@@ -400,8 +393,7 @@
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "specialties",
-        "headshot"
+        "specialties"
       ],
       "instagram": "carloss_barber",
       "sources": [
@@ -430,8 +422,7 @@
       "sort_order": 15,
       "is_active": true,
       "placeholder_fields": [
-        "role",
-        "headshot"
+        "role"
       ],
       "instagram": "rudygotcuts",
       "sources": [
@@ -452,18 +443,24 @@
       "haircut_from": 60,
       "item_id": "PJDURCJVBAVPSBXAUP6VQEV4",
       "specialties": [],
-      "bio": "TODO client: bio for Javier (no Instagram account found).",
+      "bio": "",
+      "instagram": "javyinthecut",
+      "headshot_source": "instagram-post",
+      "headshot_credit": "Interim crop from @javyinthecut x @skullandthrones post, 2022-11-10 (photo 1): https://www.instagram.com/p/CkxKGnYOv89/",
       "accepting_new_clients": true,
       "sort_order": 1,
       "is_active": true,
       "placeholder_fields": [
         "role",
         "specialties",
-        "bio",
-        "headshot"
+        "bio"
       ],
-      "sources": [],
-      "confidence": "none"
+      "sources": [
+        "https://www.instagram.com/reel/CiBYUNTOAb-/",
+        "https://www.instagram.com/p/CkxKGnYOv89/",
+        "https://www.instagram.com/p/DVXTPUokdC4/"
+      ],
+      "confidence": "likely"
     },
     {
       "slug": "nick-celli",
@@ -483,8 +480,7 @@
       "sort_order": 2,
       "is_active": true,
       "placeholder_fields": [
-        "role",
-        "headshot"
+        "role"
       ],
       "instagram": "celli_cutz",
       "sources": [
@@ -510,8 +506,7 @@
       "is_active": true,
       "placeholder_fields": [
         "role",
-        "specialties",
-        "headshot"
+        "specialties"
       ],
       "instagram": "valenbarber_",
       "sources": [
@@ -543,8 +538,7 @@
       "sort_order": 4,
       "is_active": true,
       "placeholder_fields": [
-        "role",
-        "headshot"
+        "role"
       ],
       "instagram": "davidmischief_",
       "sources": [
@@ -575,8 +569,7 @@
       "is_active": true,
       "square_note": "5 years experience; real bio exists in Square",
       "placeholder_fields": [
-        "role",
-        "headshot"
+        "role"
       ],
       "sources": [
         "https://www.instagram.com/cuts.by.alejandro/",
@@ -605,8 +598,7 @@
       "is_active": true,
       "square_note": "Shear work, modern styles; real bio exists in Square",
       "placeholder_fields": [
-        "role",
-        "headshot"
+        "role"
       ],
       "instagram": "christianfadeit",
       "sources": [
@@ -624,7 +616,7 @@
       "haircut_from": 35,
       "item_id": "ECJVDSIFOU7UOT2VLHD54HRE",
       "specialties": [],
-      "bio": "TODO client: bio for Angel M (no Instagram account found).",
+      "bio": "",
       "accepting_new_clients": true,
       "sort_order": 7,
       "is_active": true,
@@ -655,8 +647,7 @@
       "sort_order": 8,
       "is_active": true,
       "placeholder_fields": [
-        "role",
-        "headshot"
+        "role"
       ],
       "instagram": "alexsis.dlt",
       "sources": [
@@ -684,8 +675,7 @@
       "sort_order": 9,
       "is_active": true,
       "placeholder_fields": [
-        "role",
-        "headshot"
+        "role"
       ],
       "instagram": "torafadez",
       "sources": [
@@ -714,8 +704,7 @@
       "sort_order": 10,
       "is_active": true,
       "placeholder_fields": [
-        "role",
-        "headshot"
+        "role"
       ],
       "instagram": "blue_suede_fadez",
       "sources": [

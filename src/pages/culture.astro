@@ -33,14 +33,14 @@ const sized = items.map((item) => ({ item, size: item.featured ? 'big' as const 
 const splitStat = (v: string) => v.match(/^([\d,.]+)(.*)$/)?.slice(1) ?? [v, ''];
 ---
 <Layout
-  title="Behind the scenes | Skull & Thrones"
+  title="Behind the scenes"
   description="Education, seminars and events at Skull & Thrones: visiting educators, in-shop classes, showcases and the people behind the chairs in Addison and Elmhurst, IL."
   current="culture"
   page="culture"
 >
   <section class="page-hero wrap" aria-labelledby="culture-title">
     <div class="rule-row"><span class="eyebrow">Education · Seminars · Events</span><span class="eyebrow">Addison · Elmhurst, IL</span></div>
-    <h1 class="giant culture__word" id="culture-title"><span>Behind</span><span>the scenes</span></h1>
+    <h1 class="giant culture__word" id="culture-title"><span>Behind</span>{' '}<span>the scenes</span></h1>
     <div class="page-hero__row">
       <p class="lead">Barbers are artists here. Here's the part you don't see from the chair.</p>
       <div class="btn-row">

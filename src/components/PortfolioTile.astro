@@ -2,19 +2,21 @@
 import { Image, getImage } from 'astro:assets';
 import { localPortfolioImage } from '../lib/localImages';
 import type { PortfolioItem } from '../lib/data';
-interface Props { item: PortfolioItem }
-const { item: t } = Astro.props;
+interface Props { item: PortfolioItem; sizes?: string }
+const { item: t, sizes = '(min-width: 1100px) 22vw, (min-width: 700px) 30vw, 46vw' } = Astro.props;
+const widths = [Math.round(t.width / 2), Math.round(t.width * 0.75), t.width];
 const what = `${t.style} by ${t.barber_name}`;
 const local = localPortfolioImage(t.id);
 const hasPhoto = Boolean(t.image || local);
 const alt = hasPhoto ? what : `Placeholder photo: ${t.style.toLowerCase()} by ${t.barber_name}`;
-const full = local ? (await getImage({ src: local, width: 1600, format: 'jpg', quality: 82 })).src : t.full;
+// Lightbox copy: 1200 px WebP (QA P2-12; was a 1600 px JPEG at 290–420 KB).
+const full = local ? (await getImage({ src: local, width: 1200, format: 'webp', quality: 78 })).src : t.full;
 ---
 <figure class="tile" data-tags={t.tag} data-barber={t.barber} data-full={full}>
   {local
-    ? <Image src={local} alt={alt} width={t.width} height={t.height} fit="cover" position="attention" loading="lazy" />
+    ? <Image src={local} alt={alt} width={t.width} height={t.height} widths={widths} sizes={sizes} fit="cover" position="attention" loading="lazy" />
     : t.image
-      ? <Image src={t.image} alt={alt} width={t.width} height={t.height} loading="lazy" />
+      ? <Image src={t.image} alt={alt} width={t.width} height={t.height} widths={widths} sizes={sizes} loading="lazy" />
       : <img src={t.src} alt={alt} width={t.width} height={t.height} loading="lazy" />}
   <button class="tile__zoom" type="button" aria-label={`Enlarge: ${what}`}></button>
   {t.source_url

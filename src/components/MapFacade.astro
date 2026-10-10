@@ -1,0 +1,28 @@
+---
+/**
+ * Click-to-load Google Map (QA P1-04). Renders a static map card in the design system, so no
+ * request reaches Google (no maps JS, no cookies) until the visitor presses "Load map";
+ * src/scripts/app.ts ([data-map]) then swaps the iframe in. "Open in Google Maps" is a plain link,
+ * so without JS (the Load button stays hidden) the map is still one tap away.
+ */
+import { hoursSummary, type Location } from '../lib/data';
+import { SITE } from '../lib/site';
+
+interface Props { location: Location }
+const { location: l } = Astro.props;
+const title = `Map of ${SITE.name} ${l.name}, ${l.address_line}`;
+---
+<div class="mapcard on-dark" data-map={l.maps_embed_url} data-map-title={title}>
+  <div class="mapcard__art" aria-hidden="true">
+    <span class="mapcard__pin"><span class="mapcard__tag">S&amp;T · {l.name}</span></span>
+  </div>
+  <div class="mapcard__body">
+    <p class="eyebrow">Map · {l.city}, {l.region}</p>
+    <address class="mapcard__addr">{l.street}<br />{l.city}, {l.region} {l.postal_code}</address>
+    <p class="mapcard__hours">{hoursSummary(l)}</p>
+    <div class="btn-row">
+      <a class="btn btn--accent btn--lg" href={l.maps_url} target="_blank" rel="noopener">Open in Google Maps <span class="arr" aria-hidden="true">↗</span></a>
+      <button class="btn btn--ghost btn--lg" type="button" data-map-load hidden aria-label={`Load map of ${l.name} here (from Google Maps)`}>Load map</button>
+    </div>
+  </div>
+</div>

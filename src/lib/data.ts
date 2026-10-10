@@ -136,6 +136,20 @@ export function fmtTime(t: string): string {
   return `${((h + 11) % 12) + 1}${mm ? ':' + String(mm).padStart(2, '0') : ''} ${h < 12 ? 'AM' : 'PM'}`;
 }
 
+/** Parking copy safe to show publicly: null while the field is still a placeholder (data stays for the CMS). */
+export const publicParking = (l: Pick<Location, 'parking' | 'placeholder_fields'>): string | null =>
+  l.parking && !l.placeholder_fields.includes('parking') ? l.parking : null;
+
+/** "Mon–Fri 10–7 · Sat 8–4 · Sun 9–3" (map card, compact hours line). */
+export function hoursSummary(l: Pick<Location, 'hours'>): string {
+  const short = (t: string) => {
+    const [h, m] = t.split(':').map(Number);
+    return `${(h! % 12) || 12}${m ? ':' + String(m).padStart(2, '0') : ''}`;
+  };
+  const day = (label: string) => label.replace(/\s*–\s*/, '–').replace('Saturday', 'Sat').replace('Sunday', 'Sun');
+  return l.hours.map((h) => `${day(h.label)} ${short(h.opens)}–${short(h.closes)}`).join(' · ');
+}
+
 /** Client-side hours map for the "Open now" script: { slug: { name, hours: { [day]: [open, close] } } } */
 export async function getHoursPayload() {
   const locs = await getLocations();
@@ -230,7 +244,7 @@ export async function getProducts(opts: { featured?: boolean; vendor?: string } 
       price_label: usd(data.price),
       compare_label: data.compare_at_price ? usd(data.compare_at_price) : null,
       src: shopifyImg(data.image, 600),
-      srcset: [300, 600, 900].map((w) => `${shopifyImg(data.image, w)} ${w}w`).join(', '),
+      srcset: [300, 450, 600, 900].map((w) => `${shopifyImg(data.image, w)} ${w}w`).join(', '),
     }))
     .sort((a, b) => a.sort_order - b.sort_order);
 }

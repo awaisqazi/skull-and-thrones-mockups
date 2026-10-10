@@ -20,7 +20,7 @@ const cur = (k: NavKey) => (k === current ? 'page' : undefined);
 ---
 <header class="nav">
   <nav class="nav__group" aria-label="Primary">
-    <a class="nav__logo" href={url('')} aria-current={cur('home')} aria-label="Skull &amp; Thrones — home"><Logo /><span>S&amp;T Hair Society</span></a>
+    <a class="nav__logo" href={url('')} aria-current={cur('home')} aria-label="S&amp;T Hair Society — home"><Logo /><span>S&amp;T Hair Society</span></a>
     <ul class="nav__links">
       {links.map((l) => <li><a class="nav__link" href={l.href} aria-current={cur(l.key)}>{l.label}</a></li>)}
     </ul>

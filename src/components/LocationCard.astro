@@ -3,8 +3,9 @@
  * Address, phone, hours table and booking CTA for one shop.
  * "Open now" + the "Today" row are painted client-side (src/scripts/app.ts) in shop time.
  */
-import { fmtTime, type Location } from '../lib/data';
+import { fmtTime, publicParking, type Location } from '../lib/data';
 import { SITE } from '../lib/site';
+import MapFacade from './MapFacade.astro';
 
 interface Props {
   location: Location;
@@ -14,6 +15,7 @@ interface Props {
   headingLevel?: 'h2' | 'h3';
 }
 const { location: l, ink = false, details = false, headingLevel: H = 'h3' } = Astro.props;
+const parking = publicParking(l);
 ---
 <article class:list={['loc-card', ink && 'loc-card--ink on-dark']} id={details ? l.slug : undefined}>
   <div class="loc-card__top"><H class="big">{l.name}</H><span class="status" data-open-status={l.slug} role="status">{l.hours_short}</span></div>
@@ -27,9 +29,9 @@ const { location: l, ink = false, details = false, headingLevel: H = 'h3' } = As
   </table>
   {details && (
     <>
-    <iframe class="map" src={l.maps_embed_url} title={`Map of ${SITE.name} ${l.name}, ${l.address_line}`} loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    <MapFacade location={l} />
     <dl class="kv">
-      {l.parking && <><dt class="eyebrow">Parking</dt><dd>{l.parking}</dd></>}
+      {parking && <><dt class="eyebrow">Parking</dt><dd>{parking}</dd></>}
       <dt class="eyebrow">Email</dt><dd><a href={`mailto:${SITE.email}`}>{SITE.email}</a></dd>
     </dl>
     </>

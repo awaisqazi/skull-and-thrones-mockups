@@ -4,10 +4,12 @@ import { SITE } from '../lib/site';
 import { url } from '../lib/url';
 const locations = await getLocations();
 const year = new Date().getFullYear();
+// The Facebook URL is still the generic placeholder (src/lib/site.ts TODO): hide the link until the real page is set.
+const hasFacebook = !/^https:\/\/www\.facebook\.com\/?$/.test(SITE.facebook);
 ---
 <footer class="footer on-dark">
   <div class="wrap">
-    <p class="giant footer__word" aria-hidden="true"><span>Skull <em>&amp;</em></span><span>Thrones</span></p>
+    <p class="giant footer__word" aria-hidden="true"><span>Skull <em>&amp;</em></span>{' '}<span>Thrones</span></p>
     <div class="footer__grid">
       {locations.map((l) => (
         <div>
@@ -19,7 +21,7 @@ const year = new Date().getFullYear();
           </div>
         </div>
       ))}
-      <div><h2 class="eyebrow">Say hi</h2><div class="footer__list"><a href={`mailto:${SITE.email}`}>{SITE.email}</a><a href={SITE.instagram} target="_blank" rel="noopener">Instagram ↗</a><a href={SITE.facebook} target="_blank" rel="noopener">Facebook ↗</a></div></div>
+      <div><h2 class="eyebrow">Say hi</h2><div class="footer__list"><a href={`mailto:${SITE.email}`}>{SITE.email}</a><a href={SITE.instagram} target="_blank" rel="noopener">Instagram ↗</a>{hasFacebook && <a href={SITE.facebook} target="_blank" rel="noopener">Facebook ↗</a>}</div></div>
       <div><h2 class="eyebrow">Site</h2><div class="footer__list"><a href={url('barbers/')}>Team</a><a href={url("addison/#portfolio")}>Portfolio</a><a href={url('culture/')}>Behind the scenes</a><a href={url('shop/')}>Shop</a><a href={url('book/')}>Book</a><a href={url('contact/')}>Contact &amp; hours</a></div></div>
     </div>
     <div class="footer__base"><span>© <span data-year>{year}</span> S&amp;T Hair Society · Addison &amp; Elmhurst, IL</span><span>Progress through creativity.</span></div>

@@ -3,34 +3,40 @@ import { Image } from 'astro:assets';
 import { ACCEPTING, type Barber } from '../lib/data';
 import { localHeadshot } from '../lib/localImages';
 
-interface Props { barber: Barber; locationName: string; headingLevel?: 'h2' | 'h3' }
-const { barber: b, locationName, headingLevel: H = 'h3' } = Astro.props;
+interface Props {
+  barber: Barber;
+  locationName: string;
+  headingLevel?: 'h2' | 'h3';
+  /** Above the fold (first row of the first visible grid): load the headshot eagerly. */
+  eager?: boolean;
+}
+const { barber: b, locationName, headingLevel: H = 'h3', eager = false } = Astro.props;
 const local = localHeadshot(b.slug);
 const hasPhoto = Boolean(b.headshot || local);
 const alt = hasPhoto ? `Headshot of ${b.name}` : `Placeholder headshot for ${b.name}`;
 const flag = b.accepting_new_clients ? ACCEPTING.yes : ACCEPTING.no;
+const img = { widths: [300, 450, 600], sizes: '(min-width: 1100px) 22vw, (min-width: 700px) 30vw, 46vw', loading: eager ? 'eager' as const : 'lazy' as const, fetchpriority: eager ? 'high' as const : undefined };
 ---
 <article class="card" data-slug={b.slug} data-loc={b.location} data-needs-profile={b.needs_profile ? '' : undefined}>
-  <div class="card__media" data-initials={b.initials}>
+  <div class:list={['card__media', !hasPhoto && 'card__media--initials']} data-initials={b.initials}>
     {local
-      ? <Image src={local} alt={alt} width={600} height={750} loading="lazy" />
+      ? <Image src={local} alt={alt} width={600} height={750} {...img} />
       : b.headshot
-        ? <Image src={b.headshot} alt={alt} width={600} height={750} loading="lazy" />
-        : <img src={b.headshot_src} alt={alt} width="600" height="750" loading="lazy" />}
+        ? <Image src={b.headshot} alt={alt} width={600} height={750} {...img} />
+        : <span class="sr-only">Photo of {b.name} coming soon</span>}
     <div class="card__flags">
       {b.accepting_new_clients
         ? <span class="accepting" title={flag.tip}><i class="dot" aria-hidden="true"></i><span>{flag.label}</span></span>
         : <span class="accepting accepting--off" title={flag.tip}><span>{flag.label}</span></span>}
       {b.next_opening && <span class="next-opening">Next opening {b.next_opening}</span>}
     </div>
-    {!hasPhoto && <span class="ph-tag">Placeholder</span>}
   </div>
   <div class="card__body">
     <H class="card__name"><a class="card__open" href={b.href}>{b.name}</a></H>
     <p class="card__role">{b.role}</p>
     {b.haircut_from != null && <p class="card__price">Haircuts from <b>${b.haircut_from}</b></p>}
     {b.specialties.length > 0 && (
-      <ul class="chips" aria-label="Specialties">{b.specialties.map((s) => <li class="chip">{s}</li>)}</ul>
+      <ul class="chips" aria-label="Specialties">{b.specialties.map((s) => <li class="chip">{s}</li>)}{b.specialties.length > 2 && <li class="chip chip--more" aria-hidden="true">+{b.specialties.length - 2}</li>}</ul>
     )}
     <div class="card__foot">
       <a class="btn btn--sm card__book" href={b.booking_url} target="_blank" rel="noopener" aria-label={`Book with ${b.name} at ${locationName} (opens Square)`}>Book <span class="arr" aria-hidden="true">↗</span></a>

@@ -15,13 +15,13 @@ const locations = await getLocations();
     <div class="rule-row"><span class="eyebrow">Contact &amp; hours</span><span class="eyebrow">Times shown in Central Time</span></div>
     <h1 class="giant" id="contact-title">Visit us</h1>
     <div class="page-hero__row">
-      <p class="lead">Two shops in the west suburbs, same hours seven days a week. Call either shop or book online anytime.</p>
+      <p class="lead">Two shops in the west suburbs, open seven days a week with the same hours at both. Call either shop or book online anytime.</p>
       <div class="btn-row"><a class="btn btn--light" href={`mailto:${SITE.email}`}>Email us</a><a class="btn btn--light" href={SITE.instagram} target="_blank" rel="noopener">Instagram <span class="arr" aria-hidden="true">↗</span></a></div>
     </div>
   </section>
   <section class="wrap" aria-label="Locations">
     <div class="loc-grid">
-      {locations.map((l) => <LocationCard location={l} details />)}
+      {locations.map((l) => <LocationCard location={l} details headingLevel="h2" />)}
     </div>
   </section>
 </Layout>

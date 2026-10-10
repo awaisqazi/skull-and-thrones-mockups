@@ -16,6 +16,9 @@ const locations = await getLocations();
 const barbers = await getBarbers();
 const [first, second] = locations;
 const featured = await Promise.all(locations.map(async (l) => ({ l, items: await getPortfolio({ location: l.slug, featured: true }) })));
+// Neutral home (no shop picked yet): one strip that alternates both floors, so neither shop is favoured (QA P2-05).
+const mixed = Array.from({ length: Math.max(0, ...featured.map((f) => f.items.length)) }, (_, i) => featured.map((f) => f.items[i]))
+  .flat().filter((t): t is NonNullable<typeof t> => Boolean(t)).slice(0, 6);
 const marquee = ['Skin fades', 'Scissor work', 'Beards', 'Kids cuts', 'Long hair', 'Color', 'Designs', 'Hot towel'];
 // Recent posts: src/data/instagram.json + matching src/assets/instagram/<id>.jpg (manual refresh for now; feed sync is a phase-2 item).
 import igPosts from '../data/instagram.json';
@@ -35,7 +38,7 @@ const hero = Object.values(heroFiles)[0]?.default;
 >
   <section class="hero wrap" aria-labelledby="hero-title">
     <div class="rule-row"><span class="eyebrow">S&amp;T Hair Society</span><span class="eyebrow">Addison · Elmhurst, IL</span></div>
-    <h1 class="giant hero__word" id="hero-title"><span>Skull &amp;</span><span>Thrones</span></h1>
+    <h1 class="giant hero__word" id="hero-title"><span>Skull &amp;</span>{' '}<span>Thrones</span></h1>
     <div class="hero__grid">
       <div class="hero__copy">
         <p class="hero__tag">Progress through<br />creativity.</p>
@@ -44,18 +47,17 @@ const hero = Object.values(heroFiles)[0]?.default;
           {first && <a class="btn btn--lg" href={first.square_booking_url} target="_blank" rel="noopener"><span class="dot" aria-hidden="true"></span>Book {first.name}</a>}
           {second && <a class="btn btn--light btn--lg" href={second.square_booking_url} target="_blank" rel="noopener">Book {second.name} <span class="arr" aria-hidden="true">↗</span></a>}
         </div>
-        {/* TODO verify: rating/review count supplied by coordinator, not yet checked against the live Google profile */}
-        <p class="rating"><span class="rating__stars" aria-hidden="true">★★★★★</span><span><b>{SITE.rating.value}</b> on Google · {SITE.rating.count} reviews</span></p>
+        {SITE.rating.verified && <p class="rating"><span class="rating__stars" aria-hidden="true">★★★★★</span><span><b>{SITE.rating.value}</b> on Google · {SITE.rating.count} reviews</span></p>}
         <ul class="hero__status" aria-label="Shop status">
           {locations.map((l) => <li>{l.name} <span class="status" data-open-status={l.slug} role="status">{l.hours_short}</span></li>)}
         </ul>
       </div>
       <div class="media hero__media">
         {hero
-          ? <Image src={hero} alt="A Skull & Thrones barber shaping a fade with clippers" width={1600} height={1100} fit="cover" position="attention" fetchpriority="high" loading="eager" />
+          ? <Image src={hero} alt="A Skull & Thrones barber shaping a fade with clippers" width={1600} height={1100} widths={[600, 1200, 1600]} sizes="(min-width: 900px) 58vw, 100vw" fit="cover" position="attention" fetchpriority="high" loading="eager" />
           : <img src={placeholder(1600, 1100, 'Hero shop')} alt="Placeholder: interior of the shop" width="1600" height="1100" fetchpriority="high" />}
-        <span class="ph-tag">Placeholder photo</span>
-        <a class="badge" href={url('book/')} aria-label="Book an appointment">
+        {!hero && <span class="ph-tag">Placeholder photo</span>}
+        <a class="badge" href={url('book/')} aria-label="Book now: pick your chair">
           <svg viewBox="0 0 100 100" aria-hidden="true"><defs><path id="ring" d="M50 50m-38 0a38 38 0 1 1 76 0a38 38 0 1 1-76 0" /></defs><text font-family="Inter Tight, sans-serif" font-size="9" font-weight="700" fill="#111"><textPath href="#ring" textLength="236" lengthAdjust="spacing">BOOK NOW · PICK YOUR CHAIR · </textPath></text></svg>
           <b aria-hidden="true">S&amp;T</b>
         </a>
@@ -77,9 +79,11 @@ const hero = Object.values(heroFiles)[0]?.default;
   <section class="section--tight wrap" aria-labelledby="work-title">
     <div class="sec-head">
       <span class="sec-num">02 — Work</span>
-      <div><h2 class="h2" id="work-title">Fresh off the chair.</h2><p>Recent cuts from the <span data-loc-name>{first?.name}</span> floor. Every photo links to the barber who did it.</p></div>
-      <a class="link" href={url(`${first?.slug}/#portfolio`)} data-loc-href={url('{loc}/#portfolio')}><span data-loc-text="See all {Loc} work">See all {first?.name} work</span> <span class="arr" aria-hidden="true">→</span></a>
+      <div><h2 class="h2" id="work-title">Fresh off the chair.</h2><p>Recent cuts from <span data-loc-text="the {Loc} floor">both floors</span>. Every photo links to the barber who did it.</p></div>
+      <a class="link" data-loc-only="chosen" href={url(`${first?.slug}/#portfolio`)} data-loc-href={url('{loc}/#portfolio')}><span data-loc-text="See all {Loc} work">See all {first?.name} work</span> <span class="arr" aria-hidden="true">→</span></a>
+      <span class="work-links" data-loc-only="neutral">{locations.map((l) => <a class="link" href={url(`${l.slug}/#portfolio`)}>{l.name} work <span class="arr" aria-hidden="true">→</span></a>)}</span>
     </div>
+    <div data-loc-only="neutral"><PortfolioGrid id="work-both" items={mixed} layout="strip" /></div>
     {featured.map(({ l, items }) => (
       <div data-loc-only={l.slug}><PortfolioGrid id={`work-${l.slug}`} items={items} layout="strip" /></div>
     ))}
@@ -91,7 +95,7 @@ const hero = Object.values(heroFiles)[0]?.default;
     <div class="sec-head">
       <span class="sec-num">03 — Visit</span>
       <div><h2 class="h2" id="loc-title">Two shops. Same standard.</h2></div>
-      <a class="link" href={url('contact/')}>Maps &amp; parking <span class="arr" aria-hidden="true">→</span></a>
+      <a class="link" href={url('contact/')}>Maps &amp; hours <span class="arr" aria-hidden="true">→</span></a>
     </div>
     <div class="loc-grid">
       {locations.map((l, i) => <LocationCard location={l} ink={i === 0} />)}

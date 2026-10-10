@@ -19,12 +19,14 @@ const locations = (await getLocations()).filter((l) => !location || l.slug === l
 const barbers = await getBarbers();
 const slugs = locations.map((l) => l.slug);
 const count = (slug: string) => barbers.filter((b) => b.location === slug).length;
+// Team page: panel heads sit directly under the page h1, so they are h2 (home: under the section h2, so h3).
+const PanelHead = neutral ? 'h3' : 'h2';
 ---
 {location
   ? locations.map((l) => (
       <div class="grid">
         {anyArtist && <AnyArtistCard location={l} />}
-        {barbers.filter((b) => b.location === l.slug).map((b) => <BarberCard barber={b} locationName={l.name} />)}
+        {barbers.filter((b) => b.location === l.slug).map((b, j) => <BarberCard barber={b} locationName={l.name} eager={j < 2} />)}
       </div>
     ))
   : (
@@ -47,10 +49,10 @@ const count = (slug: string) => barbers.filter((b) => b.location === slug).lengt
       )}
       {locations.map((l, i) => (
         <div class="tabpanel" role="tabpanel" id={`${prefix}-${l.slug}`} aria-labelledby={`${prefix}-tab-${l.slug}`} tabindex="0" hidden={!neutral && i !== 0}>
-          <h3 class:list={[neutral ? 'tabpanel__head' : 'sr-only']}>{l.name} barbers</h3>
+          <PanelHead class:list={[neutral ? 'tabpanel__head' : 'sr-only']}>{l.name} barbers</PanelHead>
           <div class="grid">
             {anyArtist && <AnyArtistCard location={l} />}
-            {barbers.filter((b) => b.location === l.slug).map((b) => <BarberCard barber={b} locationName={l.name} headingLevel="h3" />)}
+            {barbers.filter((b) => b.location === l.slug).map((b, j) => <BarberCard barber={b} locationName={l.name} headingLevel="h3" eager={!neutral && i === 0 && j < 2} />)}
           </div>
         </div>
       ))}
@@ -62,6 +64,7 @@ const count = (slug: string) => barbers.filter((b) => b.location === slug).lengt
           if (!ok(pick)) pick = new URLSearchParams(location.search).get('location');
           if (!ok(pick)) { try { pick = localStorage.getItem('st-location'); } catch (e) { pick = null; } }
           if (!ok(pick)) pick = null;
+          if (pick) document.body.setAttribute('data-loc', pick);
           wrap.setAttribute('data-js', '');
           slugs.forEach(function (k) {
             var panel = document.getElementById(prefix + '-' + k);
