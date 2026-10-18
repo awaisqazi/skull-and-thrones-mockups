@@ -8,7 +8,8 @@
  *
  * Keeps hand curation across re-syncs: `featured` and the featured `sort_order` are carried over
  * by handle from the existing products.json (unless --feature is passed). Products that are sold
- * out, priced 0, have no photo, or are event tickets / gift cards are skipped.
+ * out, priced 0, have no photo, or are event tickets / gift cards are skipped. Only the brands in
+ * BRANDS (the lines the shop stocks and uses) are kept; add a vendor there to list another brand.
  *
  * buy_url is the checkout route switch: today it equals the Bodega product page. When the route is
  * decided (Shopify Buy Button or Square Online, see README "Products"), map it here.
@@ -20,6 +21,13 @@ const STORE = 'https://www.bybodega.com';
 const OUT = fileURLToPath(new URL('../src/data/products.json', import.meta.url));
 /** Listings that are not retail products (in-shop event cuts, gift cards). */
 const EXCLUDE_HANDLES = new Set(['event-cut', 'learn-to-cut']);
+/**
+ * Brand allowlist: only these Shopify vendors are listed on the site (client request 2026-10-18).
+ * Matched case-insensitively on the trimmed vendor. Add a vendor name here to list another brand.
+ */
+const BRANDS = ['STMNT', 'H14', 'SLICK GORILLA'];
+const BRAND_SET = new Set(BRANDS.map((b) => b.toUpperCase()));
+const allowedBrand = (vendor) => BRAND_SET.has(String(vendor || '').trim().toUpperCase());
 
 const args = process.argv.slice(2);
 const flag = (name) => {
@@ -52,7 +60,7 @@ const isEvent = (p) =>
 
 function toRow(p) {
   const live = (p.variants || []).filter((v) => v.available && Number(v.price) > 0);
-  if (!live.length || EXCLUDE_HANDLES.has(p.handle) || isEvent(p)) return null;
+  if (!live.length || EXCLUDE_HANDLES.has(p.handle) || isEvent(p) || !allowedBrand(p.vendor)) return null;
   const img = (p.images || [])[0];
   if (!img?.src) return null;
   const cheapest = live.reduce((a, b) => (Number(b.price) < Number(a.price) ? b : a));
@@ -100,7 +108,7 @@ const products = [...featured, ...rest].map((r, i) => ({ ...r, sort_order: i + 1
 
 const today = new Date().toISOString().slice(0, 10);
 const out = {
-  _note: `Synced from ${STORE}/products.json on ${today} by scripts/sync-products.mjs (${feed.length} listings in feed, ${products.length} kept: available, price > 0, has a photo, not an event ticket or gift card). Edit "featured" (home strip) by hand or re-run with --feature; re-syncs keep it. Images are the client's own product photos on his own Shopify store (hotlinked from cdn.shopify.com; pages append &width=N). buy_url = checkout route switch, see README "Products".`,
+  _note: `Synced from ${STORE}/products.json on ${today} by scripts/sync-products.mjs (${feed.length} listings in feed, ${products.length} kept: available, price > 0, has a photo, not an event ticket or gift card, vendor in the BRANDS allowlist: ${BRANDS.join(', ')}). Edit "featured" (home strip) by hand or re-run with --feature; re-syncs keep it. Images are the client's own product photos on his own Shopify store (hotlinked from cdn.shopify.com; pages append &width=N). buy_url = checkout route switch, see README "Products".`,
   products,
 };
 await writeFile(OUT, JSON.stringify(out, null, 2) + '\n');

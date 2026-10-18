@@ -19,9 +19,8 @@ const full = local ? (await getImage({ src: local, width: 1200, format: 'webp', 
       ? <Image src={t.image} alt={alt} width={t.width} height={t.height} widths={widths} sizes={sizes} loading="lazy" />
       : <img src={t.src} alt={alt} width={t.width} height={t.height} loading="lazy" />}
   <button class="tile__zoom" type="button" aria-label={`Enlarge: ${what}`}></button>
-  {t.source_url
-    ? <a class="ph-tag tile__ig" href={t.source_url} target="_blank" rel="noopener" aria-label={`See this ${t.style.toLowerCase()} by ${t.barber_name} on Instagram`}>IG <span aria-hidden="true">↗</span></a>
-    : t.placeholder && <span class="ph-tag">Placeholder</span>}
+  {/* Client 2026-10-18: photo + caption only, no Instagram link-out. source_url/credit stay in the data (rights trail). */}
+  {t.placeholder && <span class="ph-tag">Placeholder</span>}
   <figcaption class="tile__overlay">
     <span class="tile__cap">Cut by <b>{t.barber_name}</b> · {t.style}</span>
     <span class="tile__actions">

@@ -49,6 +49,12 @@ The home page has a "Shop the tools we use" strip (below the work section, never
 above 0 and have a photo, and skips event tickets and gift cards. Re-run it whenever the store
 changes (or `--from page1.json …` to use saved feed pages), then rebuild.
 
+- **Brand allowlist** (`BRANDS` in `scripts/sync-products.mjs`): only **STMNT**, **H14** and **SLICK GORILLA**
+  are listed (client request 2026-10-18: the lines the shop stocks and uses), matched case-insensitively
+  on the trimmed Shopify vendor. Everything else (clippers, shears, other brands) stays on bybodega.com,
+  linked from `/shop/`. To add a brand, add its vendor name exactly as Shopify shows it to `BRANDS`,
+  re-run `node scripts/sync-products.mjs`, and rebuild; the `/shop/` brand filters and counts are computed.
+
 - **Featured** (`"featured": true`, ordered by `sort_order`): the 8 products in the home strip. Edit by
   hand, or re-run with `--feature handle1,handle2,…`. Re-syncs keep the current picks; a pick that
   sells out is dropped with a warning.

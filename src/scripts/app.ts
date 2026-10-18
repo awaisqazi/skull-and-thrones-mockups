@@ -192,13 +192,18 @@ function showTile(i: number) {
   const big = $<HTMLImageElement>('[data-lb="img"]', lb)!;
   big.src = t.dataset.full || src.src;
   big.alt = src.alt;
-  $('[data-lb="cap"]', lb)!.innerHTML = $('.tile__cap', t)!.innerHTML;
+  // Caption line: data-caption (plain text) wins, else the overlay's .tile__cap markup (portfolio "Cut by …").
+  const cap = $('[data-lb="cap"]', lb)!;
+  const capEl = $('.tile__cap', t);
+  if (t.dataset.caption) cap.textContent = t.dataset.caption;
+  else cap.innerHTML = capEl ? capEl.innerHTML : '';
+  cap.hidden = !cap.textContent?.trim();
   const [book, view] = $$<HTMLAnchorElement>('.tile__actions a', t);
   const lbBook = $<HTMLAnchorElement>('[data-lb="book"]', lb)!;
   const lbView = $<HTMLAnchorElement>('[data-lb="view"]', lb)!;
   if (book) { lbBook.href = book.href; lbBook.textContent = book.textContent; }
   if (view) { lbView.href = view.href; lbView.textContent = view.textContent; }
-  // Culture tiles carry at most one link (the Instagram post) and no barber: hide unused buttons.
+  // Culture and home social tiles carry no links (photo + caption only): hide unused buttons.
   lbBook.hidden = !book;
   lbView.hidden = !view;
   $('[data-lb="count"]', lb)!.textContent = `${lbIdx + 1} / ${lbList.length}`;
@@ -206,7 +211,7 @@ function showTile(i: number) {
 if (lb) {
   $$('.tile__zoom').forEach((b) => b.addEventListener('click', () => {
     const tile = b.closest<HTMLElement>('.tile')!;
-    const scope = tile.closest('[data-filterable], .strip') || document;
+    const scope = tile.closest('[data-filterable], .strip, .ig') || document;
     lbList = $$('.tile', scope).filter((t) => !t.hidden && t.offsetParent !== null && $('.tile__zoom', t) !== null);
     showTile(lbList.indexOf(tile));
     lb.showModal();

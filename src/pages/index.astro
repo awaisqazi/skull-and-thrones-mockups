@@ -1,5 +1,5 @@
 ---
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import Layout from '../layouts/Layout.astro';
 import LocationTabs from '../components/LocationTabs.astro';
@@ -21,11 +21,20 @@ const mixed = Array.from({ length: Math.max(0, ...featured.map((f) => f.items.le
   .flat().filter((t): t is NonNullable<typeof t> => Boolean(t)).slice(0, 6);
 const marquee = ['Skin fades', 'Scissor work', 'Beards', 'Kids cuts', 'Long hair', 'Color', 'Designs', 'Hot towel'];
 // Recent posts: src/data/instagram.json + matching src/assets/instagram/<id>.jpg (manual refresh for now; feed sync is a phase-2 item).
+// Client 2026-10-18: tiles are photo + caption and open the shared lightbox; they never link out to the post
+// (the `url` field stays in the data as the rights trail). Only the "Follow" button links to the profile.
 import igPosts from '../data/instagram.json';
 const igFiles = import.meta.glob<{ default: ImageMetadata }>('/src/assets/instagram/*.{jpg,jpeg,png,webp}', { eager: true });
 const igImage = (id: string) => Object.entries(igFiles).find(([k]) => k.endsWith(`/${id}.jpg`) || k.endsWith(`/${id}.png`) || k.endsWith(`/${id}.webp`))?.[1].default;
-const igTiles = igPosts.slice(0, 6).map((p) => ({ ...p, image: igImage(p.id) }));
-while (igTiles.length < 6) igTiles.push({ id: `ph-${igTiles.length}`, url: SITE.instagram, caption: 'Instagram post (placeholder)', image: undefined });
+const igTiles: { id: string; caption: string; image?: ImageMetadata; full?: string }[] = await Promise.all(
+  igPosts.slice(0, 6).map(async (p) => {
+    const image = igImage(p.id);
+    // Lightbox copy: 1200 px WebP, same as portfolio/culture tiles.
+    const full = image ? (await getImage({ src: image, width: Math.min(1200, image.width), format: 'webp', quality: 78 })).src : undefined;
+    return { id: p.id, caption: p.caption, image, full };
+  }),
+);
+while (igTiles.length < 6) igTiles.push({ id: `ph-${igTiles.length}`, caption: 'Instagram post (placeholder)' });
 // Drop a photo at src/assets/hero.(jpg|png|webp) to replace the hero placeholder.
 const heroFiles = import.meta.glob<{ default: ImageMetadata }>('/src/assets/hero.{jpg,jpeg,png,webp}', { eager: true });
 const hero = Object.values(heroFiles)[0]?.default;
@@ -110,12 +119,14 @@ const hero = Object.values(heroFiles)[0]?.default;
     </div>
     <div class="ig">
       {igTiles.map((p, i) => (
-        <a href={p.url} target="_blank" rel="noopener" aria-label={`${p.caption} — opens on Instagram`}>
+        <figure class="tile ig__item" data-full={p.full} data-caption={p.image ? p.caption : undefined}>
           {p.image
             ? <Image src={p.image} alt={p.caption} width={500} height={500} fit="cover" position="attention" loading="lazy" />
             : <img src={placeholder(500, 500, `IG ${i}`)} alt="" width="500" height="500" loading="lazy" />}
-          {!p.image && <span class="ph-tag">Placeholder</span>}
-        </a>
+          {p.image
+            ? <button class="tile__zoom" type="button" aria-label={`Enlarge: ${p.caption}`}></button>
+            : <span class="ph-tag">Placeholder</span>}
+        </figure>
       ))}
     </div>
   </section>

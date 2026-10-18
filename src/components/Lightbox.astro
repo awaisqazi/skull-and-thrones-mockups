@@ -1,9 +1,16 @@
-<dialog class="lightbox on-dark" id="lightbox" aria-label="Portfolio viewer">
+---
+/**
+ * Shared photo viewer (wired in src/scripts/app.ts). Opened by any .tile__zoom button.
+ * Caption: the tile's data-caption (plain text) if set, else its .tile__cap markup.
+ * Book/View buttons mirror the tile's .tile__actions links and hide when the tile has none.
+ */
+---
+<dialog class="lightbox on-dark" id="lightbox" aria-label="Photo viewer">
   <div class="lightbox__bar"><span class="lightbox__count" data-lb="count">1 / 1</span><button class="btn btn--light btn--sm" type="button" data-close>Close <span aria-hidden="true">✕</span></button></div>
   <div class="lightbox__stage">
     <img data-lb="img" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" />
     <button class="btn btn--light lightbox__nav lightbox__nav--prev" type="button" data-lb="prev" aria-label="Previous photo">←</button>
     <button class="btn btn--light lightbox__nav lightbox__nav--next" type="button" data-lb="next" aria-label="Next photo">→</button>
   </div>
-  <div class="lightbox__foot"><p data-lb="cap"></p><div class="btn-row"><a class="btn btn--accent" data-lb="book" href="#" target="_blank" rel="noopener">Book</a><a class="btn btn--light" data-lb="view" href="#">View</a></div></div>
+  <div class="lightbox__foot"><p class="lightbox__cap" data-lb="cap"></p><div class="btn-row"><a class="btn btn--accent" data-lb="book" href="#" target="_blank" rel="noopener">Book</a><a class="btn btn--light" data-lb="view" href="#">View</a></div></div>
 </dialog>
