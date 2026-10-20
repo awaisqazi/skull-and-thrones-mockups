@@ -45,7 +45,7 @@ const jsonLd = {
       alternateName: SITE.alt_name,
       slogan: SITE.slogan,
       url: new URL(url(''), site).href,
-      logo: ogImage,
+      logo: new URL(url('logo-512.png'), site).href,
       email: SITE.email,
       sameAs: [SITE.instagram],
     },
@@ -95,7 +95,9 @@ const hours = await getHoursPayload();
 {!noindex && <link rel="canonical" href={canonical}>}
 {noindex && <meta name="robots" content="noindex, follow">}
 <meta name="theme-color" content="#EAEAEA">
-<link rel="icon" href={url('favicon.svg')} type="image/svg+xml">
+<link rel="icon" href={url('favicon-32.png')} type="image/png" sizes="32x32">
+<link rel="icon" href={url('favicon-192.png')} type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href={url('apple-touch-icon.png')}>
 <link rel="sitemap" href={url('sitemap-index.xml')}>
 <meta property="og:type" content={ogType}>
 <meta property="og:site_name" content={SITE.name}>

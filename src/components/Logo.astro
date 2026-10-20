@@ -1,1 +1,9 @@
-<svg viewBox="0 0 40 36" aria-hidden="true" focusable="false"><path d="M20 2.5 38 33.5H2Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><text x="20" y="29" text-anchor="middle" font-family="Anton, Impact, sans-serif" font-size="12.5" fill="currentColor">S&amp;T</text></svg>
+---
+/**
+ * Nav mark: the triangle emblem from the client's logo (versionB_blacktranparent.png, texted 2026-10-19),
+ * traced to SVG with potrace (docs/brand/). Served as an <img> rather than inlined: the traced paths are ~150 KB.
+ * Full logo with wordmark: src/assets/brand/logo-black.svg / logo-white.svg.
+ */
+import mark from '../assets/brand/mark-black.svg';
+---
+<img src={mark.src} alt="" width="32" height="28" decoding="async" aria-hidden="true" />
