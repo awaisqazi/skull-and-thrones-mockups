@@ -16,5 +16,6 @@ const locations = await getLocations();
         {locations.map((l) => <a class="btn btn--light btn--lg" href={l.square_booking_url} target="_blank" rel="noopener">Book {l.name} <span class="arr" aria-hidden="true">↗</span></a>)}
       </div>
     </div>
+    <p class="lead">Looking for the shop? Old Skull &amp; Thrones links to products, the gallery or online ordering now live here: <a class="link" href={url('shop/')}>Shop products</a> · <a class="link" href={url('addison/#portfolio')}>See the work</a> · <a class="link" href={url('book/')}>Book a chair</a>.</p>
   </section>
 </Layout>

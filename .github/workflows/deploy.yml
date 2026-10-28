@@ -24,10 +24,13 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # Project site: https://awaisqazi.github.io/skull-and-thrones-mockups/
-  # Custom domain: set BASE_PATH to "/" and SITE_URL to "https://skullandthrones.com".
-  BASE_PATH: /skull-and-thrones-mockups
-  SITE_URL: https://awaisqazi.github.io
+  # Custom domain (cutover): https://skullandthrones.com/ (public/CNAME holds the same host).
+  # ROLLBACK to the project site (https://awaisqazi.github.io/skull-and-thrones-mockups/) is one edit:
+  # swap these two lines for the commented pair below, and delete the cutover custom domain in repo Pages settings.
+  #   BASE_PATH: /skull-and-thrones-mockups
+  #   SITE_URL: https://awaisqazi.github.io
+  BASE_PATH: /
+  SITE_URL: https://skullandthrones.com
 
 jobs:
   build:
