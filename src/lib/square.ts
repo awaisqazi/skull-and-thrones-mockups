@@ -25,6 +25,28 @@ export interface SquareItem {
   /** Square product_type, e.g. APPOINTMENTS_SERVICE (barbers) vs REGULAR (retail). */
   product_type: string | null;
   is_archived: boolean;
+  /**
+   * Every variation present at this location, in catalog order (the services: Haircut, Beard…).
+   * Availability search needs one variation id plus the team member who performs it
+   * (src/lib/bookings.ts `pickBookableVariation`).
+   */
+  variations: SquareVariation[];
+  /** Catalog IMAGE object ids attached to the item (resolve with include_related_objects). */
+  image_ids: string[];
+}
+
+/** One service variation of a barber item. */
+export interface SquareVariation {
+  id: string;
+  name: string;
+  /** Dollars. null = no fixed price (variable pricing) or price not set. */
+  price: number | null;
+  /** service_duration in minutes. null = not set. */
+  duration_minutes: number | null;
+  /** Team members who perform this service (item_variation_data.team_member_ids). */
+  team_member_ids: string[];
+  /** item_variation_data.available_for_booking; Square treats unset as bookable. */
+  available_for_booking: boolean;
 }
 
 /* Minimal shapes of the Catalog API objects we read (https://developer.squareup.com/reference/square/catalog-api/search-catalog-objects). */
@@ -34,7 +56,14 @@ interface CatalogVariation {
   present_at_all_locations?: boolean;
   present_at_location_ids?: string[];
   absent_at_location_ids?: string[];
-  item_variation_data?: { price_money?: Money | null; service_duration?: number | null };
+  is_deleted?: boolean;
+  item_variation_data?: {
+    name?: string;
+    price_money?: Money | null;
+    service_duration?: number | bigint | null;
+    team_member_ids?: string[] | null;
+    available_for_booking?: boolean | null;
+  };
 }
 export interface CatalogObject {
   type: string;
@@ -49,6 +78,7 @@ export interface CatalogObject {
     description_plaintext?: string;
     product_type?: string;
     is_archived?: boolean;
+    image_ids?: string[] | null;
     variations?: CatalogVariation[];
   };
 }
@@ -66,12 +96,11 @@ export function isAtLocation(o: Located, locationId: string): boolean {
 export function toSquareItem(o: CatalogObject, locationId: string): SquareItem | null {
   if (o.type !== 'ITEM' || o.is_deleted || !o.item_data || !isAtLocation(o, locationId)) return null;
   const d = o.item_data;
-  const priced = (d.variations ?? [])
-    .filter((v) => isAtLocation(v, locationId))
-    .map((v) => ({
-      cents: v.item_variation_data?.price_money?.amount != null ? Number(v.item_variation_data.price_money.amount) : null,
-      ms: v.item_variation_data?.service_duration ?? null,
-    }));
+  const here = (d.variations ?? []).filter((v) => !v.is_deleted && isAtLocation(v, locationId));
+  const priced = here.map((v) => ({
+    cents: v.item_variation_data?.price_money?.amount != null ? Number(v.item_variation_data.price_money.amount) : null,
+    ms: v.item_variation_data?.service_duration != null ? Number(v.item_variation_data.service_duration) : null,
+  }));
   const cheapest = priced
     .filter((v): v is { cents: number; ms: number | null } => v.cents != null && v.cents > 0)
     .sort((a, b) => a.cents - b.cents)[0];
@@ -84,6 +113,28 @@ export function toSquareItem(o: CatalogObject, locationId: string): SquareItem |
     description: (d.description_plaintext ?? d.description ?? '').trim(),
     product_type: d.product_type ?? null,
     is_archived: Boolean(d.is_archived),
+    variations: here.map((v, i) => {
+      const { cents, ms } = priced[i]!;
+      return {
+        id: v.id,
+        name: (v.item_variation_data?.name ?? '').trim(),
+        price: cents != null ? cents / 100 : null,
+        duration_minutes: ms ? Math.round(ms / 60000) : null,
+        team_member_ids: [...(v.item_variation_data?.team_member_ids ?? [])],
+        available_for_booking: v.item_variation_data?.available_for_booking !== false,
+      };
+    }),
+    image_ids: [...(d.image_ids ?? [])],
+  };
+}
+
+/** Request headers for every Square API call (bookings.ts reuses them). */
+export function squareHeaders(token: string, squareVersion = SQUARE_VERSION): Record<string, string> {
+  return {
+    Authorization: `Bearer ${token}`,
+    'Square-Version': squareVersion,
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
   };
 }
 
@@ -108,12 +159,7 @@ export async function listSquareItems(token: string, locationId: string, opts: L
   do {
     const res = await doFetch(`${opts.apiBase ?? SQUARE_API}/v2/catalog/search`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Square-Version': opts.squareVersion ?? SQUARE_VERSION,
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
+      headers: squareHeaders(token, opts.squareVersion),
       body: JSON.stringify({ object_types: ['ITEM'], include_deleted_objects: false, limit: 1000, ...(cursor ? { cursor } : {}) }),
       signal: AbortSignal.timeout(opts.timeoutMs ?? 20000),
     });

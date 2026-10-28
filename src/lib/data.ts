@@ -16,8 +16,6 @@ export type Location = CollectionEntry<'locations'>['data'] & {
   href: string;
 };
 export type Barber = CollectionEntry<'barbers'>['data'] & {
-  /** Phase 2 (Square availability job), e.g. "Tue 2pm"; null = not shown. Shop-set accepting_new_clients is separate. */
-  next_opening: string | null;
   booking_url: string;
   href: string;
   first_name: string;
@@ -33,15 +31,6 @@ export type PortfolioItem = CollectionEntry<'portfolio'>['data'] & {
   barber_href: string;
   booking_url: string;
 };
-
-/**
- * Copy for `accepting_new_clients`: a shop-set statement (CMS toggle) about whether the barber
- * takes NEW customers. It is not live Square availability; that arrives later as `next_opening`.
- */
-export const ACCEPTING = {
-  yes: { label: 'Accepting new clients', tip: 'Set by the shop: this barber is taking new clients. Open times show in Square when you book.' },
-  no: { label: 'Booked up', tip: 'Set by the shop: this barber is not taking new clients right now. Existing clients can still book in Square.' },
-} as const;
 
 /** Square: per-barber deep link = location services page + '/' + item id. */
 export function buildBookingUrl(base: string, itemId: string): string {
@@ -84,7 +73,6 @@ export async function getBarbers(location?: LocationSlug): Promise<Barber[]> {
       first_name: data.name.split(' ')[0]!,
       initials: initialsOf(data.name),
       headshot_src: data.headshot ?? placeholder(600, 750, data.name),
-      next_opening: data.next_opening ?? null,
     }))
     .sort((a, b) => locs[a.location].sort_order - locs[b.location].sort_order || a.sort_order - b.sort_order);
 }
@@ -204,14 +192,14 @@ export async function getCultureStats(): Promise<CultureStat[]> {
   return (await getCollection('cultureStats')).map(({ id, data }) => ({ ...data, id }));
 }
 
-/* ---------- Products (Bodega / bybodega.com, synced by scripts/sync-products.mjs) ---------- */
+/* ---------- Products (Bodega via scripts/sync-products.mjs, or Square when SHOP_SOURCE=square; see content.config.ts) ---------- */
 export type Product = CollectionEntry<'products'>['data'] & {
   /** Title without the leading brand name, ALL-CAPS titles title-cased ("WAHL CORDLESS MAGIC CLIP" → "Cordless Magic Clip"). */
   display_title: string;
   vendor_slug: string;
   price_label: string;
   compare_label: string | null;
-  /** Shopify CDN resized copies (the CDN resizes on `width`, and serves WebP/AVIF when the browser accepts it). */
+  /** Shopify CDN resized copies (the CDN resizes on `width`, and serves WebP/AVIF when the browser accepts it). Square images are used as is. */
   src: string;
   srcset: string;
 };
@@ -219,6 +207,8 @@ export type Product = CollectionEntry<'products'>['data'] & {
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 /** Shopify CDN: append width=N to the image URL for a resized copy (never ship the multi-MB originals). */
 export const shopifyImg = (src: string, width: number) => `${src}${src.includes('?') ? '&' : '?'}width=${width}`;
+/** Only Shopify's CDN understands `width=`; any other host (Square's image bucket) is served unresized. */
+const resized = (src: string, width: number) => (new URL(src).hostname.endsWith('shopify.com') ? shopifyImg(src, width) : src);
 const titleCase = (s: string) => s.toLowerCase().replace(/(^|[\s\-/(])([a-z])/g, (_, p: string, c: string) => p + c.toUpperCase());
 
 function displayTitle(title: string, vendor: string): string {
@@ -237,19 +227,22 @@ export async function getProducts(opts: { featured?: boolean; vendor?: string } 
   return rows
     .map(({ data }) => ({
       ...data,
-      // checkout route switch: buy_url comes straight from products.json (today = Bodega product page).
-      // Switching to a Shopify Buy Button or Square Online checkout only changes that field (see README "Products").
+      // checkout route switch: buy_url comes straight from the row (Bodega product page, or with SHOP_SOURCE=square
+      // the Square store page / payment link, or null = no online buy). See README "Products".
       display_title: displayTitle(data.title, data.vendor),
       vendor_slug: slugify(data.vendor),
       price_label: usd(data.price),
       compare_label: data.compare_at_price ? usd(data.compare_at_price) : null,
-      src: shopifyImg(data.image, 600),
-      srcset: [300, 450, 600, 900].map((w) => `${shopifyImg(data.image, w)} ${w}w`).join(', '),
+      src: resized(data.image, 600),
+      srcset: resized(data.image, 600) === data.image ? '' : [300, 450, 600, 900].map((w) => `${resized(data.image, w)} ${w}w`).join(', '),
     }))
     .sort((a, b) => a.sort_order - b.sort_order);
 }
 
 export const getFeaturedProducts = () => getProducts({ featured: true });
+
+/** True when the listed products come from Square (SHOP_SOURCE=square); pages use it to adjust the copy. */
+export const productsFromSquare = (list: Product[]) => list.length > 0 && list.every((p) => p.source === 'square');
 
 /** Vendor filter chips for /shop/: [{ slug, label, count }], A–Z. */
 export function productVendors(list: Product[]) {

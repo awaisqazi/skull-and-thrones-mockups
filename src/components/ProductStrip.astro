@@ -1,14 +1,15 @@
 ---
 /**
- * Home-page "Shop the tools we use" strip: featured products from src/data/products.json,
+ * Home-page "Shop the tools we use" strip: featured products (src/data/products.json, or Square with SHOP_SOURCE=square),
  * horizontally scrolling (CSS scroll-snap), prev/next buttons wired in src/scripts/app.ts ([data-pstrip]).
  */
 import ProductCard from './ProductCard.astro';
-import { getFeaturedProducts } from '../lib/data';
+import { getFeaturedProducts, productsFromSquare } from '../lib/data';
 import { url } from '../lib/url';
 
 const products = await getFeaturedProducts();
 const id = 'pstrip-home';
+const fromSquare = productsFromSquare(products);
 ---
 {products.length > 0 && (
   <section class="section--tight wrap pstrip-sec" aria-labelledby="shop-strip-title">
@@ -17,10 +18,12 @@ const id = 'pstrip-home';
       <div>
         <p class="eyebrow">Shop the tools we use</p>
         <h2 class="big pstrip-head__title" id="shop-strip-title">Take the chair home.</h2>
-        <p>The products and tools on our stations, sold through Bodega. Order online, it ships to you.</p>
+        {fromSquare
+          ? <p>The products on our stations. Order online or pick them up at our shops.</p>
+          : <p>The products and tools on our stations, sold through Bodega. Order online, it ships to you.</p>}
       </div>
       <div class="pstrip-head__aside">
-        <a class="link" href="https://www.bybodega.com/" target="_blank" rel="noopener">See everything at Bodega <span class="arr" aria-hidden="true">↗</span></a>
+        <a class="link" href="https://www.bybodega.com/" target="_blank" rel="noopener">{fromSquare ? 'More tools at Bodega ' : 'See everything at Bodega '}<span class="arr" aria-hidden="true">↗</span></a>
         <div class="pstrip__nav" data-pstrip-nav={id}>
           <button class="pstrip__btn" type="button" data-pstrip-prev aria-controls={id} aria-label="Previous products" disabled>←</button>
           <button class="pstrip__btn" type="button" data-pstrip-next aria-controls={id} aria-label="Next products">→</button>

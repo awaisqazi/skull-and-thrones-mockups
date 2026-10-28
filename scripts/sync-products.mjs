@@ -5,29 +5,34 @@
  *   node scripts/sync-products.mjs                       # fetch https://www.bybodega.com/products.json (all pages)
  *   node scripts/sync-products.mjs --from a.json b.json  # read saved feed pages instead of fetching
  *   node scripts/sync-products.mjs --feature h1,h2,...   # set the home-strip picks (in this order)
+ *   node scripts/sync-products.mjs --create-links --location addison|elmhurst [--write]   # Square S2: pickup payment links (see below); dry run without --write
  *
  * Keeps hand curation across re-syncs: `featured` and the featured `sort_order` are carried over
  * by handle from the existing products.json (unless --feature is passed). Products that are sold
  * out, priced 0, have no photo, or are event tickets / gift cards are skipped. Only the brands in
  * BRANDS (the lines the shop stocks and uses) are kept; add a vendor there to list another brand.
  *
+ * --create-links --location <shop> (docs/SQUARE-INTEGRATION-SPEC.md section 5, route S2): for each in-stock STMNT/H14/Slick Gorilla item in
+ * that ONE shop's Square catalog (pickup is at a specific shop, so the shop is required; run it once per shop) that has no Square Online page and no stored link yet, creates ONE Checkout API payment link
+ * (POST /v2/online-checkout/payment-links) and stores it in src/data/square-payment-links.json keyed by variation id, so
+ * links are reused, never duplicated. Without --write it only lists what it would create. Writing needs production tokens
+ * (SQUARE_TOKEN_ADDISON / SQUARE_TOKEN_ELMHURST, env or site/.env) with ORDERS_WRITE + PAYMENTS_WRITE; it refuses the sandbox
+ * unless SQUARE_API_BASE is the sandbox (then it uses the sandbox token). Does not touch products.json.
+ *
  * buy_url is the checkout route switch: today it equals the Bodega product page. When the route is
  * decided (Shopify Buy Button or Square Online, see README "Products"), map it here.
  */
 import { readFile, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { BRANDS, allowedBrand, ensurePaymentLinks, loadShopRetail, resolveCreds } from '../src/lib/square-products.ts';
 
 const STORE = 'https://www.bybodega.com';
 const OUT = fileURLToPath(new URL('../src/data/products.json', import.meta.url));
 /** Listings that are not retail products (in-shop event cuts, gift cards). */
 const EXCLUDE_HANDLES = new Set(['event-cut', 'learn-to-cut']);
-/**
- * Brand allowlist: only these Shopify vendors are listed on the site (client request 2026-10-18).
- * Matched case-insensitively on the trimmed vendor. Add a vendor name here to list another brand.
- */
-const BRANDS = ['STMNT', 'H14', 'SLICK GORILLA'];
-const BRAND_SET = new Set(BRANDS.map((b) => b.toUpperCase()));
-const allowedBrand = (vendor) => BRAND_SET.has(String(vendor || '').trim().toUpperCase());
+// Brand allowlist: BRANDS / allowedBrand live in src/lib/square-products.ts, shared with the Square products loader
+// (client request 2026-10-18: only STMNT, H14 and SLICK GORILLA). Add a vendor name there to list another brand.
 
 const args = process.argv.slice(2);
 const flag = (name) => {
@@ -37,6 +42,45 @@ const flag = (name) => {
   for (let j = i + 1; j < args.length && !args[j].startsWith('--'); j++) vals.push(args[j]);
   return vals;
 };
+
+/* ---- S2: create Square payment links (only with --create-links) ---- */
+async function createLinks() {
+  const root = new URL('../', import.meta.url);
+  if (existsSync(new URL('.env', root))) process.loadEnvFile(new URL('.env', root));
+  const apiBase = process.env.SQUARE_API_BASE || undefined;
+  const write = args.includes('--write');
+  const shops = JSON.parse(await readFile(new URL('src/data/locations.json', root), 'utf8')).locations;
+  const linksPath = fileURLToPath(new URL('src/data/square-payment-links.json', root));
+  const buyPath = new URL('src/data/square-buy-links.json', root);
+  const file = JSON.parse(await readFile(linksPath, 'utf8'));
+  const store = existsSync(buyPath) ? JSON.parse(await readFile(buyPath, 'utf8')).links ?? {} : {};
+  const shopArg = args[args.indexOf('--location') + 1];
+  if (args.indexOf('--location') < 0 || !shops.some((s) => s.slug === shopArg)) {
+    console.error(`--create-links needs --location ${shops.map((s) => s.slug).join('|')}: a payment link is pickup at one specific shop.`);
+    process.exit(1);
+  }
+  const { creds: all, missing } = resolveCreds(shops, process.env, apiBase);
+  if (missing.length) { console.error(`--create-links needs ${missing.join(' and ')} (env or site/.env).`); process.exit(1); }
+  const creds = all.filter((c) => c.slug === shopArg);
+  let payment = file.links ?? {};
+  let made = 0;
+  for (const c of creds) {
+    const { items, stock } = await loadShopRetail(c.token, c.locationId, { apiBase });
+    const r = await ensurePaymentLinks(c.token, c.locationId, items, stock, { store, payment }, { apiBase, write, shop: c.slug });
+    payment = r.payment;
+    made += r.created.length;
+    console.log(`${c.slug}: ${write ? `created ${r.created.length}` : `would create ${r.wouldCreate.length}`}${(write ? r.created : r.wouldCreate).length ? ` (${(write ? r.created : r.wouldCreate).join(', ')})` : ''}`);
+  }
+  if (write && made) {
+    await writeFile(linksPath, JSON.stringify({ ...file, links: payment }, null, 2) + '\n');
+    console.log(`Wrote ${made} new link(s) to src/data/square-payment-links.json (${Object.keys(payment).length} total).`);
+  } else if (!write) console.log('Dry run. Add --write to create the links.');
+}
+
+if (args.includes('--create-links')) {
+  await createLinks();
+  process.exit(0);
+}
 
 async function loadFeed() {
   const files = flag('--from');

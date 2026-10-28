@@ -11,6 +11,8 @@ import interTightWoff2 from '../assets/fonts/inter-tight-latin-var.woff2?url';
 import { getLocations, getHoursPayload } from '../lib/data';
 import { SITE } from '../lib/site';
 import { url } from '../lib/url';
+import { DEFAULT_LIVE_URL, parseFile, slimFile } from '../lib/availability';
+import bakedAvailability from '../data/availability.json';
 
 export type NavKey = 'home' | 'team' | 'portfolio' | 'culture' | 'shop' | 'book' | 'contact' | 'none';
 
@@ -84,6 +86,12 @@ const jsonLd = {
   ],
 };
 const hours = await getHoursPayload();
+// Live availability chips (spec §3) render on these pages only (barber cards, barber page, /book).
+// They get the baked snapshot plus the live file's URL; src/scripts/availability.ts swaps in newer data.
+const AVAILABILITY_PAGES = new Set(['home', 'location', 'team', 'barber', 'book']);
+const availability = AVAILABILITY_PAGES.has(page)
+  ? { src: import.meta.env.PUBLIC_AVAILABILITY_URL || DEFAULT_LIVE_URL, file: slimFile(parseFile(bakedAvailability)) }
+  : null;
 ---
 <!doctype html>
 <html lang="en">
@@ -131,5 +139,7 @@ const hours = await getHoursPayload();
 <script>
   import '../scripts/app.ts';
 </script>
+{availability && <script type="application/json" id="st-avail" set:html={JSON.stringify(availability).replace(/</g, '\\u003c')} />}
+{availability && <script>import '../scripts/availability.ts';</script>}
 </body>
 </html>

@@ -1,0 +1,98 @@
+name: Refresh live availability
+
+# Every 15 minutes during shop hours: ask Square when each barber is next free and publish
+# availability.json on the one-commit branch `data`. The site fetches it from
+#   https://raw.githubusercontent.com/<owner>/<repo>/data/availability.json
+# (spec docs/SQUARE-INTEGRATION-SPEC.md §2–§3). Costs nothing: public repo Actions minutes are free.
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    # Shop hours are 07:00–20:00 America/Chicago. GitHub cron is UTC and has no time zones, so these two
+    # lines cover the union of both DST states: 12:00–02:59 UTC = 07:00–21:59 CDT (summer, UTC-5) and
+    # 06:00–20:59 CST (winter, UTC-6). The "Shop-hours guard" step below drops runs outside 07:00–20:59
+    # Chicago time, so the effective window is the same all year. Scheduled runs often start 5–15 min late;
+    # the site tolerates up to 2 h of age before it hides the chips.
+    - cron: '*/15 12-23 * * *'
+    - cron: '*/15 0-2 * * *'
+
+permissions:
+  contents: write # force-push the `data` branch
+
+concurrency:
+  group: availability
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SQUARE_TOKEN_ADDISON: ${{ secrets.SQUARE_TOKEN_ADDISON }}
+      SQUARE_TOKEN_ELMHURST: ${{ secrets.SQUARE_TOKEN_ELMHURST }}
+    steps:
+      - name: Shop-hours guard (America/Chicago 07:00–20:59; manual runs always go)
+        id: guard
+        run: |
+          hour=$(TZ=America/Chicago date +%H)
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || { [ "$hour" -ge 7 ] && [ "$hour" -le 20 ]; }; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Outside shop hours in Chicago (hour $hour); nothing to do."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Tokens present?
+        id: tokens
+        if: steps.guard.outputs.run == 'true'
+        run: |
+          if [ -z "$SQUARE_TOKEN_ADDISON" ] && [ -z "$SQUARE_TOKEN_ELMHURST" ]; then
+            echo "No SQUARE_TOKEN_* secrets yet (spec §9): nothing to fetch, nothing published."
+            echo "go=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.tokens.outputs.go == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.tokens.outputs.go == 'true'
+        with:
+          node-version: 22 # 22.18+ runs the src/lib/*.ts modules directly; no npm install needed
+
+      - name: Previous file from the data branch (a failing shop keeps its last good block)
+        if: steps.tokens.outputs.go == 'true'
+        run: |
+          mkdir -p "$RUNNER_TEMP/out"
+          if git fetch --depth=1 origin data 2>/dev/null && git show FETCH_HEAD:availability.json > "$RUNNER_TEMP/previous.json" 2>/dev/null; then
+            echo "previous file found"
+          else
+            echo '{"shops":{}}' > "$RUNNER_TEMP/previous.json"
+            echo "no data branch yet: starting empty"
+          fi
+
+      - name: Fetch availability from Square
+        if: steps.tokens.outputs.go == 'true'
+        run: node scripts/fetch-availability.mjs --previous "$RUNNER_TEMP/previous.json" --out "$RUNNER_TEMP/out/availability.json"
+
+      - name: Publish to the one-commit branch `data`
+        if: steps.tokens.outputs.go == 'true'
+        run: |
+          cd "$RUNNER_TEMP/out"
+          git init -q -b data
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+          git add availability.json
+          msg="availability $(date -u +%Y-%m-%dT%H:%MZ)"
+          if git fetch -q --depth=1 origin data 2>/dev/null; then
+            # Point `data` at its single existing commit (index keeps the new file), then amend it,
+            # so the branch never grows a history.
+            git reset -q --soft FETCH_HEAD
+            git commit -q --amend -m "$msg"
+          else
+            git commit -q -m "$msg" # first run: the orphan branch is born here
+          fi
+          git push -q -f origin data
+          echo "published $(wc -c < availability.json) bytes to branch data ($(git rev-list --count HEAD) commit)"

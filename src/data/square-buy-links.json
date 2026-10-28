@@ -1,0 +1,4 @@
+{
+  "_note": "S1 link map, hand-maintained until the Square Online store is confirmed (docs/SQUARE-INTEGRATION-SPEC.md section 5). handle -> product page on the shop's Square Online store, e.g. \"h14-raw-matte-clay\": \"https://<store>.square.site/product/h14-raw-matte-clay/123\". The handle is the item name slugified (see check:square). An entry here wins over the item's own Square Online page. Only read when SHOP_SOURCE=square.",
+  "links": {}
+}

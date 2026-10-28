@@ -35,13 +35,28 @@ jobs:
       # src/data/barbers.json as before. Build-time only; never exposed to the browser.
       SQUARE_TOKEN_ADDISON: ${{ secrets.SQUARE_TOKEN_ADDISON }}
       SQUARE_TOKEN_ELMHURST: ${{ secrets.SQUARE_TOKEN_ELMHURST }}
+      # Retail products source for /shop/ and the home strip (spec §5): `bodega` = src/data/products.json
+      # (Bodega's Shopify feed, as today). `square` = the shops' Square catalogs, once the production tokens
+      # exist and the retail route (S1/S2) is decided. Anything else behaves like `bodega`.
+      SHOP_SOURCE: bodega
+      # Live availability file the browser fetches (written every 15 min by availability.yml to branch `data`).
+      PUBLIC_AVAILABILITY_URL: https://raw.githubusercontent.com/${{ github.repository }}/data/availability.json
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Unit tests (roster merge, Square client; no network)
+      - name: Unit tests (roster merge, Square clients, availability rules; no network)
         run: npm test
+      - name: Bake the latest availability snapshot (branch `data`; keeps the checked-in empty default if absent)
+        run: |
+          if git fetch --depth=1 origin data 2>/dev/null && git show FETCH_HEAD:availability.json > "$RUNNER_TEMP/availability.json" 2>/dev/null \
+             && node -e 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).shops || process.exit(1)' "$RUNNER_TEMP/availability.json"; then
+            cp "$RUNNER_TEMP/availability.json" src/data/availability.json
+            echo "baked availability.json from branch data"
+          else
+            echo "no usable availability.json on branch data: chips render from the live file only (or not at all)"
+          fi
       - name: Build with Astro and upload the Pages artifact
         uses: withastro/action@v3
         with:

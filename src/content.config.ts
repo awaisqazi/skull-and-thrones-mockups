@@ -13,6 +13,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { fetchShops, type SquareShop } from './lib/square.ts';
 import { mergeRoster, type Row } from './lib/roster.ts';
+import { allowedBrand, fetchSquareProducts, NO_LINKS, type BuyLinks } from './lib/square-products.ts';
 
 const locationSlug = z.enum(['addison', 'elmhurst']);
 const time = z.string().regex(/^\d{2}:\d{2}$/, 'HH:MM, 24h shop-local time');
@@ -127,7 +128,6 @@ const barbers = defineCollection({
     /** Shop-set statement "Accepting new clients" (false = "Booked up"). NOT live Square availability. */
     accepting_new_clients: z.boolean().default(true),
     /** Phase 2: written by the nightly Square availability search, e.g. "Tue 2pm". null/absent = not shown. */
-    next_opening: z.string().nullable().default(null),
     /** In Square but no barbers.json/CMS row yet: renders with the placeholder headshot and no bio. */
     needs_profile: z.boolean().default(false),
     sort_order: z.number().int().default(0),
@@ -192,10 +192,62 @@ const cultureStats = defineCollection({
   }),
 });
 
-/** Retail products from Bodega (bybodega.com, Shopify). Written by scripts/sync-products.mjs. */
+/**
+ * Retail products. Two sources, one row shape (see docs/SQUARE-INTEGRATION-SPEC.md section 5):
+ * - default (SHOP_SOURCE unset or "bodega"): src/data/products.json from the Bodega Shopify feed, exactly as before.
+ * - SHOP_SOURCE=square AND both SQUARE_TOKEN_* set: the shops' Square retail catalog (src/lib/square-products.ts),
+ *   with stock from the Inventory API and buy links from src/data/square-buy-links.json / square-payment-links.json.
+ * A Square failure, or Square returning no listable products, logs a warning and falls back to products.json.
+ * The brand allowlist (BRANDS in src/lib/square-products.ts, shared with scripts/sync-products.mjs) applies to both.
+ */
+function productsLoader(): Loader {
+  return {
+    name: 'products',
+    load: async ({ store, parseData, generateDigest, logger, config, watcher }) => {
+      const dataPath = (name: string) => fileURLToPath(new URL(`src/data/${name}`, config.root));
+      const productsPath = dataPath('products.json');
+      const readJson = async (path: string) => JSON.parse(await readFile(path, 'utf8'));
+      const sync = async () => {
+        let rows: Record<string, unknown>[] = (await readJson(productsPath)).products;
+        const source = (process.env.SHOP_SOURCE || 'bodega').trim().toLowerCase();
+        if (source === 'square') {
+          const links: BuyLinks = { ...NO_LINKS };
+          try {
+            links.store = (await readJson(dataPath('square-buy-links.json'))).links ?? {};
+            links.payment = (await readJson(dataPath('square-payment-links.json'))).links ?? {};
+          } catch (e) { logger.warn(`Square products: could not read the buy link files (${(e as Error).message}); items get no buy link.`); }
+          const shops = (await readJson(dataPath('locations.json'))).locations as SquareShop[];
+          const res = await fetchSquareProducts(shops, process.env, links, { apiBase: process.env.SQUARE_API_BASE || undefined });
+          if (res.missing.length) logger.warn(`SHOP_SOURCE=square but ${res.missing.join(', ')} not set: using src/data/products.json (Bodega).`);
+          for (const e of res.errors) logger.warn(`Square products: ${e}`);
+          if (!res.missing.length) {
+            if (res.errors.length || !res.products.length) {
+              logger.warn(`Square products: ${res.errors.length ? 'a shop failed' : 'no listable products'}; using src/data/products.json (Bodega).`);
+            } else {
+              const skipped = [...new Map(res.skipped.map((s) => [s.name, s.reason])).values()].reduce<Record<string, number>>((n, r) => ({ ...n, [r]: (n[r] ?? 0) + 1 }), {});
+              logger.info(`Square products: ${res.products.length} listed (${res.products.filter((p) => p.available).length} in stock)${Object.keys(skipped).length ? `, skipped ${Object.entries(skipped).map(([k, v]) => `${v} ${k}`).join(', ')}` : ''}.`);
+              rows = res.products as unknown as Record<string, unknown>[];
+            }
+          }
+        }
+        store.clear();
+        for (const row of rows) {
+          if (!allowedBrand(row.vendor)) continue;
+          const id = String(row.handle);
+          store.set({ id, data: await parseData({ id, data: row }), digest: generateDigest(row) });
+        }
+      };
+      await sync();
+      // Dev server: re-run when products.json changes (what the file() loader used to do).
+      watcher?.add(productsPath);
+      watcher?.on('change', (changed) => { if (changed === productsPath) sync().catch((e) => logger.error(String(e))); });
+    },
+  };
+}
+
 const price = z.string().regex(/^\d+\.\d{2}$/, 'USD, e.g. "24.95"');
 const products = defineCollection({
-  loader: file('src/data/products.json', { parser: fromKey('products', 'handle') }),
+  loader: productsLoader(),
   schema: z.object({
     handle: z.string(),
     title: z.string(),
@@ -203,21 +255,23 @@ const products = defineCollection({
     /** Lowest available variant price. */
     price,
     compare_at_price: price.nullable().default(null),
-    /** Shopify CDN original; pages append &width=N for a resized copy. */
+    /** Product photo. Shopify CDN original (pages append &width=N for a resized copy) or a Square image URL (used as is). */
     image: z.string().url(),
     image_width: z.number().int().positive().default(1000),
     image_height: z.number().int().positive().default(1000),
     alt: z.string(),
-    /** Product page on bybodega.com. */
-    url: z.string().url(),
-    /* checkout route switch: today = url. Later a Shopify Buy Button checkout or a Square Online checkout link. */
-    buy_url: z.string().url(),
+    /** Product page (bybodega.com, or the shop's Square Online page). null = no product page to link to (Square item without a store link). */
+    url: z.string().url().nullable().default(null),
+    /* checkout route switch: Bodega product page today; Square store page (S1) or payment link (S2) with SHOP_SOURCE=square. null = no online buy button ("Available in shop"). */
+    buy_url: z.string().url().nullable().default(null),
     product_type: z.string().default(''),
     tags: z.array(z.string()).default([]),
     available: z.boolean().default(true),
     /** Shown in the home-page product strip. */
     featured: z.boolean().default(false),
     sort_order: z.number().int().default(0),
+    /** Where the row came from. */
+    source: z.enum(['bodega', 'square']).default('bodega'),
   }),
 });
 

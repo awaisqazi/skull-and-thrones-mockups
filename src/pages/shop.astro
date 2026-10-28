@@ -1,14 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import ProductCard from '../components/ProductCard.astro';
-import { getProducts, getLocations, productVendors } from '../lib/data';
+import { getProducts, getLocations, productVendors, productsFromSquare } from '../lib/data';
 
 const products = await getProducts();
 const vendors = productVendors(products);
 const locations = await getLocations();
 // QA P2-09: render the first FIRST cards; the rest wait in a <template> (inert: no DOM, no image requests)
 // until "Show all" or any brand filter is pressed (src/scripts/app.ts [data-more]).
-const FIRST = 24;
+// SHOP_SOURCE=square: a small in-shop catalog, so no deferral (and no Bodega "see all" fallback).
+const fromSquare = productsFromSquare(products);
+const FIRST = fromSquare ? products.length : 24;
 const shown = products.slice(0, FIRST);
 const later = products.slice(FIRST);
 // Cards are 2/3/4 per row and the packshot sits at 80 % of the card width.
@@ -16,16 +18,20 @@ const sizes = '(min-width: 1100px) 270px, (min-width: 700px) 25vw, 38vw';
 ---
 <Layout
   title="Shop"
-  description="Shop STMNT, H14 and Slick Gorilla, the three lines the Skull & Thrones barbers stock and use. Orders ship from Bodega; the same products are stocked at both shops."
+  description={fromSquare
+    ? 'Shop STMNT, H14 and Slick Gorilla, the three lines the Skull & Thrones barbers stock and use. Buy online or pick them up at our shops.'
+    : 'Shop STMNT, H14 and Slick Gorilla, the three lines the Skull & Thrones barbers stock and use. Orders ship from Bodega; the same products are stocked at both shops.'}
   current="shop"
   page="shop"
 >
   <section class="page-hero wrap" aria-labelledby="shop-title">
-    <div class="rule-row"><span class="eyebrow">{products.length} products · {vendors.length} brands</span><span class="eyebrow">Sold by Bodega</span></div>
+    <div class="rule-row"><span class="eyebrow">{products.length} products · {vendors.length} brands</span><span class="eyebrow">{fromSquare ? 'Stocked at our shops' : 'Sold by Bodega'}</span></div>
     <h1 class="giant" id="shop-title">Shop</h1>
     <div class="page-hero__row">
-      <p class="lead">STMNT, H14 and Slick Gorilla: the three lines we stock and use in the chair. Orders ship from Bodega, and the same products are on the shelf at both shops if you'd rather grab them at your next cut. Clippers, shears and everything else live on bybodega.com.</p>
-      <a class="link" href="https://www.bybodega.com/" target="_blank" rel="noopener">Visit bybodega.com <span class="arr" aria-hidden="true">↗</span></a>
+      {fromSquare
+        ? <p class="lead">STMNT, H14 and Slick Gorilla: the three lines we stock and use in the chair. Order online or grab them at your next cut. Clippers, shears and everything else live at Bodega.</p>
+        : <p class="lead">STMNT, H14 and Slick Gorilla: the three lines we stock and use in the chair. Orders ship from Bodega, and the same products are on the shelf at both shops if you'd rather grab them at your next cut. Clippers, shears and everything else live on bybodega.com.</p>}
+      <a class="link" href="https://www.bybodega.com/" target="_blank" rel="noopener">{fromSquare ? 'More tools at Bodega' : 'Visit bybodega.com'} <span class="arr" aria-hidden="true">↗</span></a>
     </div>
   </section>
 

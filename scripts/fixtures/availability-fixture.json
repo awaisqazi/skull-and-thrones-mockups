@@ -1,0 +1,4183 @@
+{
+ "_note": "SYNTHETIC fixture for scripts/fetch-availability.mjs --fixture. Shaped like Square POST /v2/catalog/search objects and POST /v2/bookings/availability/search responses (Square-Version 2025-09-24), keyed by shop, then by service_variation_id. Made because the sandbox seller is not onboarded to Appointments (HTTP 401 UNAUTHORIZED \"Merchant not onboarded to Appointments\", 2026-10-28), so no real response could be recorded. Item ids are the real ones from barbers.json; variation and team member ids are fake. anchor_date: slot dates are shifted by whole days so this date becomes today. Patterns: open today, first opening tomorrow, 3 and 5 days out (amber), booked up; anastacio has no team member on his services; peter's search always returns 503.",
+ "anchor_date": "2026-10-28",
+ "shops": {
+  "addison": {
+   "location_id": "D11BVA91E8V3N",
+   "catalog": [
+    {
+     "type": "ITEM",
+     "id": "DBRRZN5WC3Y3RTSNMMW5EJGN",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "D11BVA91E8V3N"
+     ],
+     "item_data": {
+      "name": "Elyse LC",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR01HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "DBRRZN5WC3Y3RTSNMMW5EJGN",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 5000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture01"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR01BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "DBRRZN5WC3Y3RTSNMMW5EJGN",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture01"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "YH7L6N2OL6D2VKKQTYLGCDAY",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "D11BVA91E8V3N"
+     ],
+     "item_data": {
+      "name": "Adrian",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR02HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "YH7L6N2OL6D2VKKQTYLGCDAY",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 5000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture02"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR02BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "YH7L6N2OL6D2VKKQTYLGCDAY",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture02"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "AN2U5RNAGZJQASIRIMLYO6XL",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "D11BVA91E8V3N"
+     ],
+     "item_data": {
+      "name": "Fabi",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR03HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "AN2U5RNAGZJQASIRIMLYO6XL",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 5000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture03"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR03BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "AN2U5RNAGZJQASIRIMLYO6XL",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture03"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "GP7OICKASS3DQAC247I72VST",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "D11BVA91E8V3N"
+     ],
+     "item_data": {
+      "name": "Jayden Sanchez",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR04HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "GP7OICKASS3DQAC247I72VST",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 3500,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture04"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR04BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "GP7OICKASS3DQAC247I72VST",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture04"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "RETPNFELD4Y3X65VHIKL3WBY",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "D11BVA91E8V3N"
+     ],
+     "item_data": {
+      "name": "Darian",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR05HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "RETPNFELD4Y3X65VHIKL3WBY",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 5000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture05"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR05BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "RETPNFELD4Y3X65VHIKL3WBY",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture05"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "I56TJK2FOFIPPKGZG2SJMTHQ",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "D11BVA91E8V3N"
+     ],
+     "item_data": {
+      "name": "Reno",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR06HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "I56TJK2FOFIPPKGZG2SJMTHQ",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 6000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture06"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR06BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "I56TJK2FOFIPPKGZG2SJMTHQ",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture06"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "MYAXT2YC2OF3RGKNCMQSGFPF",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "D11BVA91E8V3N"
+     ],
+     "item_data": {
+      "name": "Jovani",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR07HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "MYAXT2YC2OF3RGKNCMQSGFPF",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 5000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture07"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR07BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "MYAXT2YC2OF3RGKNCMQSGFPF",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture07"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "7R7UJ47T2F44GVJKH7NU6WNC",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "D11BVA91E8V3N"
+     ],
+     "item_data": {
+      "name": "Anastacio",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR08HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "7R7UJ47T2F44GVJKH7NU6WNC",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 6000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": []
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR08BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "7R7UJ47T2F44GVJKH7NU6WNC",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": []
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "BTOOSYPMAEG6PIBBRE75L5GH",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "D11BVA91E8V3N"
+     ],
+     "item_data": {
+      "name": "Ruben",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR09HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "BTOOSYPMAEG6PIBBRE75L5GH",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 5000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture09"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR09BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "BTOOSYPMAEG6PIBBRE75L5GH",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture09"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "L6DOT2SZ7CYQMOSFUKXCTTLH",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "D11BVA91E8V3N"
+     ],
+     "item_data": {
+      "name": "Peter",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR10HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "L6DOT2SZ7CYQMOSFUKXCTTLH",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 5000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture10"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR10BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "L6DOT2SZ7CYQMOSFUKXCTTLH",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture10"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "DVE3222JSCK3F4E36XHADN6Q",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "D11BVA91E8V3N"
+     ],
+     "item_data": {
+      "name": "Juan",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR11HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "DVE3222JSCK3F4E36XHADN6Q",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 6000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture11"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR11BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "DVE3222JSCK3F4E36XHADN6Q",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture11"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "IG6Y73MXISY24MVYVEHSSFCQ",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "D11BVA91E8V3N"
+     ],
+     "item_data": {
+      "name": "Eric el Samurai",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR12HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "IG6Y73MXISY24MVYVEHSSFCQ",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 6000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture12"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR12BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "IG6Y73MXISY24MVYVEHSSFCQ",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture12"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "KJ3JCPRVP32IKO6LKXIZINL4",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "D11BVA91E8V3N"
+     ],
+     "item_data": {
+      "name": "Jackie",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR13HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "KJ3JCPRVP32IKO6LKXIZINL4",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 5000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture13"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR13BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "KJ3JCPRVP32IKO6LKXIZINL4",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture13"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "QKLFDTZSBKHTGSWG3U5WMSP6",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "D11BVA91E8V3N"
+     ],
+     "item_data": {
+      "name": "Carlos",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR14HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "QKLFDTZSBKHTGSWG3U5WMSP6",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 6500,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture14"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR14BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "QKLFDTZSBKHTGSWG3U5WMSP6",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture14"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "WMWW4OSKI334OASEUQRV5OY2",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "D11BVA91E8V3N"
+     ],
+     "item_data": {
+      "name": "Rudy",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR15HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "WMWW4OSKI334OASEUQRV5OY2",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 6000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture15"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR15BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "WMWW4OSKI334OASEUQRV5OY2",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture15"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "UPKLK2CAHWYINF22WNWPSCY4",
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "D11BVA91E8V3N"
+     ],
+     "item_data": {
+      "name": "Any artist available",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "variations": []
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "FIXTURERETAILADDISON",
+     "present_at_all_locations": true,
+     "item_data": {
+      "name": "Matte paste (retail)",
+      "product_type": "REGULAR",
+      "variations": []
+     }
+    }
+   ],
+   "availability": {
+    "FIXTUREVAR01HAIRCUT": {
+     "availabilities": [
+      {
+       "start_at": "2026-10-28T19:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture01",
+         "service_variation_id": "FIXTUREVAR01HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-28T20:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture01",
+         "service_variation_id": "FIXTUREVAR01HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-28T22:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture01",
+         "service_variation_id": "FIXTUREVAR01HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-29T16:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture01",
+         "service_variation_id": "FIXTUREVAR01HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-29T19:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture01",
+         "service_variation_id": "FIXTUREVAR01HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-29T21:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture01",
+         "service_variation_id": "FIXTUREVAR01HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T17:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture01",
+         "service_variation_id": "FIXTUREVAR01HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T21:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture01",
+         "service_variation_id": "FIXTUREVAR01HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T16:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture01",
+         "service_variation_id": "FIXTUREVAR01HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T17:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture01",
+         "service_variation_id": "FIXTUREVAR01HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T17:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture01",
+         "service_variation_id": "FIXTUREVAR01HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T16:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture01",
+         "service_variation_id": "FIXTUREVAR01HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T16:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture01",
+         "service_variation_id": "FIXTUREVAR01HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T19:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture01",
+         "service_variation_id": "FIXTUREVAR01HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T16:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture01",
+         "service_variation_id": "FIXTUREVAR01HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T21:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture01",
+         "service_variation_id": "FIXTUREVAR01HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T19:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture01",
+         "service_variation_id": "FIXTUREVAR01HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T21:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture01",
+         "service_variation_id": "FIXTUREVAR01HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T23:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture01",
+         "service_variation_id": "FIXTUREVAR01HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      }
+     ],
+     "errors": []
+    },
+    "FIXTUREVAR02HAIRCUT": {
+     "availabilities": [
+      {
+       "start_at": "2026-10-29T16:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture02",
+         "service_variation_id": "FIXTUREVAR02HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-29T21:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture02",
+         "service_variation_id": "FIXTUREVAR02HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T19:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture02",
+         "service_variation_id": "FIXTUREVAR02HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T22:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture02",
+         "service_variation_id": "FIXTUREVAR02HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T18:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture02",
+         "service_variation_id": "FIXTUREVAR02HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T18:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture02",
+         "service_variation_id": "FIXTUREVAR02HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T20:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture02",
+         "service_variation_id": "FIXTUREVAR02HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T23:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture02",
+         "service_variation_id": "FIXTUREVAR02HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      }
+     ],
+     "errors": []
+    },
+    "FIXTUREVAR03HAIRCUT": {
+     "availabilities": [
+      {
+       "start_at": "2026-10-31T15:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture03",
+         "service_variation_id": "FIXTUREVAR03HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T19:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture03",
+         "service_variation_id": "FIXTUREVAR03HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T16:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture03",
+         "service_variation_id": "FIXTUREVAR03HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T19:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture03",
+         "service_variation_id": "FIXTUREVAR03HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T17:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture03",
+         "service_variation_id": "FIXTUREVAR03HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T18:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture03",
+         "service_variation_id": "FIXTUREVAR03HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      }
+     ],
+     "errors": []
+    },
+    "FIXTUREVAR04HAIRCUT": {
+     "availabilities": [
+      {
+       "start_at": "2026-10-28T20:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture04",
+         "service_variation_id": "FIXTUREVAR04HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-28T20:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture04",
+         "service_variation_id": "FIXTUREVAR04HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-28T22:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture04",
+         "service_variation_id": "FIXTUREVAR04HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T15:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture04",
+         "service_variation_id": "FIXTUREVAR04HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T19:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture04",
+         "service_variation_id": "FIXTUREVAR04HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T21:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture04",
+         "service_variation_id": "FIXTUREVAR04HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T22:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture04",
+         "service_variation_id": "FIXTUREVAR04HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T14:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture04",
+         "service_variation_id": "FIXTUREVAR04HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T16:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture04",
+         "service_variation_id": "FIXTUREVAR04HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T16:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture04",
+         "service_variation_id": "FIXTUREVAR04HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T17:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture04",
+         "service_variation_id": "FIXTUREVAR04HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T16:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture04",
+         "service_variation_id": "FIXTUREVAR04HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T17:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture04",
+         "service_variation_id": "FIXTUREVAR04HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T19:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture04",
+         "service_variation_id": "FIXTUREVAR04HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T23:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture04",
+         "service_variation_id": "FIXTUREVAR04HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      }
+     ],
+     "errors": []
+    },
+    "FIXTUREVAR05HAIRCUT": {
+     "availabilities": [],
+     "errors": []
+    },
+    "FIXTUREVAR06HAIRCUT": {
+     "availabilities": [
+      {
+       "start_at": "2026-11-02T18:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture06",
+         "service_variation_id": "FIXTUREVAR06HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T21:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture06",
+         "service_variation_id": "FIXTUREVAR06HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      }
+     ],
+     "errors": []
+    },
+    "FIXTUREVAR07HAIRCUT": {
+     "availabilities": [
+      {
+       "start_at": "2026-10-28T19:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-28T21:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-28T22:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-29T17:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-29T18:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-29T18:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T17:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T18:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T19:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T14:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T17:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T19:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T17:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T18:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T19:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T20:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T20:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T21:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T19:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T21:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T23:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture07",
+         "service_variation_id": "FIXTUREVAR07HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      }
+     ],
+     "errors": []
+    },
+    "FIXTUREVAR09HAIRCUT": {
+     "availabilities": [
+      {
+       "start_at": "2026-10-31T14:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture09",
+         "service_variation_id": "FIXTUREVAR09HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T18:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture09",
+         "service_variation_id": "FIXTUREVAR09HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T16:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture09",
+         "service_variation_id": "FIXTUREVAR09HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T18:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture09",
+         "service_variation_id": "FIXTUREVAR09HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T18:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture09",
+         "service_variation_id": "FIXTUREVAR09HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T19:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture09",
+         "service_variation_id": "FIXTUREVAR09HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      }
+     ],
+     "errors": []
+    },
+    "FIXTUREVAR10HAIRCUT": {
+     "status": 503,
+     "errors": [
+      {
+       "category": "API_ERROR",
+       "code": "SERVICE_UNAVAILABLE",
+       "detail": "fixture: simulated outage"
+      }
+     ]
+    },
+    "FIXTUREVAR11HAIRCUT": {
+     "availabilities": [],
+     "errors": []
+    },
+    "FIXTUREVAR12HAIRCUT": {
+     "availabilities": [
+      {
+       "start_at": "2026-11-02T22:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture12",
+         "service_variation_id": "FIXTUREVAR12HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T23:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture12",
+         "service_variation_id": "FIXTUREVAR12HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      }
+     ],
+     "errors": []
+    },
+    "FIXTUREVAR13HAIRCUT": {
+     "availabilities": [
+      {
+       "start_at": "2026-10-28T19:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture13",
+         "service_variation_id": "FIXTUREVAR13HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-28T22:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture13",
+         "service_variation_id": "FIXTUREVAR13HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-29T15:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture13",
+         "service_variation_id": "FIXTUREVAR13HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-29T16:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture13",
+         "service_variation_id": "FIXTUREVAR13HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-29T18:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture13",
+         "service_variation_id": "FIXTUREVAR13HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T16:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture13",
+         "service_variation_id": "FIXTUREVAR13HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T20:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture13",
+         "service_variation_id": "FIXTUREVAR13HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T23:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture13",
+         "service_variation_id": "FIXTUREVAR13HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T14:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture13",
+         "service_variation_id": "FIXTUREVAR13HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T16:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture13",
+         "service_variation_id": "FIXTUREVAR13HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T17:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture13",
+         "service_variation_id": "FIXTUREVAR13HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T15:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture13",
+         "service_variation_id": "FIXTUREVAR13HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T19:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture13",
+         "service_variation_id": "FIXTUREVAR13HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T19:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture13",
+         "service_variation_id": "FIXTUREVAR13HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T23:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture13",
+         "service_variation_id": "FIXTUREVAR13HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T16:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture13",
+         "service_variation_id": "FIXTUREVAR13HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T18:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture13",
+         "service_variation_id": "FIXTUREVAR13HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T22:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture13",
+         "service_variation_id": "FIXTUREVAR13HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      }
+     ],
+     "errors": []
+    },
+    "FIXTUREVAR14HAIRCUT": {
+     "availabilities": [
+      {
+       "start_at": "2026-10-29T15:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture14",
+         "service_variation_id": "FIXTUREVAR14HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-29T17:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture14",
+         "service_variation_id": "FIXTUREVAR14HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T15:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture14",
+         "service_variation_id": "FIXTUREVAR14HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T20:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture14",
+         "service_variation_id": "FIXTUREVAR14HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T16:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture14",
+         "service_variation_id": "FIXTUREVAR14HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T18:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture14",
+         "service_variation_id": "FIXTUREVAR14HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T20:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture14",
+         "service_variation_id": "FIXTUREVAR14HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T21:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture14",
+         "service_variation_id": "FIXTUREVAR14HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      }
+     ],
+     "errors": []
+    },
+    "FIXTUREVAR15HAIRCUT": {
+     "availabilities": [
+      {
+       "start_at": "2026-10-31T14:30:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture15",
+         "service_variation_id": "FIXTUREVAR15HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T19:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture15",
+         "service_variation_id": "FIXTUREVAR15HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T16:00:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture15",
+         "service_variation_id": "FIXTUREVAR15HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T16:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture15",
+         "service_variation_id": "FIXTUREVAR15HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T16:45:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture15",
+         "service_variation_id": "FIXTUREVAR15HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T23:15:00Z",
+       "location_id": "D11BVA91E8V3N",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture15",
+         "service_variation_id": "FIXTUREVAR15HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      }
+     ],
+     "errors": []
+    }
+   }
+  },
+  "elmhurst": {
+   "location_id": "L65DF5AG5BDAN",
+   "catalog": [
+    {
+     "type": "ITEM",
+     "id": "PJDURCJVBAVPSBXAUP6VQEV4",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "L65DF5AG5BDAN"
+     ],
+     "item_data": {
+      "name": "Javier",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR16HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "PJDURCJVBAVPSBXAUP6VQEV4",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 6000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture16"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR16BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "PJDURCJVBAVPSBXAUP6VQEV4",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture16"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "25FEVIHUXEJIZQE7HGFYTYPH",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "L65DF5AG5BDAN"
+     ],
+     "item_data": {
+      "name": "Nick Celli",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR17HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "25FEVIHUXEJIZQE7HGFYTYPH",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 6000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture17"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR17BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "25FEVIHUXEJIZQE7HGFYTYPH",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture17"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "5GLRERZEXKX2AXHI5KJR5GAV",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "L65DF5AG5BDAN"
+     ],
+     "item_data": {
+      "name": "Valentina",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR18HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "5GLRERZEXKX2AXHI5KJR5GAV",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 5000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture18"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR18BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "5GLRERZEXKX2AXHI5KJR5GAV",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture18"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "MFGYLL5AFGGE5P66FEHPPJB2",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "L65DF5AG5BDAN"
+     ],
+     "item_data": {
+      "name": "David",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR19HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "MFGYLL5AFGGE5P66FEHPPJB2",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 5000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture19"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR19BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "MFGYLL5AFGGE5P66FEHPPJB2",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture19"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "36F635MXDBRTJVBMC7XAP6ME",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "L65DF5AG5BDAN"
+     ],
+     "item_data": {
+      "name": "Alejandro",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR20HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "36F635MXDBRTJVBMC7XAP6ME",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 5000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture20"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR20BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "36F635MXDBRTJVBMC7XAP6ME",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture20"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "T4NNZ4UDRM4XSIJBQG6LNFTM",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "L65DF5AG5BDAN"
+     ],
+     "item_data": {
+      "name": "Christian",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR21HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "T4NNZ4UDRM4XSIJBQG6LNFTM",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 6000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture21"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR21BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "T4NNZ4UDRM4XSIJBQG6LNFTM",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture21"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "ECJVDSIFOU7UOT2VLHD54HRE",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "L65DF5AG5BDAN"
+     ],
+     "item_data": {
+      "name": "Angel M",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR22HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "ECJVDSIFOU7UOT2VLHD54HRE",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 3500,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture22"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR22BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "ECJVDSIFOU7UOT2VLHD54HRE",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture22"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "KEEGQN3I73ENOAGL5UDVA272",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "L65DF5AG5BDAN"
+     ],
+     "item_data": {
+      "name": "Alexsis",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR23HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "KEEGQN3I73ENOAGL5UDVA272",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 6000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture23"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR23BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "KEEGQN3I73ENOAGL5UDVA272",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture23"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "3LCO5MAREUX4XXLRT4SMYGRH",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "L65DF5AG5BDAN"
+     ],
+     "item_data": {
+      "name": "Brandon",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR24HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "3LCO5MAREUX4XXLRT4SMYGRH",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 6000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture24"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR24BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "3LCO5MAREUX4XXLRT4SMYGRH",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture24"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "PJLZAFYIIXKWMX7JBUWPUQEF",
+     "version": 1730000000000,
+     "is_deleted": false,
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "L65DF5AG5BDAN"
+     ],
+     "item_data": {
+      "name": "Bella",
+      "description": "",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "is_archived": false,
+      "variations": [
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR25HAIRCUT",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "PJLZAFYIIXKWMX7JBUWPUQEF",
+         "name": "Haircut",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 6000,
+          "currency": "USD"
+         },
+         "service_duration": 2700000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture25"
+         ]
+        }
+       },
+       {
+        "type": "ITEM_VARIATION",
+        "id": "FIXTUREVAR25BEARD",
+        "version": 1730000000000,
+        "present_at_all_locations": true,
+        "item_variation_data": {
+         "item_id": "PJLZAFYIIXKWMX7JBUWPUQEF",
+         "name": "Beard trim",
+         "ordinal": 0,
+         "pricing_type": "FIXED_PRICING",
+         "price_money": {
+          "amount": 2500,
+          "currency": "USD"
+         },
+         "service_duration": 1200000,
+         "available_for_booking": true,
+         "sellable": true,
+         "stockable": true,
+         "team_member_ids": [
+          "TMfixture25"
+         ]
+        }
+       }
+      ]
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "YWLSORKMSZEAIER66TICZXKB",
+     "present_at_all_locations": false,
+     "present_at_location_ids": [
+      "L65DF5AG5BDAN"
+     ],
+     "item_data": {
+      "name": "Any artist available",
+      "product_type": "APPOINTMENTS_SERVICE",
+      "variations": []
+     }
+    },
+    {
+     "type": "ITEM",
+     "id": "FIXTURERETAILELMHURST",
+     "present_at_all_locations": true,
+     "item_data": {
+      "name": "Matte paste (retail)",
+      "product_type": "REGULAR",
+      "variations": []
+     }
+    }
+   ],
+   "availability": {
+    "FIXTUREVAR16HAIRCUT": {
+     "availabilities": [
+      {
+       "start_at": "2026-10-28T19:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture16",
+         "service_variation_id": "FIXTUREVAR16HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-28T21:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture16",
+         "service_variation_id": "FIXTUREVAR16HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-28T21:30:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture16",
+         "service_variation_id": "FIXTUREVAR16HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-28T22:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture16",
+         "service_variation_id": "FIXTUREVAR16HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T15:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture16",
+         "service_variation_id": "FIXTUREVAR16HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T16:30:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture16",
+         "service_variation_id": "FIXTUREVAR16HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T22:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture16",
+         "service_variation_id": "FIXTUREVAR16HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T22:30:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture16",
+         "service_variation_id": "FIXTUREVAR16HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T14:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture16",
+         "service_variation_id": "FIXTUREVAR16HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T17:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture16",
+         "service_variation_id": "FIXTUREVAR16HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T17:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture16",
+         "service_variation_id": "FIXTUREVAR16HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T20:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture16",
+         "service_variation_id": "FIXTUREVAR16HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T16:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture16",
+         "service_variation_id": "FIXTUREVAR16HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T17:30:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture16",
+         "service_variation_id": "FIXTUREVAR16HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T17:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture16",
+         "service_variation_id": "FIXTUREVAR16HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T20:30:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture16",
+         "service_variation_id": "FIXTUREVAR16HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      }
+     ],
+     "errors": []
+    },
+    "FIXTUREVAR17HAIRCUT": {
+     "availabilities": [],
+     "errors": []
+    },
+    "FIXTUREVAR18HAIRCUT": {
+     "availabilities": [
+      {
+       "start_at": "2026-11-02T22:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture18",
+         "service_variation_id": "FIXTUREVAR18HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T21:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture18",
+         "service_variation_id": "FIXTUREVAR18HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      }
+     ],
+     "errors": []
+    },
+    "FIXTUREVAR19HAIRCUT": {
+     "availabilities": [
+      {
+       "start_at": "2026-10-28T19:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-28T21:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-28T22:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-29T15:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-29T16:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-29T22:30:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T15:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T20:30:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T22:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T19:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T19:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T20:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T17:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T19:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T20:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T18:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T22:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T23:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T17:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T19:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture19",
+         "service_variation_id": "FIXTUREVAR19HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      }
+     ],
+     "errors": []
+    },
+    "FIXTUREVAR20HAIRCUT": {
+     "availabilities": [
+      {
+       "start_at": "2026-10-29T19:30:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture20",
+         "service_variation_id": "FIXTUREVAR20HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-29T22:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture20",
+         "service_variation_id": "FIXTUREVAR20HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T17:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture20",
+         "service_variation_id": "FIXTUREVAR20HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T20:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture20",
+         "service_variation_id": "FIXTUREVAR20HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T16:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture20",
+         "service_variation_id": "FIXTUREVAR20HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T18:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture20",
+         "service_variation_id": "FIXTUREVAR20HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T19:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture20",
+         "service_variation_id": "FIXTUREVAR20HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T21:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture20",
+         "service_variation_id": "FIXTUREVAR20HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      }
+     ],
+     "errors": []
+    },
+    "FIXTUREVAR21HAIRCUT": {
+     "availabilities": [
+      {
+       "start_at": "2026-10-31T14:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture21",
+         "service_variation_id": "FIXTUREVAR21HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T15:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture21",
+         "service_variation_id": "FIXTUREVAR21HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T20:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture21",
+         "service_variation_id": "FIXTUREVAR21HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T21:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture21",
+         "service_variation_id": "FIXTUREVAR21HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T23:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture21",
+         "service_variation_id": "FIXTUREVAR21HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      }
+     ],
+     "errors": []
+    },
+    "FIXTUREVAR22HAIRCUT": {
+     "availabilities": [
+      {
+       "start_at": "2026-10-28T19:30:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture22",
+         "service_variation_id": "FIXTUREVAR22HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-28T19:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture22",
+         "service_variation_id": "FIXTUREVAR22HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-28T21:30:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture22",
+         "service_variation_id": "FIXTUREVAR22HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-28T22:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture22",
+         "service_variation_id": "FIXTUREVAR22HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T19:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture22",
+         "service_variation_id": "FIXTUREVAR22HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T19:30:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture22",
+         "service_variation_id": "FIXTUREVAR22HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T21:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture22",
+         "service_variation_id": "FIXTUREVAR22HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T22:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture22",
+         "service_variation_id": "FIXTUREVAR22HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T14:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture22",
+         "service_variation_id": "FIXTUREVAR22HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T14:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture22",
+         "service_variation_id": "FIXTUREVAR22HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T16:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture22",
+         "service_variation_id": "FIXTUREVAR22HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T16:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture22",
+         "service_variation_id": "FIXTUREVAR22HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T20:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture22",
+         "service_variation_id": "FIXTUREVAR22HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T20:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture22",
+         "service_variation_id": "FIXTUREVAR22HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T20:30:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture22",
+         "service_variation_id": "FIXTUREVAR22HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T21:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture22",
+         "service_variation_id": "FIXTUREVAR22HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      }
+     ],
+     "errors": []
+    },
+    "FIXTUREVAR23HAIRCUT": {
+     "availabilities": [],
+     "errors": []
+    },
+    "FIXTUREVAR24HAIRCUT": {
+     "availabilities": [
+      {
+       "start_at": "2026-11-02T22:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture24",
+         "service_variation_id": "FIXTUREVAR24HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T18:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture24",
+         "service_variation_id": "FIXTUREVAR24HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      }
+     ],
+     "errors": []
+    },
+    "FIXTUREVAR25HAIRCUT": {
+     "availabilities": [
+      {
+       "start_at": "2026-10-28T19:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-28T20:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-28T22:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-29T16:30:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-29T19:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-29T20:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T16:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T17:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-30T20:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T13:30:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T16:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-10-31T18:30:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T19:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-01T19:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T16:00:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T21:30:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-02T23:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T20:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T21:45:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      },
+      {
+       "start_at": "2026-11-03T22:15:00Z",
+       "location_id": "L65DF5AG5BDAN",
+       "appointment_segments": [
+        {
+         "duration_minutes": 45,
+         "team_member_id": "TMfixture25",
+         "service_variation_id": "FIXTUREVAR25HAIRCUT",
+         "service_variation_version": 1730000000000
+        }
+       ]
+      }
+     ],
+     "errors": []
+    }
+   }
+  }
+ }
+}

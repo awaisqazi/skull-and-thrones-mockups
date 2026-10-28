@@ -890,3 +890,62 @@ body[data-loc] [data-loc-only="neutral"] { display: none !important; }
 
 /* P2-09: /shop/ "Show all" */
 .more-row { display: flex; justify-content: center; margin-top: clamp(20px, 3vw, 32px); }
+
+/* ---------- 17. Availability (live Square openings, spec §3; replaces the removed 17) ----------
+   .avail = live dot + "Next: Today 3:15 PM" (green ≤ 48 h, amber 2–7 days, grey booked up; hidden = no data).
+   .newclients = the shop-set "New clients welcome" switch, deliberately dot-less so it never reads as live data. */
+.avail {
+  display: inline-flex; align-items: center; gap: 6px; max-width: 100%;
+  padding: 6px 10px 6px 8px; border-radius: var(--r-pill); background: var(--ink); color: var(--paper);
+  font: 600 10px/1.1 var(--f-ui); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap;
+}
+.avail time { font: inherit; }
+.avail__dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: #9A9A9A; }
+.avail[data-state="green"] .avail__dot { background: var(--accent); animation: pulse 2.2s infinite; }
+.avail[data-state="amber"] .avail__dot { background: #FFB547; }
+.avail[data-state="grey"] { background: var(--paper); color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); }
+.avail[data-state="grey"] .avail__dot { background: #B5B5B5; }
+.avail--lg { min-height: 32px; padding: 0 12px 0 10px; gap: 8px; font-size: 11.5px; letter-spacing: .05em; }
+.avail--lg .avail__dot { width: 8px; height: 8px; }
+
+.newclients {
+  display: inline-flex; align-items: center; padding: 5px 9px; border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, .92); color: var(--ink);
+  font: 600 10px/1.1 var(--f-ui); letter-spacing: .05em; text-transform: uppercase; white-space: nowrap;
+}
+.newclients--off { color: var(--muted); }
+.newclients--lg { min-height: 32px; padding: 0 12px; font-size: 11.5px; border: 1px solid var(--line); background: var(--paper); }
+
+@media (max-width: 599px) {
+  /* Small cards (~46vw): drop the "Next:" prefix visually (screen readers keep it) so the time fits on the photo. */
+  .card__flags .avail__pre {
+    position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+  .card__flags .avail { padding: 5px 8px 5px 7px; font-size: 9.5px; letter-spacing: .04em; }
+  .card__flags .newclients { padding: 4px 8px; font-size: 9px; letter-spacing: .04em; }
+}
+
+/* Barber page: chip row + "Next openings" (each time links to the barber's Square page) */
+.profile__flags { display: flex; flex-wrap: wrap; gap: 8px; }
+.openings { display: grid; gap: 12px; align-self: stretch; padding-top: 18px; border-top: 1px solid var(--line); }
+.openings__title { font: 600 12px/1 var(--f-ui); letter-spacing: .08em; text-transform: uppercase; }
+.openings__list { display: flex; flex-wrap: wrap; gap: 8px; }
+.openings__slot {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px;
+  border: 1px solid var(--ink); border-radius: var(--r-pill); background: var(--paper); color: var(--ink);
+  font: 600 14px/1 var(--f-ui); text-decoration: none; transition: background .2s, color .2s;
+}
+@media (hover: hover) { .openings__slot:hover { background: var(--ink); color: var(--paper); } }
+.openings__empty { font-weight: 600; }
+.openings__note { font-size: 13px; color: var(--muted); max-width: 52ch; }
+
+/* /book: "First open chair" per shop */
+.first-chair { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; font-size: 15px; }
+.first-chair .avail { background: var(--accent); color: var(--ink); }
+.first-chair .avail .avail__dot { background: var(--ink); animation: none; }
+.first-chair__link { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+@media (hover: hover) { .first-chair__link:hover { text-decoration-thickness: 2px; } }
+
+/* /shop/: "Available in shop" line on cards without a Buy button. min-height = the Buy button's height,
+   so the price lines up with cards that have a button (moved here from an inline style in ProductCard). */
+.pcard__instore { display: flex; align-items: center; min-height: 36px; }

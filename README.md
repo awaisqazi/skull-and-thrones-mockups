@@ -12,7 +12,8 @@ npm run build      # outputs dist/
 npm run preview    # serves dist/ at http://localhost:4321/skull-and-thrones-mockups/
 npm run check      # astro check (types + .astro diagnostics)
 npm test           # unit tests: roster merge + Square client (no network)
-npm run check:square  # live Square catalog → printed roster (needs the two tokens; exits 0 without them)
+npm run check:square  # live Square catalogs → roster, item_id check, retail items + shop route (S1/S2/S3); needs the two tokens, exits 0 without them
+npm run seed:products # SANDBOX only: seeds retail test items (needs SQUARE_API_BASE=https://connect.squareupsandbox.com)
 ```
 
 Requires Node 18.20+ (CI uses Node 22).
@@ -28,6 +29,7 @@ Requires Node 18.20+ (CI uses Node 22).
 | `src/pages/culture.astro` | `/culture/` "Behind the scenes": hero, stat band, filterable collage (`CultureTile.astro`, reuses portfolio filters + lightbox), Learn with us (Bodega Events), Book band |
 | `src/data/products.json` + `scripts/sync-products.mjs` | Bodega (bybodega.com) retail products, synced from the Shopify feed. `featured` = home strip. Collection `products`, read via `getProducts()` / `getFeaturedProducts()`; `ProductStrip.astro` (home) + `ProductCard.astro`, page `src/pages/shop.astro` (`/shop/`). See "Products" below |
 | `src/content.config.ts` | Content collections (`file()` loaders + zod schemas), the Square roster loader for `barbers`, and a commented Supabase loader stub |
+| `src/lib/square-products.ts` (+ test), `src/data/square-buy-links.json`, `src/data/square-payment-links.json` | Retail products from Square (used only with `SHOP_SOURCE=square`): catalog + images + inventory → the same product rows as Bodega, brand allowlist shared with `sync-products.mjs`, buy links. See "Products from Square" below |
 | `src/lib/square.ts`, `src/lib/roster.ts` | Square Catalog client and the pure Square ⇄ barbers.json merge (tests in `src/lib/roster.test.ts`) |
 | `src/lib/data.ts` | The only data API pages use. Builds `booking_url = square_booking_url + '/' + item_id` |
 | `src/lib/placeholder.ts` | Generates the grey striped SVG placeholder tiles (data URIs) |
@@ -49,7 +51,7 @@ The home page has a "Shop the tools we use" strip (below the work section, never
 above 0 and have a photo, and skips event tickets and gift cards. Re-run it whenever the store
 changes (or `--from page1.json …` to use saved feed pages), then rebuild.
 
-- **Brand allowlist** (`BRANDS` in `scripts/sync-products.mjs`): only **STMNT**, **H14** and **SLICK GORILLA**
+- **Brand allowlist** (`BRANDS` in `src/lib/square-products.ts`, imported by `scripts/sync-products.mjs` and the Square loader): only **STMNT**, **H14** and **SLICK GORILLA**
   are listed (client request 2026-10-18: the lines the shop stocks and uses), matched case-insensitively
   on the trimmed Shopify vendor. Everything else (clippers, shears, other brands) stays on bybodega.com,
   linked from `/shop/`. To add a brand, add its vendor name exactly as Shopify shows it to `BRANDS`,
@@ -71,6 +73,46 @@ changes (or `--from page1.json …` to use saved feed pages), then rebuild.
   - *Square Online:* create the items in Square, and point `buy_url` at each item's Square Online
     checkout link (map handle → link in the sync script, or add a `square_checkout_url` column).
 - Prices shown are retail only (the lowest in-stock variant). PRO pricing stays on bybodega.com.
+- The Square alternative to all of the above is `SHOP_SOURCE=square`, described next.
+
+### Products from Square (`SHOP_SOURCE=square`)
+
+By default (`SHOP_SOURCE` unset or `bodega`) nothing above changes: the shop is `products.json` from Bodega.
+Setting `SHOP_SOURCE=square` (a variable in `.github/workflows/deploy.yml`, or in the shell) makes the
+`products` collection (`productsLoader()` in `src/content.config.ts`) read the shops' **Square retail catalog**
+instead, **only when both `SQUARE_TOKEN_ADDISON` and `SQUARE_TOKEN_ELMHURST` are set**. Any failure (a token missing,
+a Square error, no listable items) logs a warning and falls back to `products.json`; the build never fails because of Square.
+Decision tree and fee notes: `../docs/SQUARE-INTEGRATION-SPEC.md` section 5.
+
+- **What counts as a product:** catalog ITEMs at the shop's location with `product_type` REGULAR (or unset), not archived,
+  with a photo (IMAGE object, `include_related_objects`) and a fixed price. Brand allowlist = `BRANDS` in
+  `src/lib/square-products.ts` (STMNT, H14, SLICK GORILLA), **one constant shared with `scripts/sync-products.mjs`**. In Square
+  the brand is read from a **category named like the brand**, else from the **item name starting with it**
+  ("STMNT NOMAD Classic Pomade"), so name items that way or put them in a brand category.
+- **Price / stock:** the cheapest sellable variation (location price overrides respected). With inventory tracking on, stock
+  comes from `POST /v2/inventory/counts/batch-retrieve` (IN_STOCK at the location); `available = quantity > 0`, and sold-out
+  items disappear from `/shop/` and the home strip. Untracked items are always available.
+- **Both shops:** the same product in Addison and Elmhurst (same slugified name) is one card; available if either shop has it.
+- **Home strip:** items in a Square category named **Featured**; if there is none, the first 8 spread across the three brands.
+- **Buy button** (`buy_url`), in this order: (1) `src/data/square-buy-links.json` (handle → URL, hand-maintained; the handle
+  is the item name slugified, `check:square` shows it); (2) the item's own Square Online page (`ecom_uri`, when published
+  to the online store); (3) a Checkout API payment link from `src/data/square-payment-links.json`; (4) none: the card
+  shows **Available in shop** instead of Buy.
+- **Payment links (route S2)** are created once, never by the build: `node scripts/sync-products.mjs --create-links --location addison|elmhurst`
+  lists what it would create; add `--write` to create them (production tokens with ORDERS_WRITE + PAYMENTS_WRITE) and store
+  them by variation id in `square-payment-links.json` (commit that file). Re-running creates nothing twice.
+- **Images:** Square image URLs are used as is (no resizing, unlike Shopify's CDN); Square's API gives no image size, so
+  they sit in a square frame.
+- **Sandbox:** with `SQUARE_API_BASE=https://connect.squareupsandbox.com` and `SQUARE_SANDBOX_TOKEN` /
+  `SQUARE_SANDBOX_LOCATION_ID` (site/.env) the loader and `check:square` use the sandbox account for both shops.
+  `npm run seed:products` creates four test items there (one in stock with a payment link, one sold out, one off-brand).
+
+```sh
+set -a; . ./.env; set +a
+SQUARE_API_BASE=https://connect.squareupsandbox.com npm run seed:products
+SQUARE_API_BASE=https://connect.squareupsandbox.com npm run check:square
+SHOP_SOURCE=square SQUARE_API_BASE=https://connect.squareupsandbox.com npm run build
+```
 
 ## Deploy (GitHub Pages)
 
@@ -135,6 +177,12 @@ developer.squareup.com while signed in to that account, and copy its **Productio
 (read-only `ITEMS_READ` is all the roster needs). Optional `SQUARE_API_BASE=https://connect.squareupsandbox.com`
 for sandbox tokens. Locally, put the two lines in `site/.env` (git-ignored) or prefix the command, then
 run `npm run check:square` to print what the build would use.
+
+**`npm run check:square`** prints, per shop: the catalog, the merged roster, an **item_id check** (every active
+`barbers.json` row found in its shop's catalog; mismatches listed by name), a **retail items** table (brand, price,
+stock, photo count, whether the item would be listed and which buy link it gets) and a **shop route recommendation**
+(S1 Square Online pages / S2 payment links / S3 keep Bodega). Exit code 1 only when a Square call fails; mismatches
+are reported, not fatal. Without tokens it says so and exits 0.
 
 **Status (2026-10-10): no tokens yet.** The client's Square team-member invite (both accounts:
 Appointments, Items & Orders, Online) is still pending, so the roster is barbers.json only. The merge

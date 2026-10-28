@@ -2,6 +2,7 @@
 /**
  * One product (home strip + /shop/ grid). Remote Shopify CDN image as a plain <img>
  * (not Astro's optimizer: the CDN already resizes via &width=N, and nothing is copied into the Pages build).
+ * Square-sourced rows (SHOP_SOURCE=square) use the Square image as is, and a row without buy_url shows "Available in shop".
  */
 import type { Product } from '../lib/data';
 
@@ -9,21 +10,32 @@ interface Props { product: Product; sizes: string; tag?: 'li' | 'article' }
 const { product: p, sizes, tag: Tag = 'article' } = Astro.props;
 // Wide banner packshots (product centred on a wide white canvas, e.g. STMNT) fill the square better cropped.
 const wide = p.image_width / p.image_height > 1.4;
+// Rows without a product page (Square item with no store link) render the same markup without the links.
+const linked = Boolean(p.url);
+const Media = linked ? 'a' : 'div';
+const TitleLink = linked ? 'a' : 'span';
+const Buy = p.buy_url ? 'a' : 'p';
+const mediaAttrs = { class: wide ? 'pcard__media pcard__media--wide' : 'pcard__media', ...(linked ? { href: p.url, target: '_blank', rel: 'noopener', tabindex: '-1', 'aria-hidden': 'true' as const } : {}) };
+const titleAttrs = linked ? { href: p.url, target: '_blank', rel: 'noopener' } : {};
+const buyLabel = p.source === 'square' ? `Buy ${p.display_title} (opens in a new tab)` : `Buy ${p.display_title} on Bodega (opens in a new tab)`;
+const buyAttrs = p.buy_url
+  ? { class: 'btn btn--sm pcard__buy', href: p.buy_url, target: '_blank', rel: 'noopener', 'aria-label': buyLabel }
+  : { class: 'pcard__vendor pcard__instore' };
 ---
 <Tag class="pcard" data-tags={p.vendor_slug}>
-  <a class:list={['pcard__media', wide && 'pcard__media--wide']} href={p.url} target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
-    <img src={p.src} srcset={p.srcset} sizes={sizes} alt={p.alt} width={p.image_width} height={p.image_height} loading="lazy" decoding="async" />
-  </a>
+  <Media {...mediaAttrs}>
+    <img src={p.src} srcset={p.srcset || undefined} sizes={p.srcset ? sizes : undefined} alt={p.alt} width={p.image_width} height={p.image_height} loading="lazy" decoding="async" />
+  </Media>
   <div class="pcard__body">
     <p class="pcard__vendor">{p.vendor}</p>
-    <h3 class="pcard__title"><a href={p.url} target="_blank" rel="noopener">{p.display_title}</a></h3>
+    <h3 class="pcard__title"><TitleLink {...titleAttrs}>{p.display_title}</TitleLink></h3>
     <div class="pcard__foot">
       <p class="pcard__price">
         <b>{p.price_label}</b>
         {p.compare_label && <s><span class="sr-only">was </span>{p.compare_label}</s>}
       </p>
-      {/* checkout route switch: buy_url (src/data/products.json) is the Bodega product page today; later a Buy Button / Square checkout link. */}
-      <a class="btn btn--sm pcard__buy" href={p.buy_url} target="_blank" rel="noopener" aria-label={`Buy ${p.display_title} on Bodega (opens in a new tab)`}>Buy <span class="arr" aria-hidden="true">↗</span></a>
+      {/* checkout route switch: buy_url is the Bodega product page today; with SHOP_SOURCE=square it is the Square store page / payment link, or null (no online buy: shown as "Available in shop"). */}
+      <Buy {...buyAttrs}>{p.buy_url ? <Fragment>Buy <span class="arr" aria-hidden="true">↗</span></Fragment> : 'Available in shop'}</Buy>
     </div>
   </div>
 </Tag>

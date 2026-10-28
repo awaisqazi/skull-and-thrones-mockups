@@ -5,9 +5,13 @@ import Layout from '../layouts/Layout.astro';
 import { getLocations, getBarbers } from '../lib/data';
 import { placeholder } from '../lib/placeholder';
 import { url } from '../lib/url';
+import { firstOpenChair, parseFile } from '../lib/availability';
+import bakedJson from '../data/availability.json';
 
 const locations = await getLocations();
 const barbers = await getBarbers();
+const baked = parseFile(bakedJson);
+const now = new Date();
 const shortHours = (l: (typeof locations)[number]) =>
   l.hours.map((h) => `${h.label.replace(/ – /, '–').replace('Saturday', 'Sat').replace('Sunday', 'Sun')} ${+h.opens.slice(0, 2) % 12 || 12}–${+h.closes.slice(0, 2) % 12 || 12}`).join(' · ');
 ---
@@ -29,6 +33,11 @@ const shortHours = (l: (typeof locations)[number]) =>
         const team = barbers.filter((b) => b.location === l.slug);
         const from = Math.min(...team.flatMap((b) => (b.haircut_from != null ? [b.haircut_from] : [])));
         const ink = i === 0;
+        // "First open chair" (spec §3): the shop's barber with the earliest live opening. Hidden without data;
+        // src/scripts/availability.ts recomputes it from the live file using this roster map.
+        const roster = Object.fromEntries(team.map((b) => [b.item_id, [b.name, b.booking_url]]));
+        const first = firstOpenChair(baked, l.slug, Object.keys(roster), now);
+        const firstBarber = first ? team.find((b) => b.item_id === first.item_id) : undefined;
         return (
           <article class:list={['book-card', ink && 'book-card--ink on-dark']}>
             <div class="media book-card__media">{localLocationPhoto(l.slug)
@@ -38,6 +47,10 @@ const shortHours = (l: (typeof locations)[number]) =>
               <div class="loc-card__top"><h2 class="big">{l.name}</h2><span class="status" data-open-status={l.slug} role="status">{l.hours_short}</span></div>
               <p class="muted">{l.address_line} · <a href={`tel:${l.phone_e164}`}>{l.phone}</a></p>
               <p>{team.length} barbers · {Number.isFinite(from) && <>haircuts from ${from} · </>} {shortHours(l)}</p>
+              <p class="first-chair" data-first-chair={l.slug} data-roster={JSON.stringify(roster)} hidden={!first}>
+                <span class="avail" data-state={first?.view.state}><i class="avail__dot" aria-hidden="true"></i><span class="avail__text">First open chair</span></span>
+                <a class="first-chair__link" href={firstBarber?.booking_url ?? l.square_booking_url} target="_blank" rel="noopener"><span class="first-chair__name">{firstBarber?.name}</span> · <time datetime={first?.view.next?.iso}>{first?.view.next?.label}</time> <span class="arr" aria-hidden="true">↗</span></a>
+              </p>
               <div class="btn-row">
                 <a class:list={['btn btn--lg', ink && 'btn--accent']} href={l.square_booking_url} target="_blank" rel="noopener"><span class="dot" aria-hidden="true"></span>Book {l.name} <span class="arr" aria-hidden="true">↗</span></a>
                 <a class:list={['btn btn--lg', ink ? 'btn--ghost' : 'btn--light']} href={url(`barbers/#${l.slug}`)}>See barbers</a>

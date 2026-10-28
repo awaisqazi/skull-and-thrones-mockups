@@ -9,8 +9,12 @@
     "preview": "astro preview",
     "check": "astro check",
     "astro": "astro",
-    "test": "node --test src/lib/roster.test.ts",
-    "check:square": "node scripts/check-square.mjs"
+    "test": "node --test src/lib/*.test.ts",
+    "check:square": "node scripts/check-square.mjs",
+    "availability": "node scripts/fetch-availability.mjs",
+    "availability:fixture": "node scripts/fetch-availability.mjs --fixture scripts/fixtures/availability-fixture.json --previous /dev/null",
+    "seed:sandbox": "node scripts/seed-sandbox.mjs",
+    "seed:products": "node scripts/seed-sandbox-products.mjs"
   },
   "dependencies": {
     "astro": "^5.18.2",

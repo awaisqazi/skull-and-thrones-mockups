@@ -1,7 +1,10 @@
 ---
 import { Image } from 'astro:assets';
-import { ACCEPTING, type Barber } from '../lib/data';
+import type { Barber } from '../lib/data';
 import { localHeadshot } from '../lib/localImages';
+import { barberView, parseFile, NEW_CLIENTS } from '../lib/availability';
+// Baked snapshot (deploy.yml copies the `data` branch file here before the build; checked-in default = empty).
+import bakedJson from '../data/availability.json';
 
 interface Props {
   barber: Barber;
@@ -14,7 +17,10 @@ const { barber: b, locationName, headingLevel: H = 'h3', eager = false } = Astro
 const local = localHeadshot(b.slug);
 const hasPhoto = Boolean(b.headshot || local);
 const alt = hasPhoto ? `Headshot of ${b.name}` : `Placeholder headshot for ${b.name}`;
-const flag = b.accepting_new_clients ? ACCEPTING.yes : ACCEPTING.no;
+const flag = b.accepting_new_clients ? NEW_CLIENTS.yes : NEW_CLIENTS.no;
+// Live Square availability (spec §3). null = no data: the chip renders hidden and
+// src/scripts/availability.ts fills it in from the live file when there is one.
+const avail = barberView(parseFile(bakedJson), b.location, b.item_id, new Date());
 const img = { widths: [300, 450, 600], sizes: '(min-width: 1100px) 22vw, (min-width: 700px) 30vw, 46vw', loading: eager ? 'eager' as const : 'lazy' as const, fetchpriority: eager ? 'high' as const : undefined };
 ---
 <article class="card" data-slug={b.slug} data-loc={b.location} data-needs-profile={b.needs_profile ? '' : undefined}>
@@ -25,10 +31,12 @@ const img = { widths: [300, 450, 600], sizes: '(min-width: 1100px) 22vw, (min-wi
         ? <Image src={b.headshot} alt={alt} width={600} height={750} {...img} />
         : <span class="sr-only">Photo of {b.name} coming soon</span>}
     <div class="card__flags">
-      {b.accepting_new_clients
-        ? <span class="accepting" title={flag.tip}><i class="dot" aria-hidden="true"></i><span>{flag.label}</span></span>
-        : <span class="accepting accepting--off" title={flag.tip}><span>{flag.label}</span></span>}
-      {b.next_opening && <span class="next-opening">Next opening {b.next_opening}</span>}
+      <span class="avail" data-avail={b.item_id} data-shop={b.location} data-state={avail?.state} hidden={!avail}>
+        <i class="avail__dot" aria-hidden="true"></i><span class="avail__text">{avail?.next
+          ? <><span class="avail__pre">Next: </span><time datetime={avail.next.iso}>{avail.next.label}</time></>
+          : avail?.text}</span>
+      </span>
+      <span class:list={['newclients', !b.accepting_new_clients && 'newclients--off']} title={flag.tip}>{flag.label}</span>
     </div>
   </div>
   <div class="card__body">

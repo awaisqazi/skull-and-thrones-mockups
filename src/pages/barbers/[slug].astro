@@ -5,7 +5,9 @@ import { localHeadshot } from '../../lib/localImages';
 import Layout from '../../layouts/Layout.astro';
 import BarberCard from '../../components/BarberCard.astro';
 import PortfolioGrid from '../../components/PortfolioGrid.astro';
-import { ACCEPTING, getBarbers, getLocationMap, getPortfolio, type Barber } from '../../lib/data';
+import { getBarbers, getLocationMap, getPortfolio, type Barber } from '../../lib/data';
+import { barberView, parseFile, NEW_CLIENTS } from '../../lib/availability';
+import bakedJson from '../../data/availability.json';
 import { igUrl } from '../../lib/site';
 import { url } from '../../lib/url';
 
@@ -31,6 +33,11 @@ const description = [
   b.haircut_from != null ? `Haircuts from $${b.haircut_from}.` : null,
 ].filter(Boolean).join(' ');
 const headshotSizes = '(min-width: 900px) 40vw, 100vw';
+// Live Square availability (spec §3): chip + "Next openings" list. null = no data → both render hidden;
+// src/scripts/availability.ts fills them from the live file.
+const avail = barberView(parseFile(bakedJson), b.location, b.item_id, new Date());
+const flag = b.accepting_new_clients ? NEW_CLIENTS.yes : NEW_CLIENTS.no;
+const slotAria = (label: string) => `Book ${b.name}, ${label} (opens Square)`;
 const site = Astro.site ?? new URL('https://awaisqazi.github.io');
 const person = {
   '@context': 'https://schema.org',
@@ -65,10 +72,24 @@ const person = {
         <p class="eyebrow">{b.role} · {loc.name}</p>
         <h1 class="panel__name" id="panel-name">{b.name}</h1>
         {b.haircut_from != null && <p class="panel__price">Haircuts from <b>${b.haircut_from}</b></p>}
-        {b.accepting_new_clients
-          ? <span class="status" data-state="open" title={ACCEPTING.yes.tip}>{ACCEPTING.yes.label}</span>
-          : <span class="status" title={ACCEPTING.no.tip}>{ACCEPTING.no.label}</span>}
-        {b.next_opening && <p class="panel__price">Next opening <b>{b.next_opening}</b></p>}
+        <div class="profile__flags">
+          <span class="avail avail--lg" data-avail={b.item_id} data-shop={b.location} data-state={avail?.state} hidden={!avail}>
+            <i class="avail__dot" aria-hidden="true"></i><span class="avail__text">{avail?.next
+              ? <><span class="avail__pre">Next: </span><time datetime={avail.next.iso}>{avail.next.label}</time></>
+              : avail?.text}</span>
+          </span>
+          <span class:list={['newclients newclients--lg', !b.accepting_new_clients && 'newclients--off']} title={flag.tip}>{flag.label}</span>
+        </div>
+        <section class="openings" aria-labelledby="openings-title" data-avail-list={b.item_id} data-shop={b.location} data-href={b.booking_url} data-name={b.name} hidden={!avail}>
+          <h2 class="openings__title" id="openings-title">Next openings</h2>
+          <ul class="openings__list">
+            {avail?.soon.map((s) => (
+              <li><a class="openings__slot" href={b.booking_url} target="_blank" rel="noopener" aria-label={slotAria(s.label)}><time datetime={s.iso}>{s.label}</time> <span class="arr" aria-hidden="true">↗</span></a></li>
+            ))}
+          </ul>
+          <p class="openings__empty" hidden={avail?.state !== 'grey'}>Booked up for the next 7 days. Check Square for cancellations.</p>
+          <p class="openings__note">Live from Square, refreshed every 15 minutes. Each time opens {b.first_name}'s Square page, where you confirm it.</p>
+        </section>
         {b.specialties.length > 0 && <ul class="chips" aria-label="Specialties">{b.specialties.map((s) => <li class="chip">{s}</li>)}</ul>}
         {bio && <p class="panel__bio">{bio}</p>}
         {b.instagram && <a class="link" href={igUrl(b.instagram)} target="_blank" rel="noopener"><span>@{b.instagram}</span> ↗</a>}

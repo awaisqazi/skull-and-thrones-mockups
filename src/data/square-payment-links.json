@@ -1,0 +1,4 @@
+{
+  "_note": "S2 payment links, written by `node scripts/sync-products.mjs --create-links` (needs a production token; never hand-edit). Keyed by the Square catalog variation id so a link is created once and reused. Only read when SHOP_SOURCE=square.",
+  "links": {}
+}

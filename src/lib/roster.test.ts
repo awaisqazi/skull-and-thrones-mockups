@@ -6,7 +6,8 @@ import { listSquareItems, toSquareItem, type CatalogObject, type SquareItem } fr
 
 const ADDISON = 'D11BVA91E8V3N';
 const sq = (item_id: string, name: string, extra: Partial<SquareItem> = {}): SquareItem => ({
-  item_id, name, price_from: 45, duration_minutes: 45, description: '', product_type: 'APPOINTMENTS_SERVICE', is_archived: false, ...extra,
+  item_id, name, price_from: 45, duration_minutes: 45, description: '', product_type: 'APPOINTMENTS_SERVICE', is_archived: false,
+  variations: [], image_ids: [], ...extra,
 });
 const row = (slug: string, item_id: string, location = 'addison', extra: Record<string, unknown> = {}): Row => ({
   slug, name: slug[0]!.toUpperCase() + slug.slice(1), location, item_id, tier: 'barber', role: 'Barber', haircut_from: 40,
@@ -107,6 +108,20 @@ test('toSquareItem: lowest-priced variation, cents to dollars, ms to minutes', (
   const item = toSquareItem(obj('X', {}, [{ cents: 6000, ms: 3600000 }, { cents: 4500, ms: 1800000 }, { ms: 900000 }]), ADDISON)!;
   assert.equal(item.price_from, 45);
   assert.equal(item.duration_minutes, 30);
+});
+
+test('toSquareItem: variations keep id, name, dollars, minutes, team members; image ids pass through', () => {
+  const o = obj('X', {}, [{ cents: 6000, ms: 3600000 }, { cents: 4500, ms: 1800000, at: ['OTHER'] }, { ms: 900000 }]);
+  o.item_data!.image_ids = ['IMG1'];
+  o.item_data!.variations![0]!.item_variation_data = { ...o.item_data!.variations![0]!.item_variation_data, name: ' Haircut ', team_member_ids: ['TM1'] };
+  o.item_data!.variations![2]!.item_variation_data = { ...o.item_data!.variations![2]!.item_variation_data, name: 'Consult', available_for_booking: false };
+  const item = toSquareItem(o, ADDISON)!;
+  assert.deepEqual(item.variations, [
+    { id: 'X-v0', name: 'Haircut', price: 60, duration_minutes: 60, team_member_ids: ['TM1'], available_for_booking: true },
+    { id: 'X-v2', name: 'Consult', price: null, duration_minutes: 15, team_member_ids: [], available_for_booking: false },
+  ]);
+  assert.deepEqual(item.image_ids, ['IMG1']);
+  assert.equal(item.price_from, 60, 'the variation at another location no longer counts');
 });
 
 test('toSquareItem: location filtering', () => {
