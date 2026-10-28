@@ -4,9 +4,15 @@ name: Refresh live availability
 # availability.json on the one-commit branch `data`. The site fetches it from
 #   https://raw.githubusercontent.com/<owner>/<repo>/data/availability.json
 # (spec docs/SQUARE-INTEGRATION-SPEC.md §2–§3). Costs nothing: public repo Actions minutes are free.
+# Fails loudly: when Square rejects a shop's token (HTTP 401/403) the job still publishes the file (that shop keeps
+# its last good block with ok:false, which the site hides after 2 h) and then fails, so GitHub emails the repo owner.
 
 on:
   workflow_dispatch: {}
+  # Fired by the Square webhook relay Worker (site/worker/, spec §10) on booking.* events, so a new or
+  # cancelled booking shows within a minute instead of at the next 15-minute tick.
+  repository_dispatch:
+    types: [square-booking]
   schedule:
     # Shop hours are 07:00–20:00 America/Chicago. GitHub cron is UTC and has no time zones, so these two
     # lines cover the union of both DST states: 12:00–02:59 UTC = 07:00–21:59 CDT (summer, UTC-5) and
@@ -19,9 +25,11 @@ on:
 permissions:
   contents: write # force-push the `data` branch
 
+# A burst of booking events (or a dispatch during a scheduled run) collapses into the newest run: every run
+# reads Square fresh, so the cancelled one had nothing the new one will not have.
 concurrency:
   group: availability
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   refresh:
@@ -34,11 +42,12 @@ jobs:
       SQUARE_TOKEN_ADDISON: ${{ secrets.SQUARE_TOKEN_ADDISON }}
       SQUARE_TOKEN_ELMHURST: ${{ secrets.SQUARE_TOKEN_ELMHURST }}
     steps:
-      - name: Shop-hours guard (America/Chicago 07:00–20:59; manual runs always go)
+      - name: Shop-hours guard (America/Chicago 07:00–20:59; manual and webhook-dispatched runs always go)
         id: guard
         run: |
           hour=$(TZ=America/Chicago date +%H)
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || { [ "$hour" -ge 7 ] && [ "$hour" -le 20 ]; }; then
+          event="${{ github.event_name }}"
+          if [ "$event" = "workflow_dispatch" ] || [ "$event" = "repository_dispatch" ] || { [ "$hour" -ge 7 ] && [ "$hour" -le 20 ]; }; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "Outside shop hours in Chicago (hour $hour); nothing to do."
@@ -75,12 +84,22 @@ jobs:
             echo "no data branch yet: starting empty"
           fi
 
+      # Exit 0 = published as usual (a 5xx/network failure for a shop is recorded in the file). Exit 2 = a token was
+      # rejected: the file was still written, so publish it, then fail the job in the last step. Anything else
+      # (1 = file not written / bad arguments) fails here and publishes nothing.
       - name: Fetch availability from Square
+        id: fetch
         if: steps.tokens.outputs.go == 'true'
-        run: node scripts/fetch-availability.mjs --previous "$RUNNER_TEMP/previous.json" --out "$RUNNER_TEMP/out/availability.json"
+        run: |
+          set +e
+          node scripts/fetch-availability.mjs --previous "$RUNNER_TEMP/previous.json" --out "$RUNNER_TEMP/out/availability.json"
+          code=$?
+          set -e
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          if [ "$code" -ne 0 ] && [ "$code" -ne 2 ]; then exit "$code"; fi
 
       - name: Publish to the one-commit branch `data`
-        if: steps.tokens.outputs.go == 'true'
+        if: steps.tokens.outputs.go == 'true' && (steps.fetch.outputs.code == '0' || steps.fetch.outputs.code == '2')
         run: |
           cd "$RUNNER_TEMP/out"
           git init -q -b data
@@ -99,3 +118,9 @@ jobs:
           fi
           git push -q -f origin data
           echo "published $(wc -c < availability.json) bytes to branch data ($(git rev-list --count HEAD) commit)"
+
+      - name: Fail on a rejected Square token (GitHub emails the repo owner)
+        if: steps.fetch.outputs.code == '2'
+        run: |
+          echo "::error title=Square token rejected::A shop's Square token was rejected (HTTP 401/403). The AUTH FAILURE line in the 'Fetch availability from Square' step names the shop and the secret to rotate (repo Settings → Secrets → Actions). The file was still published; that shop's chips hide after 2 h."
+          exit 1

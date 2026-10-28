@@ -8,9 +8,11 @@ on:
   # morning. Only does anything once the SQUARE_TOKEN secret exists (see README "Square roster").
   schedule:
     - cron: '0 9 * * *'
-  # Later (CMS): Supabase fires a repository_dispatch on content changes.
-  # repository_dispatch:
-  #   types: [cms-update]
+  # Instant rebuild when a barber, price, service, team member or shop hours change in Square.
+  # Fired by the Cloudflare relay Worker (site/worker, spec section 10) as event_type `square-catalog`.
+  # A burst of events queues behind the running build (concurrency below), it never cancels a deploy.
+  repository_dispatch:
+    types: [square-catalog]
 
 permissions:
   contents: read

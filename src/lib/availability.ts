@@ -8,6 +8,7 @@
  *   next opening within 48 h  → green  "Next: Today 3:15 PM" / "Next: Tomorrow 10:00 AM" / "Next: Thu 9:00 AM"
  *   next opening in 2–7 days  → amber  "Next: Thu 11:30 AM"
  *   nothing open in 7 days    → grey   "Booked up this week"
+ *   not bookable online       → offline "Call the shop to book" (Square booking profile is_bookable false; not searched)
  *   no data                   → null   (nothing rendered): no token, shop error, data older than 2 h,
  *                                       barber not in the file, or every listed time already passed
  */
@@ -24,6 +25,11 @@ export const DEFAULT_LIVE_URL = 'https://raw.githubusercontent.com/awaisqazi/sku
 export interface BarberAvailability {
   variation_id?: string;
   team_member_id?: string;
+  /**
+   * Square booking profile `is_bookable` of that team member. false = not bookable online: the job did not
+   * search (next null, soon []) and the site says "Call the shop to book". Absent = bookable or unknown.
+   */
+  bookable?: boolean;
   /** null = nothing open in the window; absent = no data for this barber (see `error`). */
   next?: string | null;
   soon?: string[];
@@ -72,7 +78,10 @@ export function slimFile(f: AvailabilityFile): AvailabilityFile {
   const shops: Record<string, ShopAvailability> = {};
   for (const [slug, s] of Object.entries(f.shops)) {
     const barbers: Record<string, BarberAvailability> = {};
-    for (const [id, b] of Object.entries(s.barbers ?? {})) if (Array.isArray(b.soon)) barbers[id] = { next: b.next ?? null, soon: b.soon };
+    for (const [id, b] of Object.entries(s.barbers ?? {})) {
+      if (b.bookable === false) barbers[id] = { bookable: false, next: null, soon: [] };
+      else if (Array.isArray(b.soon)) barbers[id] = { next: b.next ?? null, soon: b.soon };
+    }
     shops[slug] = { ok: s.ok, ...(s.fetched_at ? { fetched_at: s.fetched_at } : {}), barbers };
   }
   return { ...f, shops };
@@ -116,13 +125,13 @@ export function slotLabel(iso: string, now: Date, tz = TZ): string {
 
 /* ---------- Display rules ---------- */
 
-export type DotState = 'green' | 'amber' | 'grey';
+export type DotState = 'green' | 'amber' | 'grey' | 'offline';
 export interface Slot { iso: string; label: string }
 export interface BarberView {
   state: DotState;
-  /** Chip text: "Next: Today 3:15 PM" or "Booked up this week". */
+  /** Chip text: "Next: Today 3:15 PM", "Booked up this week" or "Call the shop to book". */
   text: string;
-  /** Earliest upcoming opening, null when booked up. */
+  /** Earliest upcoming opening, null when booked up or offline. */
   next: Slot | null;
   /** Up to 3 upcoming openings (barber page list). */
   soon: Slot[];
@@ -140,7 +149,10 @@ export function barberView(file: AvailabilityFile, shopSlug: string, itemId: str
   const shop = file.shops[shopSlug];
   if (!shopIsFresh(shop, now)) return null;
   const b = shop.barbers![itemId];
-  if (!b || !Array.isArray(b.soon) || b.next === undefined) return null;
+  if (!b) return null;
+  // Not bookable online (Square booking profile): a known state, shown quietly like "booked up".
+  if (b.bookable === false) return { state: 'offline', text: 'Call the shop to book', next: null, soon: [] };
+  if (!Array.isArray(b.soon) || b.next === undefined) return null;
   const tz = file.tz || TZ;
   if (b.next === null) return { state: 'grey', text: 'Booked up this week', next: null, soon: [] };
   const upcoming = [...new Set([b.next, ...b.soon])]
@@ -160,12 +172,12 @@ export function barberView(file: AvailabilityFile, shopSlug: string, itemId: str
   };
 }
 
-/** /book "First open chair": the barber (of `itemIds`, the shop's site roster) with the earliest upcoming opening. */
+/** /book "First open chair": the barber (of `itemIds`, the shop's site roster) with the earliest upcoming opening. Offline barbers never qualify. */
 export function firstOpenChair(file: AvailabilityFile, shopSlug: string, itemIds: string[], now: Date): { item_id: string; view: BarberView } | null {
   let best: { item_id: string; view: BarberView } | null = null;
   for (const id of itemIds) {
     const view = barberView(file, shopSlug, id, now);
-    if (!view?.next) continue;
+    if (!view?.next || view.state === 'offline') continue;
     if (!best || Date.parse(view.next.iso) < Date.parse(best.view.next!.iso)) best = { item_id: id, view };
   }
   return best;

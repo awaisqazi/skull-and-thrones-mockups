@@ -1,7 +1,7 @@
 /* npm test  (node --test; Node 22.18+ runs .ts directly). No network: Square is faked. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { isBarberItem, mergeRoster, slugify, type Row } from './roster.ts';
+import { isBarberItem, mergeRoster, slugify, cleanBio, squareBio, BIO_MAX, type Row } from './roster.ts';
 import { listSquareItems, toSquareItem, type CatalogObject, type SquareItem } from './square.ts';
 
 const ADDISON = 'D11BVA91E8V3N';
@@ -159,4 +159,81 @@ test('isBarberItem: the "No Show" fee item and items with no online-bookable var
   assert.equal(isBarberItem(sq('F1', 'Fee only', { variations: [vb(false)] }), ex), false, 'nothing bookable online');
   assert.equal(isBarberItem(sq('B1', 'Bella', { variations: [vb(false), { ...vb(true), name: 'Haircut' }] }), ex), true);
   assert.equal(isBarberItem(sq('B2', 'Nick'), ex), true, 'no variations listed (fixtures) still counts');
+});
+
+/* ---------- Bios from Square team member booking profiles ---------- */
+const hv = (id: string, name: string, team: string[], price = 45) => ({ id, name, price, duration_minutes: 45, team_member_ids: team, available_for_booking: true });
+// Shaped like the production profiles (2026-10-29): only some carry a description.
+const PROFILES = new Map<string, { description?: string }>([
+  ['TM_BIO', { description: '  Christian is extremely passionate\n\nabout barbering.   He specializes in shear work.  ' }],
+  ['TM_KIDS', { description: 'Kids-cut specialist profile (a second team member).' }],
+  ['TM_NONE', {}],
+]);
+
+test('cleanBio: trims, collapses whitespace, caps at 400 chars on a word boundary', () => {
+  assert.equal(cleanBio('  a\n\n b\t c  '), 'a b c');
+  assert.equal(cleanBio(undefined), '');
+  const long = cleanBio(('word ').repeat(200));
+  assert.ok(long.length <= BIO_MAX, `${long.length} chars`);
+  assert.ok(long.endsWith('word…'));
+  const noSpaces = cleanBio('x'.repeat(500));
+  assert.equal(noSpaces.length, BIO_MAX);
+});
+
+test('squareBio: the standard-haircut variation\'s first team member, else the first staffed variation', () => {
+  const item = { variations: [hv('K', 'Kids Haircut', ['TM_KIDS'], 30), hv('H', 'Haircut', ['TM_BIO', 'TM_KIDS'])] };
+  assert.equal(squareBio(item, PROFILES), 'Christian is extremely passionate about barbering. He specializes in shear work.');
+  assert.equal(squareBio({ variations: [hv('H', 'Haircut', []), hv('B', 'Beard', ['TM_KIDS'])] }, PROFILES), 'Kids-cut specialist profile (a second team member).');
+  assert.equal(squareBio({ variations: [hv('H', 'Haircut', ['TM_NONE'])] }, PROFILES), '', 'profile without a description');
+  assert.equal(squareBio({ variations: [hv('H', 'Haircut', ['TM_UNKNOWN'])] }, PROFILES), '');
+  assert.equal(squareBio({ variations: [] }, PROFILES), '');
+  assert.equal(squareBio(item, undefined), '');
+  assert.equal(squareBio(item, new Map()), '');
+});
+
+test('mergeRoster profiles: an empty bio is filled from Square with bio_source square; a site bio always wins', () => {
+  const withBio = { variations: [hv('H', 'Haircut', ['TM_BIO'])] };
+  const { rows } = mergeRoster({
+    rows: [
+      row('reno', 'A1', 'addison', { bio: '', placeholder_fields: ['role', 'specialties', 'bio'] }),
+      row('nick', 'A2'),
+      row('blank', 'A3', 'addison', { bio: '   ' }),
+      row('fake', 'A4', 'addison', { bio: 'Invented mockup copy.', placeholder_fields: ['bio'] }),
+      row('nobio', 'A5', 'addison', { bio: '' }),
+    ],
+    square: { addison: [sq('A1', 'Reno', withBio), sq('A2', 'Nick', withBio), sq('A3', 'Blank', withBio), sq('A4', 'Fake', withBio), sq('A5', 'Nobio', { variations: [hv('H', 'Haircut', ['TM_NONE'])] })] },
+    profiles: PROFILES,
+  });
+  const by = (slug: string) => rows.find((r) => r.slug === slug)!;
+  const expected = 'Christian is extremely passionate about barbering. He specializes in shear work.';
+  assert.equal(by('reno').bio, expected);
+  assert.equal(by('reno').bio_source, 'square');
+  assert.deepEqual(by('reno').placeholder_fields, ['role', 'specialties'], 'the Square bio is real copy, so it renders');
+  assert.equal(by('nick').bio, 'nick bio', 'non-empty barbers.json bio wins');
+  assert.equal('bio_source' in by('nick'), false);
+  assert.equal(by('blank').bio, expected, 'whitespace-only counts as empty');
+  assert.equal('placeholder_fields' in by('blank'), false, 'no placeholder list invented');
+  assert.equal(by('fake').bio, expected, 'placeholder copy never renders, so Square replaces it');
+  assert.deepEqual(by('fake').placeholder_fields, []);
+  assert.equal(by('nobio').bio, '', 'no description in Square: unchanged');
+  assert.equal('bio_source' in by('nobio'), false);
+});
+
+test('mergeRoster profiles: newcomers get the Square bio; no profiles = exactly as before', () => {
+  const square = { addison: [sq('A1', 'Nick'), sq('NEW', 'Newbie', { variations: [hv('H', 'Haircut', ['TM_BIO'])] })] };
+  const withP = mergeRoster({ rows: [row('nick', 'A1')], square, profiles: PROFILES }).rows.find((r) => r.item_id === 'NEW')!;
+  assert.match(String(withP.bio), /^Christian is extremely passionate/);
+  assert.equal(withP.bio_source, 'square');
+  assert.deepEqual(withP.placeholder_fields, ['role', 'specialties', 'headshot']);
+  assert.equal(withP.needs_profile, true, 'still needs a photo');
+  const without = mergeRoster({ rows: [row('nick', 'A1')], square }).rows.find((r) => r.item_id === 'NEW')!;
+  assert.equal(without.bio, '');
+  assert.equal('bio_source' in without, false);
+  assert.deepEqual(without.placeholder_fields, ['role', 'bio', 'specialties', 'headshot']);
+});
+
+test('mergeRoster profiles: rows of a shop that was not fetched are untouched', () => {
+  const elm = row('javier', 'E1', 'elmhurst', { bio: '' });
+  const { rows } = mergeRoster({ rows: [row('nick', 'A1'), elm], square: { addison: [sq('A1', 'Nick')] }, profiles: PROFILES });
+  assert.deepEqual(rows.find((r) => r.slug === 'javier'), elm);
 });

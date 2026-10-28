@@ -6,6 +6,7 @@
       is newer, then again every 5 minutes while the tab is visible,
    3. repaints every minute so "Today 3:15 PM" drops off once 3:15 has passed.
    Elements: [data-avail] chips, [data-avail-list] barber-page "Next openings", [data-first-chair] on /book.
+   States: green / amber / grey / offline (not bookable online: "Call the shop to book"), or hidden (no data).
    Any failure leaves the page as it is (no chips is a valid state). Included by Layout.astro only on
    pages that render chips. */
 import { barberView, firstOpenChair, newer, parseFile, type AvailabilityFile, type BarberView } from '../lib/availability';
@@ -40,8 +41,12 @@ function paintList(box: HTMLElement, v: BarberView | null) {
   box.querySelector('.openings__list')?.replaceChildren(...v.soon.map((s) => el('li', {},
     el('a', { class: 'openings__slot', href, target: '_blank', rel: 'noopener', 'aria-label': `Book ${name}, ${s.label} (opens Square)` },
       time(s.iso, s.label), ' ', el('span', { class: 'arr', 'aria-hidden': 'true' }, '↗')))));
-  const empty = box.querySelector<HTMLElement>('.openings__empty');
-  if (empty) empty.hidden = v.state !== 'grey';
+  const offline = v.state === 'offline';
+  const toggle = (sel: string, hide: boolean) => { const n = box.querySelector<HTMLElement>(sel); if (n) n.hidden = hide; };
+  toggle('.openings__empty', v.state !== 'grey');
+  // Not bookable online: one line instead of times + the "live from Square" note (the Book button stays).
+  toggle('.openings__offline', !offline);
+  toggle('.openings__note', offline);
 }
 
 function paintFirstChair(row: HTMLElement, file: AvailabilityFile, now: Date) {

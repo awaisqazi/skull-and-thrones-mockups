@@ -34,7 +34,8 @@ const description = [
 ].filter(Boolean).join(' ');
 const headshotSizes = '(min-width: 900px) 40vw, 100vw';
 // Live Square availability (spec §3): chip + "Next openings" list. null = no data → both render hidden;
-// src/scripts/availability.ts fills them from the live file.
+// src/scripts/availability.ts fills them from the live file. state 'offline' (not bookable online in Square):
+// chip "Call the shop to book" and one line instead of the times; the Book button still opens Square.
 const avail = barberView(parseFile(bakedJson), b.location, b.item_id, new Date());
 const flag = b.accepting_new_clients ? NEW_CLIENTS.yes : NEW_CLIENTS.no;
 const slotAria = (label: string) => `Book ${b.name}, ${label} (opens Square)`;
@@ -88,7 +89,8 @@ const person = {
             ))}
           </ul>
           <p class="openings__empty" hidden={avail?.state !== 'grey'}>Booked up for the next 7 days. Check Square for cancellations.</p>
-          <p class="openings__note">Live from Square, refreshed every 15 minutes. Each time opens {b.first_name}'s Square page, where you confirm it.</p>
+          <p class="openings__offline" hidden={avail?.state !== 'offline'}>This barber takes bookings by phone: <a href={`tel:${loc.phone_e164}`}>{loc.phone}</a>.</p>
+          <p class="openings__note" hidden={avail?.state === 'offline'}>Live from Square, refreshed every 15 minutes. Each time opens {b.first_name}'s Square page, where you confirm it.</p>
         </section>
         {b.specialties.length > 0 && <ul class="chips" aria-label="Specialties">{b.specialties.map((s) => <li class="chip">{s}</li>)}</ul>}
         {bio && <p class="panel__bio">{bio}</p>}

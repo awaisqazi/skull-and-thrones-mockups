@@ -1,0 +1,15 @@
+# Square -> GitHub relay (docs/SQUARE-INTEGRATION-SPEC.md section 10).
+# Deploy from this folder: `npx wrangler deploy`. Secrets are set with `npx wrangler secret put <NAME>`, never here.
+name = "skull-thrones-square-relay"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+workers_dev = true
+
+[vars]
+# Repo that owns deploy.yml and availability.yml; receives the repository_dispatch.
+GITHUB_REPO = "awaisqazi/skull-and-thrones-mockups"
+
+# Secrets (wrangler secret put ...):
+#   GITHUB_TOKEN           fine-grained PAT, repo above, Contents: Read and write
+#   SQUARE_SIGNATURE_KEYS  comma-separated signature keys, one per Square webhook subscription (Addison, Elmhurst)
+#   NOTIFICATION_URL       exact URL typed into the Square subscription, e.g. https://skull-thrones-square-relay.<account>.workers.dev/square

@@ -31,6 +31,8 @@ Requires Node 18.20+ (CI uses Node 22).
 | `src/content.config.ts` | Content collections (`file()` loaders + zod schemas), the Square roster loader for `barbers`, and a commented Supabase loader stub |
 | `src/lib/square-products.ts` (+ test), `src/data/square-buy-links.json`, `src/data/square-payment-links.json` | Retail products from Square (used only with `SHOP_SOURCE=square`): catalog + images + inventory → the same product rows as Bodega, brand allowlist shared with `sync-products.mjs`, buy links. See "Products from Square" below |
 | `src/lib/square.ts`, `src/lib/roster.ts` | Square Catalog client and the pure Square ⇄ barbers.json merge (tests in `src/lib/roster.test.ts`) |
+| `src/lib/square-locations.ts` (+ test) | Shop hours from Square: `fetchLocation()`, pure `periodsToHours()` / `hoursShort()` / `resolveHours()`. Used by the `locations` loader in `content.config.ts` (see "Shop hours from Square") |
+| `worker/` | Cloudflare Worker `skull-thrones-square-relay`: Square webhook in, GitHub `repository_dispatch` out (see "Square webhooks (instant refresh)" and `worker/README.md`). Tests: `node --test "worker/test/*.test.mjs"` |
 | `src/lib/data.ts` | The only data API pages use. Builds `booking_url = square_booking_url + '/' + item_id` |
 | `src/lib/placeholder.ts` | Generates the grey striped SVG placeholder tiles (data URIs) |
 | `src/lib/url.ts` | `url(path)` prefixes `import.meta.env.BASE_URL`. Use it for every internal link |
@@ -118,6 +120,7 @@ SHOP_SOURCE=square SQUARE_API_BASE=https://connect.squareupsandbox.com npm run b
 
 `.github/workflows/deploy.yml` builds with `withastro/action@v3` and publishes with
 `actions/deploy-pages@v4` on every push to `main` and on manual "Run workflow".
+It also runs nightly (09:00 UTC) and on a `repository_dispatch` of type `square-catalog` (sent by the Square relay Worker, see "Square webhooks").
 
 1. Push the repo to GitHub (the workflow assumes this `site/` folder is the repo root; if not,
    move the workflow to the root `.github/workflows/` and set `path: site`).
@@ -185,9 +188,54 @@ stock, photo count, whether the item would be listed and which buy link it gets)
 (S1 Square Online pages / S2 payment links / S3 keep Bodega). Exit code 1 only when a Square call fails; mismatches
 are reported, not fatal. Without tokens it says so and exits 0.
 
-**Status (2026-10-10): no tokens yet.** The client's Square team-member invite (both accounts:
-Appointments, Items & Orders, Online) is still pending, so the roster is barbers.json only. The merge
-logic is unit-tested with fixtures; the live API call has not been run against a real account.
+**Status (2026-10-29): live.** Both production tokens are GitHub secrets (`SQUARE_TOKEN`, `SQUARE_TOKEN_ELMHURST`), the nightly
+build uses the Square roster, and live availability runs every 15 minutes (see `docs/SQUARE-INTEGRATION-SPEC.md`).
+
+## Shop hours from Square
+
+The `locations` collection (`src/content.config.ts`, `locationsLoader`) reads `src/data/locations.json`, then for each shop
+with a token calls `GET /v2/locations/<square_location_id>`. If that Square location has `business_hours.periods`, the
+site's `hours` and `hours_short` come from Square (`hours_source: 'square'`); otherwise the file's hours stay
+(`hours_source: 'site'`). The "Open now" script, the hours tables, the map-card summary and the JSON-LD
+`openingHoursSpecification` all read the same `hours[]` shape, so nothing else changes.
+
+- Conversion (`src/lib/square-locations.ts`): consecutive days with the same times become one row (`Mon – Fri`, `Saturday`,
+  `Sunday`, `Mon – Thu`, `Tue`), Monday first, days numbered 0 = Sunday. Two shifts on one day (lunch break) show as the
+  earliest open to the latest close, with a build warning. A close at midnight shows as 23:59 with a warning.
+- `hours_short` stays "Open 7 days" when every weekday has hours, else "Closed Mondays" and so on.
+- Today (checked 2026-10-29): Elmhurst has hours in Square (Saturday closes at 3 PM, not 4 PM like the old file), so the site
+  follows Square there. Addison has none set, so it keeps the file's hours. To make Addison follow Square, set its hours in
+  Square Dashboard → Account & Settings → Business → Locations → S&T Addison → Business hours (asked in `docs/NEEDED-FROM-CLIENT.md`).
+- Any Square error (or no token) is a build warning and the file's hours are used. The build never fails because of this.
+- Build log lines to look for: `Square hours (elmhurst): Mon – Fri 10:00-19:00, ...` and `Square hours (addison): no business hours set in Square; using locations.json.`
+- Hours shown on the site are Square's, so the shop changes them in Square and the next build (nightly, or instantly
+  via the webhook below) picks them up. `location.updated` events fire that rebuild.
+
+## Square webhooks (instant refresh)
+
+Without this the site still updates: availability every 15 minutes, the roster and hours every night. The webhook relay
+makes both near-instant (about a minute) and costs nothing (Cloudflare Workers free tier, 100,000 requests/day; we use a few hundred).
+
+```
+Square event --> Cloudflare Worker (worker/) --> GitHub repository_dispatch
+  booking.*                                        square-booking  --> availability.yml (refresh the chips)
+  catalog.version.updated, team_member.*,
+  location.updated                                 square-catalog  --> deploy.yml (rebuild + deploy the site)
+```
+
+The Worker verifies Square's HMAC signature (one signature key per Square account), drops duplicates for 10 minutes, and
+forwards only `{ type, merchant_id, event_id, created_at }`. Code, tests and the full deploy recipe are in `worker/README.md`;
+the design and the owner's setup checklist are in `docs/SQUARE-INTEGRATION-SPEC.md` section 10.
+
+| Name | Where | What |
+|---|---|---|
+| `GITHUB_REPO` | Worker var (`worker/wrangler.toml`) | `awaisqazi/skull-and-thrones-mockups` |
+| `GITHUB_TOKEN` | Worker secret (`wrangler secret put`) | Fine-grained PAT for that repo, **Contents: Read and write**, 1-year expiry (calendar the renewal) |
+| `SQUARE_SIGNATURE_KEYS` | Worker secret | `<Addison key>,<Elmhurst key>` from the two Square webhook subscriptions |
+| `NOTIFICATION_URL` | Worker secret | The exact subscription URL, `https://skull-thrones-square-relay.<subdomain>.workers.dev/square` |
+| `SQUARE_TOKEN`, `SQUARE_TOKEN_ELMHURST` | GitHub Actions secrets | Unchanged; the workflows use them, the Worker never sees them |
+
+If the Worker is down or not deployed yet, nothing breaks: the cron jobs are the backstop.
 
 ## Moving data to Supabase later
 

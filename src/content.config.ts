@@ -13,6 +13,9 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { fetchShops, type SquareShop } from './lib/square.ts';
 import { mergeRoster, type Row } from './lib/roster.ts';
+import { listTeamMemberBookingProfiles, type BookingProfile } from './lib/bookings.ts';
+import { squareToken } from './lib/square.ts';
+import { fetchLocation, resolveHours, type SquareLocation } from './lib/square-locations.ts';
 import { allowedBrand, fetchSquareProducts, NO_LINKS, type BuyLinks } from './lib/square-products.ts';
 
 const locationSlug = z.enum(['addison', 'elmhurst']);
@@ -27,6 +30,9 @@ const fromKey = (key: string, idField: string) => (text: string) =>
  * - SQUARE_TOKEN (or SQUARE_TOKEN_ADDISON and SQUARE_TOKEN_ELMHURST) set: list each shop's Square catalog items
  *   (src/lib/square.ts) and merge with barbers.json by item_id (src/lib/roster.ts, unit-tested).
  *   New Square items get an auto slug + needs_profile; rows gone from Square get is_active: false.
+ * - Bios: each fetched shop's team member booking profiles (listTeamMemberBookingProfiles in src/lib/bookings.ts)
+ *   fill the bio of rows whose barbers.json bio is empty (bio_source: 'square'); a barbers.json bio always wins.
+ *   A failed profiles call only warns: the roster builds without Square bios, exactly as before.
  * - Tokens missing: barbers.json exactly as before (one info line in the build log).
  * - Square error for a shop: warn, that shop falls back to barbers.json. Never fails the build.
  */
@@ -42,10 +48,22 @@ function squareRosterLoader(): Loader {
         let roster = rows;
         // SQUARE_API_BASE: optional override, e.g. https://connect.squareupsandbox.com for sandbox tokens.
         const { square, missing, errors } = await fetchShops(shops, process.env, { apiBase: process.env.SQUARE_API_BASE || undefined });
-        if (missing.length) logger.info(`Square roster off (${missing.join(', ')} not set): using src/data/barbers.json.`);
+        if (missing.length) logger.info(`Square roster off (set SQUARE_TOKEN, or ${missing.join(' + ')}): using src/data/barbers.json.`);
         for (const e of errors) logger.warn(`Square roster: ${e} (that shop falls back to barbers.json)`);
         if (Object.keys(square).length) {
-          const merged = mergeRoster({ rows, square, excludeItemIds: shops.map((l) => l.any_artist_item_id ?? '') });
+          // Bios typed in Square (Appointments → Staff → profile). Team member ids are unique per account, so one map serves both shops.
+          const profiles = new Map<string, BookingProfile>();
+          await Promise.all(shops.filter((s) => square[s.slug]).map(async (s) => {
+            try {
+              const list = await listTeamMemberBookingProfiles(squareToken(process.env, s.slug)!, s.square_location_id, { apiBase: process.env.SQUARE_API_BASE || undefined });
+              for (const p of list) profiles.set(p.team_member_id, p);
+            } catch (e) {
+              logger.warn(`Square roster: ${s.slug}: booking profiles failed (${(e as Error).message}); no Square bios for that shop.`);
+            }
+          }));
+          const merged = mergeRoster({ rows, square, excludeItemIds: shops.map((l) => l.any_artist_item_id ?? ''), profiles });
+          const fromSquare = merged.rows.filter((r) => r.bio_source === 'square').map((r) => r.slug);
+          if (fromSquare.length) logger.info(`Square roster: bio from Square for ${fromSquare.join(', ')}.`);
           for (const w of merged.warnings) logger.warn(w);
           const { matched, added, deactivated } = merged.stats;
           logger.info(`Square roster (${Object.keys(square).join(' + ')}): ${matched} matched, ${added} new, ${deactivated} no longer in Square.`);
@@ -65,8 +83,58 @@ function squareRosterLoader(): Loader {
   };
 }
 
+/**
+ * Locations: locations.json (address, phone, links) with the opening hours taken from Square when the shop has
+ * them set there (spec section 2/10, src/lib/square-locations.ts).
+ * - A token for the shop (squareToken: SQUARE_TOKEN_<SHOP> else SQUARE_TOKEN) and `business_hours.periods` on its
+ *   Square location: `hours` + `hours_short` come from Square, `hours_source: 'square'`.
+ * - No token, no hours set in Square (Addison today), or any Square error: the file's hours, `hours_source: 'site'`.
+ *   An error is a warning; it never fails the build.
+ */
+function locationsLoader(): Loader {
+  return {
+    name: 'square-locations',
+    load: async ({ store, parseData, generateDigest, logger, config, watcher }) => {
+      const locationsPath = fileURLToPath(new URL('src/data/locations.json', config.root));
+      const sync = async () => {
+        const rows = JSON.parse(await readFile(locationsPath, 'utf8')).locations as Record<string, any>[];
+        const apiBase = process.env.SQUARE_API_BASE || undefined;
+        const out: Record<string, unknown>[] = [];
+        for (const row of rows) {
+          const token = squareToken(process.env, String(row.slug));
+          let square: SquareLocation | null = null;
+          if (token && row.square_location_id) {
+            try {
+              square = await fetchLocation(token, String(row.square_location_id), { apiBase });
+            } catch (e) {
+              logger.warn(`Square hours (${row.slug}): ${(e as Error).message} (keeping the hours in locations.json)`);
+            }
+          }
+          const r = resolveHours({ hours: row.hours, hours_short: row.hours_short }, square);
+          for (const w of r.warnings) logger.warn(`Square hours (${row.slug}): ${w}`);
+          if (r.hours_source === 'square') logger.info(`Square hours (${row.slug}): ${r.hours.map((h) => `${h.label} ${h.opens}-${h.closes}`).join(', ')} (${r.hours_short}).`);
+          else if (square) logger.info(`Square hours (${row.slug}): ${r.note ?? 'not used'}; using locations.json.`);
+          out.push({ ...row, hours: r.hours, hours_short: r.hours_short, hours_source: r.hours_source });
+        }
+        if (!process.env.SQUARE_TOKEN && !process.env.SQUARE_TOKEN_ADDISON && !process.env.SQUARE_TOKEN_ELMHURST) {
+          logger.info('Square hours off (no Square token set): using src/data/locations.json.');
+        }
+        store.clear();
+        for (const row of out) {
+          const id = String(row.slug);
+          store.set({ id, data: await parseData({ id, data: row }), digest: generateDigest(row) });
+        }
+      };
+      await sync();
+      // Dev server: re-run when locations.json changes (what the file() loader used to do).
+      watcher?.add(locationsPath);
+      watcher?.on('change', (changed) => { if (changed === locationsPath) sync().catch((e) => logger.error(String(e))); });
+    },
+  };
+}
+
 const locations = defineCollection({
-  loader: file('src/data/locations.json', { parser: fromKey('locations', 'slug') }),
+  loader: locationsLoader(),
   schema: z.object({
     slug: locationSlug,
     name: z.string(),
@@ -86,6 +154,8 @@ const locations = defineCollection({
       }),
     ),
     hours_short: z.string(),
+    /** Where `hours`/`hours_short` came from this build: Square's business hours, or src/data/locations.json. */
+    hours_source: z.enum(['site', 'square']).default('site'),
     square_booking_url: z.string().url(),
     /** Square location id (the one inside square_booking_url); the roster loader lists this location's catalog. */
     square_location_id: z.string(),
@@ -125,6 +195,8 @@ const barbers = defineCollection({
     headshot_source: z.enum(['client', 'instagram-profile', 'instagram-post']).optional(),
     specialties: z.array(z.string()).default([]),
     bio: z.string().default(''),
+    /** 'square' = the bio came from the barber's Square booking profile because barbers.json had none. Absent = barbers.json. */
+    bio_source: z.enum(['site', 'square']).optional(),
     /** Shop-set statement "Accepting new clients" (false = "Booked up"). NOT live Square availability. */
     accepting_new_clients: z.boolean().default(true),
     /** Phase 2: written by the nightly Square availability search, e.g. "Tue 2pm". null/absent = not shown. */

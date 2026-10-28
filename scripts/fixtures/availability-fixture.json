@@ -1,5 +1,5 @@
 {
- "_note": "SYNTHETIC fixture for scripts/fetch-availability.mjs --fixture. Shaped like Square POST /v2/catalog/search objects and POST /v2/bookings/availability/search responses (Square-Version 2025-09-24), keyed by shop, then by service_variation_id. Made because the sandbox seller is not onboarded to Appointments (HTTP 401 UNAUTHORIZED \"Merchant not onboarded to Appointments\", 2026-10-28), so no real response could be recorded. Item ids are the real ones from barbers.json; variation and team member ids are fake. anchor_date: slot dates are shifted by whole days so this date becomes today. Patterns: open today, first opening tomorrow, 3 and 5 days out (amber), booked up; anastacio has no team member on his services; peter's search always returns 503.",
+ "_note": "SYNTHETIC fixture for scripts/fetch-availability.mjs --fixture. Shaped like Square POST /v2/catalog/search objects and POST /v2/bookings/availability/search responses (Square-Version 2025-09-24), keyed by shop, then by service_variation_id. Made because the sandbox seller is not onboarded to Appointments (HTTP 401 UNAUTHORIZED \"Merchant not onboarded to Appointments\", 2026-10-28), so no real response could be recorded. Item ids are the real ones from barbers.json; variation and team member ids are fake. anchor_date: slot dates are shifted by whole days so this date becomes today. Patterns: open today, first opening tomorrow, 3 and 5 days out (amber), booked up; anastacio has no team member on his services; peter's search always returns 503. Booking profiles (GET /v2/bookings/team-member-booking-profiles, added 2026-10-29): juan (TMfixture11) is_bookable false (not searched, bookable:false, \"Call the shop to book\"); rudy (TMfixture15) is missing from the list (counts as bookable); each shop also lists a non-barber \"Front Desk\" profile, and christian (TMfixture21) has a synthetic description.",
  "anchor_date": "2026-10-28",
  "shops": {
   "addison": {
@@ -983,6 +983,78 @@
       "product_type": "REGULAR",
       "variations": []
      }
+    }
+   ],
+   "profiles": [
+    {
+     "team_member_id": "TMfixture01",
+     "display_name": "Elyse LC",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixture02",
+     "display_name": "Adrian",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixture03",
+     "display_name": "Fabi",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixture04",
+     "display_name": "Jayden Sanchez",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixture05",
+     "display_name": "Darian",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixture06",
+     "display_name": "Reno",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixture07",
+     "display_name": "Jovani",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixture09",
+     "display_name": "Ruben",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixture10",
+     "display_name": "Peter",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixture11",
+     "display_name": "Juan",
+     "is_bookable": false
+    },
+    {
+     "team_member_id": "TMfixture12",
+     "display_name": "Eric el Samurai",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixture13",
+     "display_name": "Jackie",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixture14",
+     "display_name": "Carlos",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixtureFRONT1",
+     "display_name": "Front Desk",
+     "is_bookable": false
     }
    ],
    "availability": {
@@ -3058,6 +3130,64 @@
       "product_type": "REGULAR",
       "variations": []
      }
+    }
+   ],
+   "profiles": [
+    {
+     "team_member_id": "TMfixture16",
+     "display_name": "Javier",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixture17",
+     "display_name": "Nick Celli",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixture18",
+     "display_name": "Valentina",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixture19",
+     "display_name": "David",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixture20",
+     "display_name": "Alejandro",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixture21",
+     "display_name": "Christian",
+     "is_bookable": true,
+     "description": "Synthetic bio typed in Square for the fixture: shear work and classic cuts."
+    },
+    {
+     "team_member_id": "TMfixture22",
+     "display_name": "Angel M",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixture23",
+     "display_name": "Alexsis",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixture24",
+     "display_name": "Brandon",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixture25",
+     "display_name": "Bella",
+     "is_bookable": true
+    },
+    {
+     "team_member_id": "TMfixtureFRONT2",
+     "display_name": "Front Desk",
+     "is_bookable": false
     }
    ],
    "availability": {

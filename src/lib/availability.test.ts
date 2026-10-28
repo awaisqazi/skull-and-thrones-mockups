@@ -18,6 +18,11 @@ const F = file({
       FULL: { next: null, soon: [], slots_today: 0, slots_7d: 0 },
       UNMAPPED: { error: 'no team member assigned to variation V9' },
       PAST: { next: '2026-10-28T17:00:00Z', soon: ['2026-10-28T17:00:00Z', '2026-10-28T17:30:00Z'], slots_today: 2, slots_7d: 2 },
+      // What the job writes for a barber whose Square booking profile has is_bookable false.
+      OFFLINE: { variation_id: 'V7', team_member_id: 'T7', bookable: false, next: null, soon: [], slots_today: 0, slots_7d: 0 },
+      // Never written by the job (offline = not searched), but the flag must still win over any times.
+      OFFLINE_WITH_TIMES: { bookable: false, next: '2026-10-28T19:00:00Z', soon: ['2026-10-28T19:00:00Z'] },
+      BOOKABLE: { bookable: true, next: '2026-10-28T19:00:00Z', soon: ['2026-10-28T19:00:00Z'], slots_today: 1, slots_7d: 1 },
     },
   },
   elmhurst: { ok: false, error: 'token missing' },
@@ -102,4 +107,39 @@ test('recorded sandbox output (real Square run at 23:58 Chicago on 2026-10-27) r
   assert.deepEqual([v.state, v.text, v.soon.length], ['green', 'Next: Tomorrow 9:00 AM', 3]);
   assert.equal(barberView(rec, 'elmhurst', 'X', at), null, 'token missing → no data');
   assert.equal(firstOpenChair(rec, 'addison', ['CMBI4LGKXVAXG2AFDJTEH7HL', 'CKE2YOEK7AGRBCKXWSOQXZF2'], at)!.view.next!.label, 'Tomorrow 9:00 AM');
+});
+
+test('barberView: bookable:false → offline "Call the shop to book", whatever the times say', () => {
+  const off = { state: 'offline', text: 'Call the shop to book', next: null, soon: [] };
+  assert.deepEqual(barberView(F, 'addison', 'OFFLINE', NOW), off);
+  assert.deepEqual(barberView(F, 'addison', 'OFFLINE_WITH_TIMES', NOW), off);
+  assert.equal(barberView(F, 'addison', 'BOOKABLE', NOW)!.text, 'Next: Today 2:00 PM', 'bookable:true = the normal rules');
+  assert.equal(barberView(F, 'addison', 'OFFLINE', new Date(Date.parse(fresh) + 3 * 3600000)), null, 'a stale shop hides offline chips too');
+  const noSoon = file({ addison: { fetched_at: fresh, ok: true, barbers: { X: { bookable: false } } } });
+  assert.equal(barberView(noSoon, 'addison', 'X', NOW)!.state, 'offline', 'the flag alone is enough');
+});
+
+test('firstOpenChair: offline barbers never win, even with an earlier time', () => {
+  assert.equal(firstOpenChair(F, 'addison', ['OFFLINE_WITH_TIMES', 'OFFLINE', 'TODAY'], NOW)!.item_id, 'TODAY');
+  assert.equal(firstOpenChair(F, 'addison', ['OFFLINE', 'OFFLINE_WITH_TIMES'], NOW), null);
+});
+
+test('slimFile keeps the offline flag (and drops ids)', () => {
+  const slim = slimFile(F).shops.addison!.barbers!;
+  assert.deepEqual(slim.OFFLINE, { bookable: false, next: null, soon: [] });
+  assert.deepEqual(slim.BOOKABLE, { next: '2026-10-28T19:00:00Z', soon: ['2026-10-28T19:00:00Z'] });
+  assert.equal(barberView({ ...slimFile(F) }, 'addison', 'OFFLINE', NOW)!.state, 'offline', 'the browser sees the same state');
+});
+
+test('recorded sandbox output carries bookable:true and still renders green', () => {
+  const rec = parseFile(JSON.parse(readFileSync(new URL('../../scripts/fixtures/sandbox-availability-2026-10-28.json', import.meta.url), 'utf8')));
+  assert.equal(rec.shops.addison!.barbers!.CKE2YOEK7AGRBCKXWSOQXZF2!.bookable, true);
+  assert.equal(barberView(rec, 'addison', 'CKE2YOEK7AGRBCKXWSOQXZF2', new Date('2026-10-28T04:59:30Z'))!.state, 'green');
+});
+
+test('synthetic fixture: juan is offline in the replayed job output shape', () => {
+  const fx = JSON.parse(readFileSync(new URL('../../scripts/fixtures/availability-fixture.json', import.meta.url), 'utf8'));
+  const juan = fx.shops.addison.profiles.find((p: { team_member_id: string }) => p.team_member_id === 'TMfixture11');
+  assert.equal(juan.is_bookable, false);
+  assert.equal(fx.shops.addison.profiles.some((p: { team_member_id: string }) => p.team_member_id === 'TMfixture15'), false, 'rudy is missing from the list');
 });

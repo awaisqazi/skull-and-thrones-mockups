@@ -1,7 +1,8 @@
 /**
  * Roster merge: Square says WHO exists (and their name, price, duration); barbers.json (the CMS
  * later) says how they look on the site (slug, headshot, bio, specialties, instagram, sort_order…).
- * Rows are joined on the Square service `item_id`.
+ * Rows are joined on the Square service `item_id`. Optionally, Square team member booking profiles supply
+ * a bio for rows that have none (`profiles`, see `squareBio`).
  *
  * Pure function, no I/O and no Astro imports, so it is unit-tested with `npm test`
  * (src/lib/roster.test.ts). The content loader in src/content.config.ts calls it.
@@ -23,6 +24,12 @@ export interface MergeInput {
    * Default 0.5. Set 1 to disable.
    */
   maxDeactivateShare?: number;
+  /**
+   * Square team member booking profiles by team_member_id (GET /v2/bookings/team-member-booking-profiles, via
+   * listTeamMemberBookingProfiles in bookings.ts). Only `description` (the bio typed in Square) is used: it fills
+   * the bio of a matched or new row whose barbers.json bio is empty (or still flagged placeholder). Absent = no bios.
+   */
+  profiles?: ReadonlyMap<string, { description?: string }>;
 }
 
 export interface MergeResult {
@@ -65,7 +72,41 @@ const haircutFrom = (item: SquareItem) => dollars(standardHaircut(item.variation
 /** Minutes of that same service. */
 const haircutMinutes = (item: SquareItem) => standardHaircut(item.variations ?? [])?.duration_minutes ?? item.duration_minutes;
 
-export function mergeRoster({ rows, square: input, excludeItemIds = [], maxDeactivateShare = 0.5 }: MergeInput): MergeResult {
+/** Square bios are free text typed in the dashboard: one paragraph, at most this many characters. */
+export const BIO_MAX = 400;
+
+/** Trim, collapse whitespace (newlines included), cap at BIO_MAX on a word boundary with an ellipsis. '' when empty. */
+export function cleanBio(text: string | undefined | null): string {
+  const t = (text ?? '').replace(/\s+/g, ' ').trim();
+  if (t.length <= BIO_MAX) return t;
+  const cut = t.slice(0, BIO_MAX - 1);
+  const space = cut.lastIndexOf(' ');
+  return `${(space > BIO_MAX * 0.6 ? cut.slice(0, space) : cut).replace(/[\s,;:.–-]+$/, '')}…`;
+}
+
+/**
+ * The bio Square holds for this barber item: the description of the team member on the standard-haircut
+ * variation (the same service the price and availability use), else on the first variation that has a team
+ * member. '' when there is none.
+ */
+export function squareBio(item: Pick<SquareItem, 'variations'>, profiles: ReadonlyMap<string, { description?: string }> | undefined): string {
+  if (!profiles?.size) return '';
+  const vars = item.variations ?? [];
+  const tm = standardHaircut(vars)?.team_member_ids[0] ?? vars.find((v) => v.team_member_ids.length)?.team_member_ids[0];
+  return tm ? cleanBio(profiles.get(tm)?.description) : '';
+}
+
+/** A barbers.json bio Square may fill: empty, or still invented placeholder copy (which never renders). */
+const bioIsOpen = (row: Row) => !String(row.bio ?? '').trim() || (Array.isArray(row.placeholder_fields) && row.placeholder_fields.includes('bio'));
+
+/** Row fields when Square supplies the bio: the text, its source, and 'bio' no longer a placeholder field. */
+function withSquareBio(row: Row, bio: string): Partial<Row> {
+  if (!bio || !bioIsOpen(row)) return {};
+  const placeholder = Array.isArray(row.placeholder_fields) ? (row.placeholder_fields as string[]).filter((f) => f !== 'bio') : undefined;
+  return { bio, bio_source: 'square', ...(placeholder ? { placeholder_fields: placeholder } : {}) };
+}
+
+export function mergeRoster({ rows, square: input, excludeItemIds = [], maxDeactivateShare = 0.5, profiles }: MergeInput): MergeResult {
   const exclude = new Set(excludeItemIds);
   const warnings: string[] = [];
   const stats = { matched: 0, added: 0, deactivated: 0, passthrough: 0 };
@@ -107,6 +148,7 @@ export function mergeRoster({ rows, square: input, excludeItemIds = [], maxDeact
         duration_minutes: haircutMinutes(item) ?? row.duration_minutes,
         square_note: item.description || row.square_note,
         needs_profile: false,
+        ...withSquareBio(row, squareBio(item, profiles)),
       };
     }
     if (!fetched.has(row.location)) {
@@ -133,7 +175,7 @@ export function mergeRoster({ rows, square: input, excludeItemIds = [], maxDeact
     nextSort[location] = (nextSort[location] ?? 0) + 1;
     stats.added++;
     warnings.push(`${slug}: new in Square (${location}, item ${id}); needs photo + bio. Add a barbers.json row with this item_id.`);
-    out.push({
+    const fresh: Row = {
       slug,
       name: item.name,
       location,
@@ -150,7 +192,8 @@ export function mergeRoster({ rows, square: input, excludeItemIds = [], maxDeact
       ...(item.description ? { square_note: item.description } : {}),
       needs_profile: true,
       placeholder_fields: ['role', 'bio', 'specialties', 'headshot'],
-    });
+    };
+    out.push({ ...fresh, ...withSquareBio(fresh, squareBio(item, profiles)) });
   }
   return { rows: out, warnings, stats };
 }

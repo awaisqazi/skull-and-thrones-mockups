@@ -1,0 +1,55 @@
+name: Square token canary
+
+# Weekly check that each Square production token still works, so a revoked or expired token is noticed
+# even in a quiet week (the 15-minute availability job also fails loudly on 401/403, spec §3).
+# One read-only call per token: GET /v2/locations. Prints only the HTTP status and the location count,
+# never the response body, never the token. A non-200 fails the job, which makes GitHub email the repo owner.
+# Skips cleanly when no SQUARE_TOKEN* secret exists. Costs nothing (public repo Actions minutes are free).
+
+on:
+  schedule:
+    - cron: '0 13 * * 1' # Mondays 13:00 UTC (8:00 CDT / 7:00 CST)
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SQUARE_TOKEN: ${{ secrets.SQUARE_TOKEN }}
+      SQUARE_TOKEN_ELMHURST: ${{ secrets.SQUARE_TOKEN_ELMHURST }}
+    steps:
+      - name: GET /v2/locations with each token
+        run: |
+          checked=0
+          failed=0
+          for name in SQUARE_TOKEN SQUARE_TOKEN_ELMHURST; do
+            token="${!name}"
+            if [ -z "$token" ]; then
+              echo "$name: secret not set, skipped."
+              continue
+            fi
+            checked=$((checked + 1))
+            body="$RUNNER_TEMP/locations-$name.json"
+            status=$(curl -sS -o "$body" -w '%{http_code}' --max-time 30 \
+              -H "Authorization: Bearer $token" \
+              -H 'Square-Version: 2025-09-24' \
+              -H 'Accept: application/json' \
+              https://connect.squareup.com/v2/locations) || status=000
+            count=$(jq -r '(.locations // []) | length' "$body" 2>/dev/null || echo '?')
+            rm -f "$body"
+            if [ "$status" = "200" ]; then
+              echo "$name: HTTP 200, $count location(s)."
+            else
+              echo "::error title=Square token canary::$name: HTTP $status (expected 200). Rotate the $name secret (repo Settings → Secrets → Actions)."
+              failed=$((failed + 1))
+            fi
+          done
+          if [ "$checked" -eq 0 ]; then
+            echo "No SQUARE_TOKEN* secret yet: nothing to check."
+            exit 0
+          fi
+          [ "$failed" -eq 0 ]

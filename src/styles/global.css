@@ -892,7 +892,8 @@ body[data-loc] [data-loc-only="neutral"] { display: none !important; }
 .more-row { display: flex; justify-content: center; margin-top: clamp(20px, 3vw, 32px); }
 
 /* ---------- 17. Availability (live Square openings, spec §3; replaces the removed 17) ----------
-   .avail = live dot + "Next: Today 3:15 PM" (green ≤ 48 h, amber 2–7 days, grey booked up; hidden = no data).
+   .avail = live dot + "Next: Today 3:15 PM" (green ≤ 48 h, amber 2–7 days, grey booked up, offline = not bookable
+   online "Call the shop to book"; hidden = no data).
    .newclients = the shop-set "New clients welcome" switch, deliberately dot-less so it never reads as live data. */
 .avail {
   display: inline-flex; align-items: center; gap: 6px; max-width: 100%;
@@ -905,6 +906,9 @@ body[data-loc] [data-loc-only="neutral"] { display: none !important; }
 .avail[data-state="amber"] .avail__dot { background: #FFB547; }
 .avail[data-state="grey"] { background: var(--paper); color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); }
 .avail[data-state="grey"] .avail__dot { background: #B5B5B5; }
+/* Not bookable online (Square booking profile): same quiet style as grey, no pulse. */
+.avail[data-state="offline"] { background: var(--paper); color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); }
+.avail[data-state="offline"] .avail__dot { background: #B5B5B5; animation: none; }
 .avail--lg { min-height: 32px; padding: 0 12px 0 10px; gap: 8px; font-size: 11.5px; letter-spacing: .05em; }
 .avail--lg .avail__dot { width: 8px; height: 8px; }
 
@@ -936,7 +940,7 @@ body[data-loc] [data-loc-only="neutral"] { display: none !important; }
   font: 600 14px/1 var(--f-ui); text-decoration: none; transition: background .2s, color .2s;
 }
 @media (hover: hover) { .openings__slot:hover { background: var(--ink); color: var(--paper); } }
-.openings__empty { font-weight: 600; }
+.openings__empty, .openings__offline { font-weight: 600; }
 .openings__note { font-size: 13px; color: var(--muted); max-width: 52ch; }
 
 /* /book: "First open chair" per shop */

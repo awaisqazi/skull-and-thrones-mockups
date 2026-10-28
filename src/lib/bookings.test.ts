@@ -1,7 +1,10 @@
 /* npm test (node --test). No network: Square is faked with responses shaped like the real API. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { pickBookableVariation, searchAvailability, summarise, localDate, SquareApiError, type Availability } from './bookings.ts';
+import {
+  pickBookableVariation, searchAvailability, summarise, localDate, SquareApiError, type Availability,
+  listTeamMemberBookingProfiles, profilesById, bookableFrom, isAuthFailure,
+} from './bookings.ts';
 import type { SquareVariation } from './square.ts';
 
 const TZ = 'America/Chicago';
@@ -129,4 +132,89 @@ test('pickBookableVariation: the plain "Haircut" beats a cheaper "Kids Haircut" 
   assert.equal(pick.variation.id, 'H');
   const noPlain = pickBookableVariation({ variations: [v('K', 'Kids Haircut (12 and under)', 35), v('L', 'Long Length Haircut', 70), v('M', "Men's haircut", 50)] })!;
   assert.equal(noPlain.variation.id, 'M', 'not kids, not long-length');
+});
+
+/* ---------- Team member booking profiles (GET /v2/bookings/team-member-booking-profiles) ---------- */
+// Shaped like the real production response (2026-10-29): description only when a bio is typed in Square,
+// profile_image_url on some, no is_bookable key never seen but tolerated.
+const profilePage = (profiles: Record<string, unknown>[], cursor?: string) => ({ team_member_booking_profiles: profiles, ...(cursor ? { cursor } : {}), errors: [] });
+
+test('listTeamMemberBookingProfiles: GET per location, follows cursor, maps and trims fields', async () => {
+  const seen: { url: string; init: RequestInit }[] = [];
+  const pages = [
+    profilePage([
+      { team_member_id: 'TM1', display_name: ' Christian ', is_bookable: true, description: '  Shear work and classic cuts.  ' },
+      { team_member_id: 'TM2', display_name: 'Front Desk', is_bookable: false },
+    ], 'NEXT'),
+    profilePage([{ team_member_id: 'TM3', display_name: 'Elyse', profile_image_url: 'https://x.test/a.jpg' }, { display_name: 'no id' }]),
+  ];
+  const fakeFetch = (async (url: string, init: RequestInit) => {
+    seen.push({ url, init });
+    return new Response(JSON.stringify(pages[seen.length - 1]), { status: 200 });
+  }) as unknown as typeof fetch;
+  const out = await listTeamMemberBookingProfiles('tok', 'LOC1', { fetch: fakeFetch, apiBase: 'https://sq.test' });
+  assert.deepEqual(out, [
+    { team_member_id: 'TM1', display_name: 'Christian', is_bookable: true, description: 'Shear work and classic cuts.' },
+    { team_member_id: 'TM2', display_name: 'Front Desk', is_bookable: false, description: '' },
+    { team_member_id: 'TM3', display_name: 'Elyse', is_bookable: true, description: '' },
+  ], 'is_bookable unset counts as bookable; a profile without an id is dropped');
+  assert.equal(seen.length, 2);
+  const u0 = new URL(seen[0]!.url), u1 = new URL(seen[1]!.url);
+  assert.equal(u0.origin + u0.pathname, 'https://sq.test/v2/bookings/team-member-booking-profiles');
+  assert.deepEqual([u0.searchParams.get('location_id'), u0.searchParams.get('limit'), u0.searchParams.get('cursor')], ['LOC1', '100', null]);
+  assert.equal(u1.searchParams.get('cursor'), 'NEXT');
+  assert.equal(seen[0]!.init.method, 'GET');
+  assert.equal(seen[0]!.init.body, undefined, 'a GET carries no body');
+  assert.equal((seen[0]!.init.headers as Record<string, string>).Authorization, 'Bearer tok');
+});
+
+test('listTeamMemberBookingProfiles: same retry policy as searchAvailability; 401 is not retried', async () => {
+  let calls = 0;
+  const waits: number[] = [];
+  const flaky = (async () => {
+    calls++;
+    return calls === 1 ? new Response('{}', { status: 502 }) : new Response(JSON.stringify(profilePage([{ team_member_id: 'TM1', is_bookable: false }])), { status: 200 });
+  }) as unknown as typeof fetch;
+  const sleep = async (ms: number) => { waits.push(ms); };
+  assert.equal((await listTeamMemberBookingProfiles('t', 'L', { fetch: flaky, sleep }))[0]!.is_bookable, false);
+  assert.deepEqual(waits, [1000]);
+
+  calls = 0;
+  const rejected = (async () => { calls++; return new Response(JSON.stringify({ errors: [{ category: 'AUTHENTICATION_ERROR', code: 'UNAUTHORIZED', detail: 'This request could not be authorized.' }] }), { status: 401 }); }) as unknown as typeof fetch;
+  await assert.rejects(listTeamMemberBookingProfiles('t', 'L', { fetch: rejected, sleep }), (e: unknown) =>
+    e instanceof SquareApiError && e.status === 401 && /^booking profiles failed \(HTTP 401\): UNAUTHORIZED/.test(e.message) && isAuthFailure(e));
+  assert.equal(calls, 1);
+
+  const down = (async () => { throw new TypeError('fetch failed'); }) as unknown as typeof fetch;
+  await assert.rejects(listTeamMemberBookingProfiles('t', 'L', { fetch: down, sleep }), (e: unknown) => e instanceof SquareApiError && e.status === 0 && !isAuthFailure(e));
+});
+
+test('listTeamMemberBookingProfiles: gives up after 20 pages instead of looping on a bad cursor', async () => {
+  let calls = 0;
+  const endless = (async () => { calls++; return new Response(JSON.stringify(profilePage([], 'AGAIN')), { status: 200 }); }) as unknown as typeof fetch;
+  await assert.rejects(listTeamMemberBookingProfiles('t', 'L', { fetch: endless }), /more than 20 pages/);
+  assert.equal(calls, 20);
+});
+
+test('isAuthFailure: 401/403 from either client; outages and other errors are not', () => {
+  assert.equal(isAuthFailure(new SquareApiError('x', 403)), true);
+  assert.equal(isAuthFailure(new SquareApiError('x', 503)), false);
+  assert.equal(isAuthFailure(new SquareApiError('x', 0)), false);
+  // listSquareItems (square.ts) throws plain Errors with the status in the message.
+  assert.equal(isAuthFailure(new Error('Square catalog search failed (HTTP 401): UNAUTHORIZED')), true);
+  assert.equal(isAuthFailure(new Error('Square catalog search failed (HTTP 403): FORBIDDEN')), true);
+  assert.equal(isAuthFailure(new Error('Square catalog search failed (HTTP 500): INTERNAL_SERVER_ERROR')), false);
+  assert.equal(isAuthFailure(new Error('fetch failed')), false);
+  assert.equal(isAuthFailure(undefined), false);
+});
+
+test('bookableFrom: profile flag wins; missing from the list = bookable; no list = unknown', () => {
+  const m = profilesById([
+    { team_member_id: 'ON', display_name: 'On', is_bookable: true, description: '' },
+    { team_member_id: 'OFF', display_name: 'Off', is_bookable: false, description: '' },
+  ]);
+  assert.equal(bookableFrom(m, 'ON'), true);
+  assert.equal(bookableFrom(m, 'OFF'), false);
+  assert.equal(bookableFrom(m, 'NOT_LISTED'), true);
+  assert.equal(bookableFrom(null, 'OFF'), undefined);
 });
