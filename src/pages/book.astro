@@ -47,9 +47,11 @@ const shortHours = (l: (typeof locations)[number]) =>
               <div class="loc-card__top"><h2 class="big">{l.name}</h2><span class="status" data-open-status={l.slug} role="status">{l.hours_short}</span></div>
               <p class="muted">{l.address_line} · <a href={`tel:${l.phone_e164}`}>{l.phone}</a></p>
               <p>{team.length} barbers · {Number.isFinite(from) && <>haircuts from ${from} · </>} {shortHours(l)}</p>
-              <p class="first-chair" data-first-chair={l.slug} data-roster={JSON.stringify(roster)} hidden={!first}>
+              {/* Always rendered (reserved height, no layout shift when live data arrives): the link, or a muted line. */}
+              <p class="first-chair" data-first-chair={l.slug} data-roster={JSON.stringify(roster)} data-empty={first ? undefined : ''}>
                 <span class="avail" data-state={first?.view.state}><i class="avail__dot" aria-hidden="true"></i><span class="avail__text">First open chair</span></span>
-                <a class="first-chair__link" href={firstBarber?.booking_url ?? l.square_booking_url} target="_blank" rel="noopener"><span class="first-chair__name">{firstBarber?.name}</span> · <time datetime={first?.view.next?.iso}>{first?.view.next?.label}</time> <span class="arr" aria-hidden="true">↗</span></a>
+                <a class="first-chair__link" href={firstBarber?.booking_url ?? l.square_booking_url} target="_blank" rel="noopener" hidden={!first}><span class="first-chair__name">{firstBarber?.name}</span> · <time datetime={first?.view.next?.iso}>{first?.view.next?.label}</time> <span class="arr" aria-hidden="true">↗</span></a>
+                <span class="first-chair__wait" hidden={Boolean(first)}>Live from Square during shop hours</span>
               </p>
               <div class="btn-row">
                 <a class:list={['btn btn--lg', ink && 'btn--accent']} href={l.square_booking_url} target="_blank" rel="noopener"><span class="dot" aria-hidden="true"></span>Book {l.name} <span class="arr" aria-hidden="true">↗</span></a>

@@ -12,6 +12,7 @@ import { getLocations, getHoursPayload } from '../lib/data';
 import { SITE } from '../lib/site';
 import { url } from '../lib/url';
 import { DEFAULT_LIVE_URL, parseFile, slimFile } from '../lib/availability';
+import { jsonForScript } from '../lib/safe';
 import bakedAvailability from '../data/availability.json';
 
 export type NavKey = 'home' | 'team' | 'portfolio' | 'culture' | 'shop' | 'book' | 'contact' | 'none';
@@ -103,6 +104,7 @@ const availability = AVAILABILITY_PAGES.has(page)
 {!noindex && <link rel="canonical" href={canonical}>}
 {noindex && <meta name="robots" content="noindex, follow">}
 <meta name="theme-color" content="#EAEAEA">
+<meta name="color-scheme" content="light">
 <link rel="icon" href={url('favicon-32.png')} type="image/png" sizes="32x32">
 <link rel="icon" href={url('favicon-192.png')} type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href={url('apple-touch-icon.png')}>
@@ -123,8 +125,8 @@ const availability = AVAILABILITY_PAGES.has(page)
 {/* Self-hosted fonts (src/assets/fonts/, latin subset; @font-face + metric-matched fallbacks in global.css section 23). Both are used above the fold on every page. */}
 <link rel="preload" href={antonWoff2} as="font" type="font/woff2" crossorigin>
 <link rel="preload" href={interTightWoff2} as="font" type="font/woff2" crossorigin>
-<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
-<script type="application/json" id="st-hours" set:html={JSON.stringify(hours)} />
+<script type="application/ld+json" set:html={jsonForScript(jsonLd)} />
+<script type="application/json" id="st-hours" set:html={jsonForScript(hours)} />
 <slot name="head" />
 </head>
 <body data-loc={loc} data-page={page}>
@@ -136,10 +138,12 @@ const availability = AVAILABILITY_PAGES.has(page)
 <Footer />
 <MobileBookBar />
 <Lightbox />
+{/* One script on every page. app.ts loads src/scripts/availability.ts itself when #st-avail is present: a second,
+    conditional <script> here made Astro serve the availability bundle INSTEAD of app.ts on pages without chips
+    (contact, shop, culture, 404), which left the menu, popovers and "Open now" dead there (QA 2026-10-28). */}
 <script>
   import '../scripts/app.ts';
 </script>
-{availability && <script type="application/json" id="st-avail" set:html={JSON.stringify(availability).replace(/</g, '\\u003c')} />}
-{availability && <script>import '../scripts/availability.ts';</script>}
+{availability && <script type="application/json" id="st-avail" set:html={jsonForScript(availability)} />}
 </body>
 </html>

@@ -15,7 +15,7 @@
  * Pure fetch, no SDK, no Astro imports (loadable by `node --test` and the scripts; Node strips the types).
  * Deliberately independent of the roster's SquareItem so the two workstreams never share a struct.
  */
-import { SQUARE_API, SQUARE_VERSION, isAtLocation, missingTokens, squareToken, type SquareShop } from './square.ts';
+import { SQUARE_API, arrayField, isAtLocation, missingTokens, squareCall, squareToken, type ListOptions, type SquareShop } from './square.ts';
 
 /**
  * Brand allowlist, shared by BOTH sources (client request 2026-10-18): only these vendors are listed.
@@ -133,12 +133,18 @@ export interface BuyLinks {
 }
 export const NO_LINKS: BuyLinks = { store: {}, payment: {} };
 
-export interface FetchOptions {
-  /** Injected for tests. */
-  fetch?: typeof fetch;
-  apiBase?: string;
-  squareVersion?: string;
-  timeoutMs?: number;
+/** Same options as every Square client (fetch, apiBase, timeoutMs, retries, sleep; see square.ts ListOptions). */
+export type FetchOptions = ListOptions;
+
+/** An absolute http(s) URL, or null. The content schema needs absolute URLs; anything else must never fail the build. */
+export function absoluteUrl(u: unknown): string | null {
+  if (typeof u !== 'string' || !u.trim()) return null;
+  try {
+    const url = new URL(u.trim());
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : null;
+  } catch {
+    return null;
+  }
 }
 
 /* ---------- Pure helpers ---------- */
@@ -196,8 +202,9 @@ export function toRetailItem(o: RawCatalogObject, ctx: ParseContext): RetailItem
   const catIds = [...(d.categories ?? []).map((c) => c.id), d.category_id, d.reporting_category?.id].filter((x): x is string => Boolean(x));
   const categories = [...new Set(catIds.map((id) => ctx.categories.get(id)).filter((x): x is string => Boolean(x)))];
   const imageObjs = (d.image_ids ?? []).map((id) => ctx.images.get(id)).filter((x): x is { url: string; caption: string } => Boolean(x));
-  const imageUrls = imageObjs.map((i) => i.url);
-  for (const u of d.ecom_image_uris ?? []) if (!imageUrls.includes(u)) imageUrls.push(u);
+  // Only absolute http(s) image URLs count: a relative or broken one is "no photo" (skipped), never a schema failure.
+  const imageUrls = imageObjs.map((i) => absoluteUrl(i.url)).filter((u): u is string => u !== null);
+  for (const raw of Array.isArray(d.ecom_image_uris) ? d.ecom_image_uris : []) { const u = absoluteUrl(raw); if (u && !imageUrls.includes(u)) imageUrls.push(u); }
   return {
     item_id: o.id,
     name,
@@ -207,7 +214,7 @@ export function toRetailItem(o: RawCatalogObject, ctx: ParseContext): RetailItem
     categories: categories.map((c) => c.toLowerCase()),
     variations,
     image_urls: imageUrls,
-    ecom_uri: d.ecom_uri || null,
+    ecom_uri: absoluteUrl(d.ecom_uri),
     ecom_visibility: d.ecom_visibility || null,
   };
 }
@@ -236,10 +243,10 @@ export function stockLabel(item: RetailItem, stock: ReadonlyMap<string, number>)
 
 /** Buy link route for an item: S1 hand-kept link, S1 the item's own Square Online page, S2 payment link, else none. */
 export function buyLinkFor(handle: string, item: RetailItem, pick: Sellable | null, links: BuyLinks): { url: string; route: 'S1' | 'S2' } | null {
-  const mapped = links.store[handle];
+  const mapped = absoluteUrl(links.store[handle]);
   if (mapped) return { url: mapped, route: 'S1' };
   if (item.ecom_uri && item.ecom_visibility !== 'HIDDEN' && item.ecom_visibility !== 'UNAVAILABLE') return { url: item.ecom_uri, route: 'S1' };
-  const pay = pick ? links.payment[pick.variation.id]?.url : undefined;
+  const pay = pick ? absoluteUrl(links.payment[pick.variation.id]?.url) : null;
   if (pay) return { url: pay, route: 'S2' };
   return null;
 }
@@ -311,26 +318,9 @@ export function mergeShopProducts(perShop: ProductRow[][], featureCount = 8): Pr
 
 /* ---------- Square API ---------- */
 
-interface ApiError { category: string; code: string; detail?: string }
-
-async function call<T>(token: string, path: string, body: unknown, opts: FetchOptions): Promise<T> {
-  const res = await (opts.fetch ?? fetch)(`${opts.apiBase ?? SQUARE_API}${path}`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Square-Version': opts.squareVersion ?? SQUARE_VERSION,
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(opts.timeoutMs ?? 20000),
-  });
-  const json = (await res.json().catch(() => ({}))) as T & { errors?: ApiError[] };
-  if (!res.ok || json.errors?.length) {
-    const why = json.errors?.map((e) => `${e.code}${e.detail ? `: ${e.detail}` : ''}`).join('; ') || res.statusText;
-    throw new Error(`Square ${path} failed (HTTP ${res.status}): ${why}`);
-  }
-  return json;
+/** One POST through the shared Square call (retries, strict JSON bodies); throws `Square <path> failed (HTTP n): …`. */
+async function call<T extends object>(token: string, path: string, body: unknown, opts: FetchOptions): Promise<T> {
+  return squareCall<T>(`Square ${path}`, `${opts.apiBase ?? SQUARE_API}${path}`, { method: 'POST', token, body: JSON.stringify(body) }, opts);
 }
 
 /** Every retail ITEM sold at `locationId`, with photos and categories resolved. POST /v2/catalog/search, include_related_objects. */
@@ -341,14 +331,14 @@ export async function listRetailItems(token: string, locationId: string, opts: F
   let cursor: string | undefined;
   let pages = 0;
   do {
-    const body = await call<{ objects?: RawCatalogObject[]; related_objects?: RawCatalogObject[]; cursor?: string }>(
+    const body = await call<{ objects?: unknown; related_objects?: unknown; cursor?: string }>(
       token, '/v2/catalog/search',
       { object_types: ['ITEM'], include_related_objects: true, include_deleted_objects: false, limit: 1000, ...(cursor ? { cursor } : {}) },
       opts,
     );
-    objects.push(...(body.objects ?? []));
-    for (const r of body.related_objects ?? []) {
-      if (r.is_deleted) continue;
+    objects.push(...arrayField<RawCatalogObject>(body, 'objects', 'Square /v2/catalog/search').filter((o) => typeof o === 'object' && o !== null));
+    for (const r of arrayField<RawCatalogObject>(body, 'related_objects', 'Square /v2/catalog/search')) {
+      if (!r || typeof r !== 'object' || r.is_deleted) continue;
       if (r.type === 'IMAGE' && r.image_data?.url) images.set(r.id, { url: r.image_data.url, caption: r.image_data.caption ?? '' });
       if (r.type === 'CATEGORY' && r.category_data?.name) categories.set(r.id, r.category_data.name.trim());
     }
@@ -366,13 +356,14 @@ export async function fetchStock(token: string, locationId: string, variationIds
     let cursor: string | undefined;
     let pages = 0;
     do {
-      const body = await call<{ counts?: { catalog_object_id?: string; state?: string; quantity?: string }[]; cursor?: string }>(
+      const body = await call<{ counts?: unknown; cursor?: string }>(
         token, '/v2/inventory/counts/batch-retrieve',
         { catalog_object_ids: variationIds.slice(i, i + 500), location_ids: [locationId], states: ['IN_STOCK'], ...(cursor ? { cursor } : {}) },
         opts,
       );
-      for (const c of body.counts ?? []) {
-        if (c.catalog_object_id && c.state === 'IN_STOCK') stock.set(c.catalog_object_id, (stock.get(c.catalog_object_id) ?? 0) + (Number(c.quantity) || 0));
+      // A bad inventory body throws (strict JSON, `counts` must be a list): the shop then fails and the site keeps Bodega.
+      for (const c of arrayField<{ catalog_object_id?: string; state?: string; quantity?: string }>(body, 'counts', 'Square /v2/inventory/counts/batch-retrieve')) {
+        if (c && c.catalog_object_id && c.state === 'IN_STOCK') stock.set(c.catalog_object_id, (stock.get(c.catalog_object_id) ?? 0) + (Number(c.quantity) || 0));
       }
       cursor = body.cursor || undefined;
       if (++pages > 50) throw new Error('Square inventory: more than 50 pages, giving up');
@@ -480,13 +471,34 @@ export async function ensurePaymentLinks(
     const pick = pickVariation(item, stock)!;
     if (payment[pick.variation.id]) continue;
     if (!opts.write) { wouldCreate.push(r.row.handle); continue; }
-    const body = await call<{ payment_link?: { id?: string; url?: string; long_url?: string } }>(
-      token, '/v2/online-checkout/payment-links', paymentLinkRequest(locationId, pick.variation.id), opts,
-    );
-    const url = body.payment_link?.url ?? body.payment_link?.long_url;
-    if (!url) throw new Error(`Square returned no payment link url for ${r.row.handle}`);
+    let url: string | undefined;
+    let body: { payment_link?: { id?: string; url?: string; long_url?: string } };
+    try {
+      body = await call<{ payment_link?: { id?: string; url?: string; long_url?: string } }>(
+        token, '/v2/online-checkout/payment-links', paymentLinkRequest(locationId, pick.variation.id), opts,
+      );
+      url = body.payment_link?.url ?? body.payment_link?.long_url;
+      if (!url) throw new Error(`Square returned no payment link url for ${r.row.handle}`);
+    } catch (e) {
+      // Links already created in Square must not be lost: hand back what succeeded so the caller can write it, then fail.
+      throw Object.assign(e as Error, { partial: { payment, created } });
+    }
     payment[pick.variation.id] = { url, handle: r.row.handle, ...(opts.shop ? { shop: opts.shop } : {}), payment_link_id: body.payment_link?.id, created_at: (opts.now ?? (() => new Date().toISOString()))() };
     created.push(r.row.handle);
   }
   return { payment, created, wouldCreate };
+}
+
+/* ---------- Render helpers (shared by both sources) ---------- */
+
+/**
+ * Image alt text without a doubled brand: the Bodega feed builds alt as "<vendor> <title>" and most titles already
+ * start with the vendor ("STMNT STMNT NOMAD Classic Pomade" → "STMNT NOMAD Classic Pomade"). Case-insensitive.
+ */
+export function productAlt(alt: string, vendor: string): string {
+  const a = String(alt ?? '').trim().replace(/\s+/g, ' ');
+  const v = String(vendor ?? '').trim().replace(/\s+/g, ' ');
+  if (!v) return a;
+  const lower = a.toLowerCase(), pre = v.toLowerCase() + ' ';
+  return lower.startsWith(pre) && lower.slice(pre.length).startsWith(pre) ? a.slice(pre.length) : a;
 }

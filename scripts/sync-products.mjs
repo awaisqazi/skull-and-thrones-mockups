@@ -28,13 +28,15 @@ import { fileURLToPath } from 'node:url';
 import { BRANDS, allowedBrand, ensurePaymentLinks, loadShopRetail, resolveCreds } from '../src/lib/square-products.ts';
 
 const STORE = 'https://www.bybodega.com';
-const OUT = fileURLToPath(new URL('../src/data/products.json', import.meta.url));
+const DEFAULT_OUT = fileURLToPath(new URL('../src/data/products.json', import.meta.url));
 /** Listings that are not retail products (in-shop event cuts, gift cards). */
 const EXCLUDE_HANDLES = new Set(['event-cut', 'learn-to-cut']);
 // Brand allowlist: BRANDS / allowedBrand live in src/lib/square-products.ts, shared with the Square products loader
 // (client request 2026-10-18: only STMNT, H14 and SLICK GORILLA). Add a vendor name there to list another brand.
 
 const args = process.argv.slice(2);
+// --out <file>: write somewhere else than src/data/products.json (tests).
+const OUT = args.includes('--out') ? args[args.indexOf('--out') + 1] : DEFAULT_OUT;
 const flag = (name) => {
   const i = args.indexOf(name);
   if (i < 0) return null;
@@ -64,16 +66,30 @@ async function createLinks() {
   const creds = all.filter((c) => c.slug === shopArg);
   let payment = file.links ?? {};
   let made = 0;
+  const save = async () => {
+    await writeFile(linksPath, JSON.stringify({ ...file, links: payment }, null, 2) + '\n');
+    console.log(`Wrote ${made} new link(s) to src/data/square-payment-links.json (${Object.keys(payment).length} total).`);
+  };
   for (const c of creds) {
     const { items, stock } = await loadShopRetail(c.token, c.locationId, { apiBase });
-    const r = await ensurePaymentLinks(c.token, c.locationId, items, stock, { store, payment }, { apiBase, write, shop: c.slug });
+    let r;
+    try {
+      r = await ensurePaymentLinks(c.token, c.locationId, items, stock, { store, payment }, { apiBase, write, shop: c.slug });
+    } catch (e) {
+      // Some links may already exist in Square: record them before failing, so a re-run reuses them.
+      if (write && e.partial) {
+        payment = e.partial.payment;
+        made += e.partial.created.length;
+        if (e.partial.created.length) await save();
+      }
+      throw e;
+    }
     payment = r.payment;
     made += r.created.length;
     console.log(`${c.slug}: ${write ? `created ${r.created.length}` : `would create ${r.wouldCreate.length}`}${(write ? r.created : r.wouldCreate).length ? ` (${(write ? r.created : r.wouldCreate).join(', ')})` : ''}`);
   }
   if (write && made) {
-    await writeFile(linksPath, JSON.stringify({ ...file, links: payment }, null, 2) + '\n');
-    console.log(`Wrote ${made} new link(s) to src/data/square-payment-links.json (${Object.keys(payment).length} total).`);
+    await save();
   } else if (!write) console.log('Dry run. Add --write to create the links.');
 }
 
@@ -133,6 +149,11 @@ function toRow(p) {
 
 const feed = await loadFeed();
 const rows = feed.map(toRow).filter(Boolean);
+// An empty feed (store down, blocked, or every listing filtered out) must never wipe the shop page.
+if (!rows.length) {
+  console.error(`Feed gave 0 usable products (${feed.length} listings): ${OUT} left unchanged.`);
+  process.exit(1);
+}
 
 let previous = [];
 try { previous = JSON.parse(await readFile(OUT, 'utf8')).products ?? []; } catch { /* first run */ }

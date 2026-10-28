@@ -53,6 +53,8 @@ jobs:
           node-version: 22
       - name: Unit tests (roster merge, Square clients, availability rules; no network)
         run: npm test
+      - name: Worker unit tests (webhook relay + cron dispatcher, site/worker; no network)
+        run: node --test "worker/test/*.test.mjs"
       - name: Bake the latest availability snapshot (branch `data`; keeps the checked-in empty default if absent)
         run: |
           if git fetch --depth=1 origin data 2>/dev/null && git show FETCH_HEAD:availability.json > "$RUNNER_TEMP/availability.json" 2>/dev/null \

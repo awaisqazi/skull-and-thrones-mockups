@@ -5,6 +5,7 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { placeholder } from './placeholder';
 import { url } from './url';
+import { productAlt } from './square-products';
 
 export type LocationSlug = CollectionEntry<'locations'>['data']['slug'];
 export type Location = CollectionEntry<'locations'>['data'] & {
@@ -230,6 +231,7 @@ export async function getProducts(opts: { featured?: boolean; vendor?: string } 
       // checkout route switch: buy_url comes straight from the row (Bodega product page, or with SHOP_SOURCE=square
       // the Square store page / payment link, or null = no online buy). See README "Products".
       display_title: displayTitle(data.title, data.vendor),
+      alt: productAlt(data.alt, data.vendor),
       vendor_slug: slugify(data.vendor),
       price_label: usd(data.price),
       compare_label: data.compare_at_price ? usd(data.compare_at_price) : null,

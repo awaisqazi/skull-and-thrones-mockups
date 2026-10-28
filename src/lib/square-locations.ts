@@ -9,7 +9,7 @@
  *
  * No Astro imports, so `node --test` loads it directly (Node strips the types).
  */
-import { SQUARE_API, squareHeaders, type ListOptions } from './square.ts';
+import { SQUARE_API, SquareApiError, squareCall, type ListOptions } from './square.ts';
 
 /** The timezone the site's "Open now" script assumes (src/scripts/app.ts). */
 export const SITE_TIMEZONE = 'America/Chicago';
@@ -27,22 +27,16 @@ export interface HoursRow { label: string; days: number[]; opens: string; closes
 /* ---------- Fetch ---------- */
 
 /**
- * GET /v2/locations/<id> for the merchant that owns `token`. Throws on HTTP/API errors (message carries the HTTP
- * status, never the token) so the caller can fall back; the content loader never lets this fail the build.
+ * GET /v2/locations/<id> for the merchant that owns `token`, through the shared `squareCall` (retries on 429/5xx/
+ * network, strict JSON bodies). Throws SquareApiError (message carries the HTTP status, never the token) so the
+ * caller can fall back; the content loader never lets this fail the build.
  */
 export async function fetchLocation(token: string, locationId: string, opts: ListOptions = {}): Promise<SquareLocation> {
-  const doFetch = opts.fetch ?? fetch;
-  const res = await doFetch(`${opts.apiBase ?? SQUARE_API}/v2/locations/${encodeURIComponent(locationId)}`, {
-    method: 'GET',
-    headers: squareHeaders(token, opts.squareVersion),
-    signal: AbortSignal.timeout(opts.timeoutMs ?? 20000),
-  });
-  const body = (await res.json().catch(() => ({}))) as { location?: SquareLocation; errors?: { code: string; detail?: string }[] };
-  if (!res.ok || body.errors?.length || !body.location) {
-    const why = body.errors?.map((e) => `${e.code}${e.detail ? `: ${e.detail}` : ''}`).join('; ') || res.statusText || 'no location in response';
-    throw new Error(`Square location ${locationId} failed (HTTP ${res.status}): ${why}`);
-  }
-  return body.location;
+  const label = `Square location ${locationId}`;
+  const body = await squareCall<{ location?: unknown }>(label, `${opts.apiBase ?? SQUARE_API}/v2/locations/${encodeURIComponent(locationId)}`, { method: 'GET', token }, opts);
+  const loc = body.location;
+  if (typeof loc !== 'object' || loc === null || Array.isArray(loc)) throw new SquareApiError(`${label} failed (HTTP 200): no location in response`, 200);
+  return loc as SquareLocation;
 }
 
 /* ---------- Periods -> hours[] ---------- */
@@ -72,7 +66,12 @@ function labelFor(days: number[]): string {
   return `${SHORT[days[0]!]} – ${SHORT[days[days.length - 1]!]}`;
 }
 
-export interface PeriodsResult { hours: HoursRow[]; warnings: string[] }
+export interface PeriodsResult {
+  hours: HoursRow[];
+  warnings: string[];
+  /** Periods dropped as unusable (bad day, unreadable time, close not after open). resolveHours keeps the file hours when > 0. */
+  skipped: number;
+}
 
 /**
  * Converts Square's weekly periods into the site's hours rows.
@@ -84,20 +83,21 @@ export interface PeriodsResult { hours: HoursRow[]; warnings: string[] }
  */
 export function periodsToHours(periods: SquarePeriod[] | undefined | null, tz?: string | null): PeriodsResult {
   const warnings: string[] = [];
+  let skipped = 0;
   if (tz && tz !== SITE_TIMEZONE) warnings.push(`timezone is ${tz}, the site's "Open now" clock is ${SITE_TIMEZONE}`);
 
   const byDay = new Map<number, { open: number; close: number }[]>();
-  for (const p of periods ?? []) {
+  for (const p of Array.isArray(periods) ? periods : []) {
     const day = DAY_NUMBER[String(p?.day_of_week ?? '').toUpperCase()];
-    if (day === undefined) { warnings.push(`unknown day "${p?.day_of_week}", skipped`); continue; }
+    if (day === undefined) { warnings.push(`unknown day "${p?.day_of_week}", skipped`); skipped++; continue; }
     const open = minutesOf(p.start_local_time);
     let close = minutesOf(p.end_local_time);
-    if (open === null || close === null) { warnings.push(`${LONG[day]}: unreadable times (${p.start_local_time}–${p.end_local_time}), skipped`); continue; }
+    if (open === null || close === null) { warnings.push(`${LONG[day]}: unreadable times (${p.start_local_time}–${p.end_local_time}), skipped`); skipped++; continue; }
     if ((close === 0 || close === 24 * 60) && open > 0) {
       warnings.push(`${LONG[day]}: closes at midnight, shown as 23:59`);
       close = 24 * 60 - 1;
     }
-    if (close <= open) { warnings.push(`${LONG[day]}: closes (${hhmm(close)}) before it opens (${hhmm(open)}), skipped`); continue; }
+    if (close <= open) { warnings.push(`${LONG[day]}: closes (${hhmm(close)}) before it opens (${hhmm(open)}), skipped`); skipped++; continue; }
     byDay.set(day, [...(byDay.get(day) ?? []), { open, close }]);
   }
 
@@ -126,7 +126,7 @@ export function periodsToHours(periods: SquarePeriod[] | undefined | null, tz?: 
     run.push(day);
   }
   flush();
-  return { hours, warnings };
+  return { hours, warnings, skipped };
 }
 
 /* ---------- Short status text ---------- */
@@ -160,15 +160,19 @@ export interface ResolvedHours {
 }
 
 /**
- * Square's hours when the Square location has usable `business_hours.periods`, else the file's hours.
- * `square` null = the fetch failed or no token (the caller logs that); nothing is changed then.
+ * Square's hours when the Square location has fully usable `business_hours.periods`, else the file's hours.
+ * The file wins on ANY doubt (QA 2026-10-28): a period that had to be skipped, a timezone other than the site's
+ * clock (America/Chicago), or no usable day left. Split shifts and a midnight close are well defined and still apply.
+ * Warnings are returned either way. `square` null = the fetch failed or no token (the caller logs that).
  */
 export function resolveHours(file: { hours: HoursRow[]; hours_short: string }, square: SquareLocation | null): ResolvedHours {
   const keep = (note?: string, warnings: string[] = []): ResolvedHours => ({ hours: file.hours, hours_short: file.hours_short, hours_source: 'site', warnings, note });
   if (!square) return keep();
   const periods = square.business_hours?.periods;
-  if (!periods?.length) return keep('no business hours set in Square');
-  const { hours, warnings } = periodsToHours(periods, square.timezone);
+  if (!Array.isArray(periods) || !periods.length) return keep('no business hours set in Square');
+  const { hours, warnings, skipped } = periodsToHours(periods, square.timezone);
   if (!hours.length) return keep('Square business hours unusable', [...warnings, 'no usable periods, keeping the file hours']);
+  if (skipped) return keep('Square business hours partly unusable', [...warnings, `${skipped} period(s) unusable, keeping the file hours`]);
+  if (square.timezone && square.timezone !== SITE_TIMEZONE) return keep('Square location is in another timezone', [...warnings, 'keeping the file hours']);
   return { hours, hours_short: hoursShort(hours, file.hours_short), hours_source: 'square', warnings };
 }

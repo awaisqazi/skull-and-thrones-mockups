@@ -10,6 +10,7 @@ import { barberView, parseFile, NEW_CLIENTS } from '../../lib/availability';
 import bakedJson from '../../data/availability.json';
 import { igUrl } from '../../lib/site';
 import { url } from '../../lib/url';
+import { jsonForScript } from '../../lib/safe';
 
 export const getStaticPaths = (async () => {
   const barbers = await getBarbers();
@@ -58,7 +59,7 @@ const person = {
   loc={b.location}
   ogType="profile"
 >
-  <script slot="head" type="application/ld+json" set:html={JSON.stringify(person)} />
+  <script slot="head" type="application/ld+json" set:html={jsonForScript(person)} />
   <section class="page-hero wrap" aria-labelledby="panel-name">
     <div class="rule-row"><a class="eyebrow profile__back" href={url(`barbers/#${loc.slug}`)}>← All barbers</a><a class="eyebrow profile__back" href={loc.href}>{loc.name} · {loc.street}</a></div>
     <div class="profile">
@@ -81,15 +82,20 @@ const person = {
           </span>
           <span class:list={['newclients newclients--lg', !b.accepting_new_clients && 'newclients--off']} title={flag.tip}>{flag.label}</span>
         </div>
-        <section class="openings" aria-labelledby="openings-title" data-avail-list={b.item_id} data-shop={b.location} data-href={b.booking_url} data-name={b.name} hidden={!avail}>
+        {/* Always rendered with the same structure (no layout shift when live data arrives, QA 2026-10-28): the slot
+            row, the booked-up line, the phone line and the "no live times" line share one reserved cell. */}
+        <section class="openings" aria-labelledby="openings-title" data-avail-list={b.item_id} data-shop={b.location} data-href={b.booking_url} data-name={b.name} data-empty={avail ? undefined : ''}>
           <h2 class="openings__title" id="openings-title">Next openings</h2>
-          <ul class="openings__list">
-            {avail?.soon.map((s) => (
-              <li><a class="openings__slot" href={b.booking_url} target="_blank" rel="noopener" aria-label={slotAria(s.label)}><time datetime={s.iso}>{s.label}</time> <span class="arr" aria-hidden="true">↗</span></a></li>
-            ))}
-          </ul>
-          <p class="openings__empty" hidden={avail?.state !== 'grey'}>Booked up for the next 7 days. Check Square for cancellations.</p>
-          <p class="openings__offline" hidden={avail?.state !== 'offline'}>This barber takes bookings by phone: <a href={`tel:${loc.phone_e164}`}>{loc.phone}</a>.</p>
+          <div class="openings__slots">
+            <ul class="openings__list">
+              {avail?.soon.map((s) => (
+                <li><a class="openings__slot" href={b.booking_url} target="_blank" rel="noopener" aria-label={slotAria(s.label)}><time datetime={s.iso}>{s.label}</time> <span class="arr" aria-hidden="true">↗</span></a></li>
+              ))}
+            </ul>
+            <p class="openings__empty" hidden={avail?.state !== 'grey'}>Booked up for the next 7 days. Check Square for cancellations.</p>
+            <p class="openings__offline" hidden={avail?.state !== 'offline'}>This barber takes bookings by phone: <a href={`tel:${loc.phone_e164}`}>{loc.phone}</a>.</p>
+            <p class="openings__wait" hidden={Boolean(avail)}>Live times from Square show here during shop hours.</p>
+          </div>
           <p class="openings__note" hidden={avail?.state === 'offline'}>Live from Square, refreshed every 15 minutes. Each time opens {b.first_name}'s Square page, where you confirm it.</p>
         </section>
         {b.specialties.length > 0 && <ul class="chips" aria-label="Specialties">{b.specialties.map((s) => <li class="chip">{s}</li>)}</ul>}

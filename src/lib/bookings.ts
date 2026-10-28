@@ -10,7 +10,11 @@
  * directly. The pure helpers (pickBookableVariation, summarise) are unit-tested in bookings.test.ts.
  * listTeamMemberBookingProfiles reads GET /v2/bookings/team-member-booking-profiles (is_bookable + bio).
  */
-import { SQUARE_API, squareHeaders, standardHaircut, type SquareItem, type SquareVariation } from './square.ts';
+import { SQUARE_API, SquareApiError, arrayField, squareCall, standardHaircut, type ListOptions, type SquareErrorBody, type SquareItem, type SquareVariation } from './square.ts';
+
+// The error class and the call/retry policy live in square.ts (shared by every Square client); re-exported here
+// because the job and the tests have always imported them from bookings.ts.
+export { SquareApiError } from './square.ts';
 
 /** One entry of Square's `availabilities[]` (https://developer.squareup.com/reference/square/bookings-api/search-availability). */
 export interface Availability {
@@ -23,72 +27,15 @@ export interface Availability {
     service_variation_version?: number | bigint;
   }[];
 }
-interface SearchResponse { availabilities?: Availability[]; errors?: { category: string; code: string; detail?: string }[] }
+interface SearchResponse extends SquareErrorBody { availabilities?: unknown }
 
-export interface SearchOptions {
-  /** Injected for tests. */
-  fetch?: typeof fetch;
-  apiBase?: string;
-  squareVersion?: string;
-  timeoutMs?: number;
-  /** Extra attempts on HTTP 429 / 5xx / network errors. Default 2 (spec §3: never more than twice). */
-  retries?: number;
-  /** Injected for tests; default setTimeout. */
-  sleep?: (ms: number) => Promise<void>;
-}
-
-/** Thrown for a failed search; `status` is the HTTP status (0 = network/timeout). */
-export class SquareApiError extends Error {
-  // A plain field, not a constructor parameter property: Node's type stripping rejects those.
-  status: number;
-  constructor(message: string, status: number) { super(message); this.status = status; }
-}
-
-const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
-const retryable = (status: number) => status === 429 || status >= 500 || status === 0;
-
-interface SquareErrorBody { errors?: { category: string; code: string; detail?: string }[] }
-
-/**
- * One Square call with the job's retry policy (spec §3): retries twice on 429 / 5xx / network errors
- * (Retry-After honoured up to 30 s, else 1 s, 2 s backoff); throws SquareApiError(`<label> failed (HTTP n): …`)
- * for anything else, so callers can tell auth failures (401/403) from outages.
- */
-async function squareCall<T extends SquareErrorBody>(label: string, url: string, init: { method: string; token: string; body?: string }, opts: SearchOptions): Promise<T> {
-  const doFetch = opts.fetch ?? fetch;
-  const sleep = opts.sleep ?? wait;
-  const retries = opts.retries ?? 2;
-  for (let attempt = 0; ; attempt++) {
-    let status = 0;
-    let why = '';
-    let retryAfterMs: number | null = null;
-    try {
-      const res = await doFetch(url, {
-        method: init.method,
-        headers: squareHeaders(init.token, opts.squareVersion),
-        ...(init.body != null ? { body: init.body } : {}),
-        signal: AbortSignal.timeout(opts.timeoutMs ?? 20000),
-      });
-      status = res.status;
-      const json = (await res.json().catch(() => ({}))) as T;
-      if (res.ok && !json.errors?.length) return json;
-      why = json.errors?.map((e) => `${e.code}${e.detail ? `: ${e.detail}` : ''}`).join('; ') || res.statusText;
-      const ra = Number(res.headers.get('retry-after'));
-      if (Number.isFinite(ra) && ra > 0) retryAfterMs = Math.min(ra, 30) * 1000;
-    } catch (e) {
-      why = (e as Error).message;
-    }
-    if (attempt >= retries || !retryable(status)) {
-      throw new SquareApiError(`${label} failed (HTTP ${status || 'network'}): ${why}`, status);
-    }
-    await sleep(retryAfterMs ?? 1000 * 2 ** attempt);
-  }
-}
+/** Same options as every Square client (square.ts `ListOptions`: fetch, apiBase, timeoutMs, retries, sleep). */
+export type SearchOptions = ListOptions;
 
 /** True for a rejected token or missing permission (HTTP 401/403): the job fails loudly on these (spec §3). */
 export const isAuthFailure = (e: unknown): boolean => {
   if (e instanceof SquareApiError) return e.status === 401 || e.status === 403;
-  // listSquareItems (square.ts) throws a plain Error whose message carries the status.
+  // Older plain errors whose message carries the status.
   return /\(HTTP (401|403)\)/.test(String((e as Error)?.message ?? e));
 };
 
@@ -114,7 +61,10 @@ export async function searchAvailability(
     },
   });
   const json = await squareCall<SearchResponse>('availability search', `${opts.apiBase ?? SQUARE_API}/v2/bookings/availability/search`, { method: 'POST', token, body }, opts);
-  return json.availabilities ?? [];
+  // Square answers "nothing open" with `{"availabilities":[],"errors":[]}` (checked on production 2026-10-28), so a
+  // body without the list is not "booked up": it is an error and that barber shows no data.
+  if (!Array.isArray(json.availabilities)) throw new SquareApiError('availability search failed (HTTP 200): response has no availabilities list', 200);
+  return json.availabilities.filter((a): a is Availability => typeof a === 'object' && a !== null);
 }
 
 /** What the site uses from one team member booking profile (GET /v2/bookings/team-member-booking-profiles). */
@@ -143,17 +93,18 @@ export async function listTeamMemberBookingProfiles(token: string, locationId: s
   do {
     const q = new URLSearchParams({ location_id: locationId, limit: '100', ...(cursor ? { cursor } : {}) });
     const json = await squareCall<ProfilesResponse>('booking profiles', `${opts.apiBase ?? SQUARE_API}/v2/bookings/team-member-booking-profiles?${q}`, { method: 'GET', token }, opts);
-    for (const p of json.team_member_booking_profiles ?? []) {
-      if (!p.team_member_id) continue;
+    // A bad body (not JSON, or the list not a list) throws: the job then treats bookable as unknown, never as "everyone true".
+    for (const p of arrayField<NonNullable<ProfilesResponse['team_member_booking_profiles']>[number]>(json as Record<string, unknown>, 'team_member_booking_profiles', 'booking profiles')) {
+      if (!p || typeof p !== 'object' || typeof p.team_member_id !== 'string' || !p.team_member_id) continue;
       out.push({
         team_member_id: p.team_member_id,
-        display_name: (p.display_name ?? '').trim(),
+        display_name: typeof p.display_name === 'string' ? p.display_name.trim() : '',
         // Square omits is_bookable only for profiles that are bookable; treat unset as bookable (never hide on doubt).
         is_bookable: p.is_bookable !== false,
-        description: (p.description ?? '').trim(),
+        description: typeof p.description === 'string' ? p.description.trim() : '',
       });
     }
-    cursor = json.cursor || undefined;
+    cursor = typeof json.cursor === 'string' && json.cursor ? json.cursor : undefined;
     if (++pages >= 20 && cursor) throw new SquareApiError('booking profiles: more than 20 pages, giving up', 0);
   } while (cursor);
   return out;

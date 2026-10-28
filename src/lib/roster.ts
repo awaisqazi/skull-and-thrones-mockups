@@ -25,6 +25,11 @@ export interface MergeInput {
    */
   maxDeactivateShare?: number;
   /**
+   * Second safety valve: more than this many barbers new to barbers.json in one shop in one build (a catalog shape
+   * change, retail items read as services…) ignores Square for that shop, like the share rule. Default 5.
+   */
+  maxNewcomers?: number;
+  /**
    * Square team member booking profiles by team_member_id (GET /v2/bookings/team-member-booking-profiles, via
    * listTeamMemberBookingProfiles in bookings.ts). Only `description` (the bio typed in Square) is used: it fills
    * the bio of a matched or new row whose barbers.json bio is empty (or still flagged placeholder). Absent = no bios.
@@ -42,12 +47,13 @@ export interface MergeResult {
 const NOT_A_BARBER = /^no[ -]?shows?$/i;
 
 /**
- * Barber = a service item that is not the "Any artist" item, not archived, not retail, not the no-show fee,
- * and has at least one variation customers can book online (a fee-only item has none).
+ * Barber = an APPOINTMENTS_SERVICE item (Square omits product_type on old REGULAR retail items, so a missing type is
+ * NOT a barber) that is not the "Any artist" item, not archived, not the no-show fee, and has at least one variation
+ * customers can book online (a fee-only item has none).
  */
 export function isBarberItem(item: SquareItem, exclude: ReadonlySet<string>): boolean {
   if (exclude.has(item.item_id) || item.is_archived || !item.name || NOT_A_BARBER.test(item.name.trim())) return false;
-  if (item.product_type != null && item.product_type !== 'APPOINTMENTS_SERVICE') return false;
+  if (item.product_type !== 'APPOINTMENTS_SERVICE') return false;
   // Items from the roster tests/fixtures carry no variations; only reject when Square listed some and none is bookable.
   return !item.variations?.length || item.variations.some((v) => v.available_for_booking);
 }
@@ -106,7 +112,7 @@ function withSquareBio(row: Row, bio: string): Partial<Row> {
   return { bio, bio_source: 'square', ...(placeholder ? { placeholder_fields: placeholder } : {}) };
 }
 
-export function mergeRoster({ rows, square: input, excludeItemIds = [], maxDeactivateShare = 0.5, profiles }: MergeInput): MergeResult {
+export function mergeRoster({ rows, square: input, excludeItemIds = [], maxDeactivateShare = 0.5, maxNewcomers = 5, profiles }: MergeInput): MergeResult {
   const exclude = new Set(excludeItemIds);
   const warnings: string[] = [];
   const stats = { matched: 0, added: 0, deactivated: 0, passthrough: 0 };
@@ -118,6 +124,12 @@ export function mergeRoster({ rows, square: input, excludeItemIds = [], maxDeact
     const gone = active.filter((r) => !allIds.has(r.item_id)).length;
     if (active.length >= 4 && gone / active.length > maxDeactivateShare) {
       warnings.push(`${location}: Square would hide ${gone} of ${active.length} barbers at once; ignoring Square for this shop (check the token and square_location_id).`);
+      continue;
+    }
+    const known = new Set(rows.map((r) => r.item_id));
+    const fresh = new Set((items ?? []).filter((i) => isBarberItem(i, exclude) && !known.has(i.item_id)).map((i) => i.item_id)).size;
+    if (fresh > maxNewcomers) {
+      warnings.push(`${location}: Square lists ${fresh} barbers that are not in barbers.json (more than ${maxNewcomers}); ignoring Square for this shop (check the catalog: retail items or a shape change?).`);
       continue;
     }
     square[location] = items;
@@ -171,7 +183,7 @@ export function mergeRoster({ rows, square: input, excludeItemIds = [], maxDeact
     nextSort[r.location] = Math.max(nextSort[r.location] ?? 0, s);
   }
   for (const [id, { location, item }] of newcomers) {
-    const slug = uniqueSlug(slugify(item.name), taken, `barber-${id.toLowerCase()}`);
+    const slug = uniqueSlug(slugify(item.name), taken, `barber-${slugify(id) || "item"}`);
     nextSort[location] = (nextSort[location] ?? 0) + 1;
     stats.added++;
     warnings.push(`${slug}: new in Square (${location}, item ${id}); needs photo + bio. Add a barbers.json row with this item_id.`);

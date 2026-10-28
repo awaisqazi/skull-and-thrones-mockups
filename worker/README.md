@@ -13,6 +13,13 @@ Square (booking / catalog / team / location event)
         location.updated                            -> event_type "square-catalog" -> deploy.yml (rebuild)
 ```
 
+It is also the **15-minute clock** for the availability refresh: a Cloudflare Cron Trigger (`[triggers]` in
+`wrangler.toml`, `*/15 12-23 * * *` and `*/15 0-2 * * *` UTC) fires `square-booking` with
+`client_payload: { reason: "cron", scheduled_time }`. GitHub's own `schedule:` in `availability.yml` is best-effort
+(on 2026-10-28 it fired 0 times in 5.5 hours of shop time) and stays only as a backstop; `availability.yml` applies its
+shop-hours guard to these cron dispatches, so ticks outside 07:00–20:59 Chicago exit quietly. Cron Triggers are free on
+the Workers Free plan. Until the Worker is deployed, only GitHub's cron runs.
+
 Plain JavaScript, no dependencies, no KV, no database. Full design and the setup checklist:
 `docs/SQUARE-INTEGRATION-SPEC.md` section 10.
 
@@ -24,7 +31,8 @@ Plain JavaScript, no dependencies, no KV, no database. Full design and the setup
 | `POST /square`, signature matches **any** key in `SQUARE_SIGNATURE_KEYS` | route the event, dedupe, dispatch to GitHub, `200` |
 | `POST /square`, missing or wrong signature | `401` (nothing is dispatched) |
 | `POST /square`, signed but not JSON | `400` |
-| `POST /square`, body over 256 KB | `413` |
+| `POST /square`, body over 256 KB (counted in bytes, also for streamed bodies without `content-length`) | `413` |
+| Cron Trigger (every 15 min, UTC windows above) | dispatch `square-booking` `{ reason: "cron", scheduled_time }`; a GitHub failure is logged (`"cron dispatch failed"`), the next tick tries again |
 | `POST /square` while the Worker is not configured | `500` (logged) |
 | anything else | `404` |
 
@@ -119,8 +127,9 @@ Run it twice with the same `event_id` within 10 minutes to see `200 duplicate`.
 
 ```bash
 cd site
-node --test "worker/test/*.test.mjs"   # 32 unit tests, no network (node:test)
-# (Node 26 no longer expands a bare directory; `node --test worker/test` works on Node 22.)
+node --test "worker/test/*.test.mjs"   # 43 unit tests, no network (node:test); also run by deploy.yml
+# or, from site/worker: npm test   (= node --test "test/*.test.mjs")
+# Cron locally: npx wrangler dev --test-scheduled, then curl "http://localhost:8787/__scheduled?cron=*/15+12-23+*+*+*"
 cd worker && npx wrangler dev          # local Worker on :8787; set values in worker/.dev.vars (git-ignored), not in the repo
 ```
 

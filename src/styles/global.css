@@ -83,7 +83,7 @@ body[data-loc="elmhurst"] [data-loc-only="addison"] { display: none !important; 
   margin-left: -0.04em; /* optical alignment of Anton side bearing */
 }
 .giant > span { display: block; }
-@media (max-width: 420px) { .giant { font-size: clamp(64px, 23.5vw, 96px); } }
+@media (max-width: 420px) { .giant { font-size: clamp(64px, 23.5vw, 96px); line-height: .9; } }
 .big { font: 400 var(--fs-big)/.86 var(--f-display); text-transform: uppercase; letter-spacing: -0.01em; }
 .h2 { font: 600 var(--fs-2xl)/1 var(--f-ui); letter-spacing: -0.04em; }
 .h3 { font: 600 var(--fs-xl)/1.1 var(--f-ui); letter-spacing: -0.03em; }
@@ -455,6 +455,7 @@ body[data-loc="elmhurst"] [data-loc-only="addison"] { display: none !important; 
 }
 @media (min-width: 900px) { .any-band { grid-template-columns: 1fr auto; } }
 .any-band .big { font-size: clamp(56px, 9vw, 140px); }
+.any-band .eyebrow { display: block; margin-bottom: 12px; }
 
 .steps { display: grid; gap: 24px; }
 @media (min-width: 900px) { .steps { grid-template-columns: repeat(3, 1fr); gap: 20px; } }
@@ -560,7 +561,7 @@ a.card__open { color: inherit; text-decoration: none; }
 .profile__body .panel__name { font-size: clamp(64px, 10vw, 152px); }
 .profile__body .panel__bio { max-width: 52ch; }
 .profile__body .btn-row { align-self: stretch; padding-top: 18px; border-top: 1px solid var(--line); }
-.profile__back { text-decoration: none; color: var(--ink); }
+.profile__back { display: inline-flex; align-items: center; min-height: 24px; text-decoration: none; color: var(--ink); }
 @media (hover: hover) { .profile__back:hover { text-decoration: underline; text-underline-offset: 3px; } }
 
 /* ---------- 15. Motion preferences ---------- */
@@ -931,6 +932,10 @@ body[data-loc] [data-loc-only="neutral"] { display: none !important; }
 
 /* Barber page: chip row + "Next openings" (each time links to the barber's Square page) */
 .profile__flags { display: flex; flex-wrap: wrap; gap: 8px; }
+/* Reserved space: without data the live chip keeps its slot (invisible), and below 900px chip and label stack, so
+   the row height is the same before and after live times arrive (QA 2026-10-28). */
+.profile__flags .avail[hidden] { display: inline-flex !important; visibility: hidden; }
+@media (max-width: 899px) { .profile__flags { flex-direction: column; align-items: flex-start; } }
 .openings { display: grid; gap: 12px; align-self: stretch; padding-top: 18px; border-top: 1px solid var(--line); }
 .openings__title { font: 600 12px/1 var(--f-ui); letter-spacing: .08em; text-transform: uppercase; }
 .openings__list { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -942,14 +947,39 @@ body[data-loc] [data-loc-only="neutral"] { display: none !important; }
 @media (hover: hover) { .openings__slot:hover { background: var(--ink); color: var(--paper); } }
 .openings__empty, .openings__offline { font-weight: 600; }
 .openings__note { font-size: 13px; color: var(--muted); max-width: 52ch; }
+/* Reserved space (QA 2026-10-28, layout shift): the slot row and the three status lines share one cell whose
+   minimum is one row of slot pills, so nothing below moves when live times arrive or go. */
+.openings__slots { display: grid; min-height: 44px; align-items: center; }
+.openings__slots > * { grid-area: 1 / 1; }
+.openings__wait { color: var(--muted); font-size: 14px; }
 
 /* /book: "First open chair" per shop */
 .first-chair { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; font-size: 15px; }
 .first-chair .avail { background: var(--accent); color: var(--ink); }
 .first-chair .avail .avail__dot { background: var(--ink); animation: none; }
-.first-chair__link { color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.first-chair__link { display: inline-flex; align-items: center; gap: .3em; min-height: 24px; color: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.first-chair__wait { display: inline-flex; align-items: center; min-height: 24px; color: var(--muted); font-size: 14px; }
+.first-chair[data-empty] .avail { background: var(--paper); color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); }
+.first-chair[data-empty] .avail .avail__dot { background: #B5B5B5; }
+/* Narrow cards: chip and link always on two lines, so the row height is the same with or without data. */
+@media (max-width: 599px) { .first-chair { flex-direction: column; align-items: flex-start; } }
 @media (hover: hover) { .first-chair__link:hover { text-decoration-thickness: 2px; } }
 
 /* /shop/: "Available in shop" line on cards without a Buy button. min-height = the Buy button's height,
    so the price lines up with cards that have a button (moved here from an inline style in ProductCard). */
 .pcard__instore { display: flex; align-items: center; min-height: 36px; }
+
+/* ---------- Print (QA 2026-10-28): a barber page prints headshot + bio on page 1, without the site chrome ---------- */
+@media print {
+  .nav, .bookbar, .skip, .footer, .lightbox, [aria-labelledby="more-title"] { display: none !important; }
+  body { background: #fff; color: #000; }
+  /* Headshot left, name + bio right, both on page 1 */
+  .profile { grid-template-columns: 2fr 3fr !important; gap: 24px; align-items: start; }
+  .profile__media { position: static !important; aspect-ratio: 4 / 5; max-height: 90mm; break-inside: avoid; }
+  .profile__body { gap: 10px; }
+  .profile__body .panel__name { font-size: 48px; }
+  .openings, .profile__flags, .profile__body .btn-row { display: none !important; }
+  .page-hero { padding-top: 0; padding-bottom: 12px; }
+  .avail__dot { animation: none !important; }
+  a[href^="http"]::after { content: ""; }
+}

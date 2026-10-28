@@ -3,7 +3,9 @@ name: Square token canary
 # Weekly check that each Square production token still works, so a revoked or expired token is noticed
 # even in a quiet week (the 15-minute availability job also fails loudly on 401/403, spec §3).
 # One read-only call per token: GET /v2/locations. Prints only the HTTP status and the location count,
-# never the response body, never the token. A non-200 fails the job, which makes GitHub email the repo owner.
+# never the response body, never the token. Only a rejected token (401/403) or an unexpected status fails the job
+# (GitHub then emails the repo owner); a network error, 429 or 5xx is retried once after 20 s and then only warns.
+# Square-Version is read from src/lib/square.ts (SQUARE_VERSION) so the pin cannot drift.
 # Skips cleanly when no SQUARE_TOKEN* secret exists. Costs nothing (public repo Actions minutes are free).
 
 on:
@@ -22,8 +24,15 @@ jobs:
       SQUARE_TOKEN: ${{ secrets.SQUARE_TOKEN }}
       SQUARE_TOKEN_ELMHURST: ${{ secrets.SQUARE_TOKEN_ELMHURST }}
     steps:
+      # The checkout is only for reading SQUARE_VERSION from src/lib/square.ts, so the pin cannot drift.
+      - uses: actions/checkout@v4
       - name: GET /v2/locations with each token
         run: |
+          # Square-Version from the one constant every client uses (src/lib/square.ts SQUARE_VERSION).
+          version=$(node -p "require('fs').readFileSync('src/lib/square.ts','utf8').match(/export const SQUARE_VERSION = '([^']+)'/)[1]") || version=''
+          if [ -z "$version" ]; then echo "::error title=Square token canary::could not read SQUARE_VERSION from src/lib/square.ts"; exit 1; fi
+          base="${SQUARE_API_BASE:-https://connect.squareup.com}"
+          delay="${CANARY_RETRY_DELAY:-20}"
           checked=0
           failed=0
           for name in SQUARE_TOKEN SQUARE_TOKEN_ELMHURST; do
@@ -34,19 +43,29 @@ jobs:
             fi
             checked=$((checked + 1))
             body="$RUNNER_TEMP/locations-$name.json"
-            status=$(curl -sS -o "$body" -w '%{http_code}' --max-time 30 \
-              -H "Authorization: Bearer $token" \
-              -H 'Square-Version: 2025-09-24' \
-              -H 'Accept: application/json' \
-              https://connect.squareup.com/v2/locations) || status=000
+            probe() {
+              status=$(curl -sS -o "$body" -w '%{http_code}' --max-time 30 \
+                -H "Authorization: Bearer $token" \
+                -H "Square-Version: $version" \
+                -H 'Accept: application/json' \
+                "$base/v2/locations") || status=000
+            }
+            probe
+            # Network error (000), rate limit or a Square outage: not a token problem, so try once more.
+            case "$status" in 000|429|5??) echo "$name: HTTP $status, retrying in ${delay}s."; sleep "$delay"; probe ;; esac
             count=$(jq -r '(.locations // []) | length' "$body" 2>/dev/null || echo '?')
             rm -f "$body"
-            if [ "$status" = "200" ]; then
-              echo "$name: HTTP 200, $count location(s)."
-            else
-              echo "::error title=Square token canary::$name: HTTP $status (expected 200). Rotate the $name secret (repo Settings → Secrets → Actions)."
-              failed=$((failed + 1))
-            fi
+            case "$status" in
+              200) echo "$name: HTTP 200, $count location(s) (Square-Version $version)." ;;
+              401|403)
+                echo "::error title=Square token canary::$name: HTTP $status (token rejected). Rotate the $name secret (repo Settings → Secrets → Actions)."
+                failed=$((failed + 1)) ;;
+              000|429|5??)
+                echo "::warning title=Square token canary::$name: HTTP $status twice (Square unreachable or rate limited); not a token problem, nothing to rotate." ;;
+              *)
+                echo "::error title=Square token canary::$name: unexpected HTTP $status (expected 200)."
+                failed=$((failed + 1)) ;;
+            esac
           done
           if [ "$checked" -eq 0 ]; then
             echo "No SQUARE_TOKEN* secret yet: nothing to check."

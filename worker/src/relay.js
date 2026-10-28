@@ -76,6 +76,22 @@ export async function dispatchToGitHub(env, eventType, payload, fetchImpl) {
 }
 
 /**
+ * Cloudflare Cron Trigger (wrangler.toml [triggers]): the primary 15-minute clock for availability.yml, because
+ * GitHub's own schedule is best-effort (QA 2026-10-28: 0 scheduled runs in 5.5 h). Fires `square-booking` with
+ * client_payload { reason: "cron", scheduled_time }; the workflow applies its shop-hours guard to these.
+ * @param {{ scheduledTime?: number, cron?: string }} event
+ * @returns {Promise<{ok: boolean, retryable: boolean, status: number|string}>}
+ */
+export async function handleScheduled(event, env, deps = {}) {
+  const fetchImpl = deps.fetch ?? globalThis.fetch;
+  const t = Number(event?.scheduledTime);
+  const scheduled_time = new Date(Number.isFinite(t) ? t : (deps.now ?? Date.now)()).toISOString();
+  const out = await dispatchToGitHub(env, BOOKING_EVENT, { reason: 'cron', scheduled_time }, fetchImpl);
+  log({ msg: out.ok ? 'cron dispatched' : 'cron dispatch failed', route: BOOKING_EVENT, cron: event?.cron ?? null, scheduled_time, github: out.status });
+  return out;
+}
+
+/**
  * @param {Request} request
  * @param {Record<string, string|undefined>} env
  * @param {{ fetch?: typeof fetch, cache?: Cache|null, now?: () => number }} [deps]
@@ -97,8 +113,10 @@ export async function handleRequest(request, env, deps = {}) {
 
   const declared = Number(request.headers.get('content-length') ?? 0);
   if (declared > MAX_BODY_BYTES) return text('payload too large', 413);
-  const raw = await request.text();
-  if (raw.length > MAX_BODY_BYTES) return text('payload too large', 413);
+  // Counted in bytes, not UTF-16 units (a chunked body has no content-length to trust).
+  const bytes = await request.arrayBuffer();
+  if (bytes.byteLength > MAX_BODY_BYTES) return text('payload too large', 413);
+  const raw = new TextDecoder().decode(bytes);
 
   const signature = request.headers.get('x-square-hmacsha256-signature');
   // Check every key (no early exit): one subscription per Square account, each with its own key.

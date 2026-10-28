@@ -56,33 +56,94 @@ export const EMPTY_FILE: AvailabilityFile = { generated_at: null, window_days: 7
 
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x);
 
-/** Tolerant reader: anything that is not shaped like the file becomes EMPTY_FILE (never throws). */
+/** A time zone Intl accepts (an unknown one would make every formatter throw), else the shop's. */
+export function validTz(tz: unknown): string {
+  if (typeof tz !== 'string' || !tz) return TZ;
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: tz });
+    return tz;
+  } catch {
+    return TZ;
+  }
+}
+
+const str = (x: unknown): x is string => typeof x === 'string';
+const num = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
+
+/**
+ * One barber block, field by field: ids/error strings, `bookable` boolean, `next` string|null, `soon` a list of
+ * strings, slot counts numbers. A `next` of any other type drops `next` and `soon` (= no data for that barber).
+ */
+function cleanBarber(b: Record<string, unknown>): BarberAvailability {
+  const out: BarberAvailability = {};
+  if (str(b.variation_id)) out.variation_id = b.variation_id;
+  if (str(b.team_member_id)) out.team_member_id = b.team_member_id;
+  if (typeof b.bookable === 'boolean') out.bookable = b.bookable;
+  if (b.next === null || str(b.next)) {
+    out.next = b.next;
+    if (Array.isArray(b.soon)) out.soon = b.soon.filter(str);
+  }
+  if (num(b.slots_today)) out.slots_today = b.slots_today;
+  if (num(b.slots_7d)) out.slots_7d = b.slots_7d;
+  if (str(b.error)) out.error = b.error;
+  return out;
+}
+
+/** One shop block: `ok` boolean, `fetched_at`/`error` strings, `barbers` an object of objects (anything else dropped). */
+function cleanShop(s: Record<string, unknown>): ShopAvailability {
+  const out: ShopAvailability = { ok: s.ok === true };
+  if (str(s.fetched_at)) out.fetched_at = s.fetched_at;
+  if (str(s.error)) out.error = s.error;
+  if (isObj(s.barbers)) {
+    out.barbers = {};
+    for (const [id, b] of Object.entries(s.barbers)) if (isObj(b)) out.barbers[id] = cleanBarber(b);
+  }
+  return out;
+}
+
+/**
+ * Tolerant reader: anything that is not shaped like the file becomes EMPTY_FILE; inside a file, shop and barber
+ * blocks are sanitised (cleanShop / cleanBarber) and `tz` validated. Never throws, so a damaged baked snapshot can
+ * never fail the build and a damaged live file can never throw in the browser.
+ */
 export function parseFile(x: unknown): AvailabilityFile {
   if (!isObj(x) || !isObj(x.shops)) return EMPTY_FILE;
+  const shops: Record<string, ShopAvailability> = {};
+  for (const [slug, s] of Object.entries(x.shops)) if (isObj(s)) shops[slug] = cleanShop(s);
   return {
-    generated_at: typeof x.generated_at === 'string' ? x.generated_at : null,
-    window_days: typeof x.window_days === 'number' ? x.window_days : 7,
-    tz: typeof x.tz === 'string' ? x.tz : TZ,
-    shops: x.shops as Record<string, ShopAvailability>,
+    generated_at: str(x.generated_at) ? x.generated_at : null,
+    window_days: num(x.window_days) ? x.window_days : 7,
+    tz: validTz(x.tz),
+    shops,
   };
 }
 
-/** The more recent of two files (by generated_at); `a` wins ties and unknowns. */
-export function newer(a: AvailabilityFile, b: AvailabilityFile): AvailabilityFile {
-  const ta = Date.parse(a.generated_at ?? ''), tb = Date.parse(b.generated_at ?? '');
+/**
+ * The more recent of two files (by generated_at); `a` wins ties and unknowns. A generated_at more than 2 h ahead of
+ * `now` (a skewed clock on the job runner) counts as unknown, so it can never stick over later good files.
+ */
+export function newer(a: AvailabilityFile, b: AvailabilityFile, now: number = Date.now()): AvailabilityFile {
+  const at = (f: AvailabilityFile) => {
+    const t = Date.parse(f.generated_at ?? '');
+    return Number.isFinite(t) && t <= now + STALE_MS ? t : NaN;
+  };
+  const ta = at(a), tb = at(b);
   return Number.isFinite(tb) && (!Number.isFinite(ta) || tb > ta) ? b : a;
 }
 
 /** Only what the page needs (embedded in the HTML for the browser script): drops ids and diagnostics. */
 export function slimFile(f: AvailabilityFile): AvailabilityFile {
   const shops: Record<string, ShopAvailability> = {};
-  for (const [slug, s] of Object.entries(f.shops)) {
+  for (const [slug, s] of Object.entries(f.shops ?? {})) {
+    if (!isObj(s)) continue;
     const barbers: Record<string, BarberAvailability> = {};
-    for (const [id, b] of Object.entries(s.barbers ?? {})) {
+    for (const [id, b] of Object.entries(isObj(s.barbers) ? s.barbers : {})) {
+      if (!isObj(b)) continue;
       if (b.bookable === false) barbers[id] = { bookable: false, next: null, soon: [] };
-      else if (Array.isArray(b.soon)) barbers[id] = { next: b.next ?? null, soon: b.soon };
+      // `next` absent = no data; it must not become null ("Booked up this week") on the way into the page.
+      else if (Array.isArray(b.soon) && (b.next === null || str(b.next))) barbers[id] = { next: b.next, soon: b.soon };
     }
-    shops[slug] = { ok: s.ok, ...(s.fetched_at ? { fetched_at: s.fetched_at } : {}), barbers };
+    shops[slug] = { ok: s.ok === true, ...(str(s.fetched_at) ? { fetched_at: s.fetched_at } : {}), barbers };
   }
   return { ...f, shops };
 }

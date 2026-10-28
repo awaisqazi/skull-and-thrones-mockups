@@ -92,7 +92,7 @@ test('bad day codes and unreadable times are skipped with warnings, the rest sur
 });
 
 test('empty, null and undefined periods give no hours and no warnings', () => {
-  for (const x of [[], null, undefined]) assert.deepEqual(periodsToHours(x), { hours: [], warnings: [] });
+  for (const x of [[], null, undefined]) assert.deepEqual(periodsToHours(x), { hours: [], warnings: [], skipped: 0 });
 });
 
 test('a timezone other than America/Chicago adds a warning but still converts', () => {
@@ -157,9 +157,10 @@ test('resolveHours: no Square location (failed fetch / no token) keeps the file 
   assert.deepEqual([r.hours_source, r.hours === FILE_HOURS, r.warnings], ['site', true, []]);
 });
 
-test('resolveHours: a foreign timezone still applies Square hours but carries the warning', () => {
+test('resolveHours: a foreign timezone keeps the file hours (the "Open now" clock is Chicago) and carries the warning', () => {
   const r = resolveHours({ hours: FILE_HOURS, hours_short: 'Open 7 days' }, { id: 'x', timezone: 'America/Denver', business_hours: { periods: ELMHURST } });
-  assert.equal(r.hours_source, 'square');
+  assert.equal(r.hours_source, 'site');
+  assert.equal(r.hours, FILE_HOURS);
   assert.match(r.warnings[0]!, /America\/Denver/);
 });
 
@@ -189,7 +190,7 @@ test('fetchLocation: HTTP and API errors throw with the status, never the token'
   );
   await assert.rejects(fetchLocation('t', 'L1', { fetch: reply(200, { errors: [{ code: 'ODD' }] }) }), /ODD/);
   await assert.rejects(fetchLocation('t', 'L1', { fetch: reply(200, {}) }), /no location in response/);
-  await assert.rejects(fetchLocation('t', 'L1', { fetch: (async () => new Response('<html>', { status: 502, statusText: 'Bad Gateway' })) as never }), /HTTP 502\): Bad Gateway/);
+  await assert.rejects(fetchLocation('t', 'L1', { fetch: (async () => new Response('<html>', { status: 502, statusText: 'Bad Gateway' })) as never, retries: 0 }), /HTTP 502\): Bad Gateway/);
 });
 
 test('fetchLocation: encodes the location id', async () => {

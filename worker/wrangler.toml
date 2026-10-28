@@ -5,6 +5,11 @@ main = "src/index.js"
 compatibility_date = "2026-01-01"
 workers_dev = true
 
+# Primary 15-minute clock for availability.yml (GitHub's own cron is best-effort). UTC, the union of 07:00–20:59
+# Chicago in CDT and CST; the workflow's shop-hours guard drops ticks outside shop hours. Cron Triggers are free.
+[triggers]
+crons = ["*/15 12-23 * * *", "*/15 0-2 * * *"]
+
 [vars]
 # Repo that owns deploy.yml and availability.yml; receives the repository_dispatch.
 GITHUB_REPO = "awaisqazi/skull-and-thrones-mockups"

@@ -22,7 +22,11 @@
  * recorded in the file and the shop keeps its last good block); 2 when a shop's catalog or booking-profiles call
  * answered HTTP 401/403 (token rejected: the file is still written first, then one "AUTH FAILURE <shop>" line per
  * shop and exit 2, so the workflow publishes the stale-but-honest file and then fails, which emails the repo owner);
- * 1 when the file cannot be written or the arguments are wrong.
+ * 1 when the file cannot be written or the arguments are wrong (any AUTH FAILURE lines are still printed first).
+ * Time budget: AVAILABILITY_DEADLINE_MS (default 360000 = 6 min); past it no new search or shop starts, those barbers
+ * get `error: 'deadline'` (a shop not reached keeps its previous block), and the file is written as usual.
+ * Square bodies are read strictly (src/lib/square.ts readJson): a 2xx that is not the expected JSON is an error for
+ * that call, never "nothing open"; a bad booking-profiles body means "bookable unknown" (no flag, everyone searched).
  */
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -35,6 +39,7 @@ import {
   pickBookableVariation, searchAvailability, summarise, isoSeconds, localDate,
   listTeamMemberBookingProfiles, profilesById, bookableFrom, isAuthFailure,
 } from '../src/lib/bookings.ts';
+import { parseFile } from '../src/lib/availability.ts';
 
 const root = new URL('../', import.meta.url);
 if (existsSync(new URL('.env', root))) process.loadEnvFile(new URL('.env', root));
@@ -42,6 +47,14 @@ if (existsSync(new URL('.env', root))) process.loadEnvFile(new URL('.env', root)
 const TZ = 'America/Chicago';
 const WINDOW_DAYS = 7;
 const CONCURRENCY = 4;
+/**
+ * Overall time budget (spec §3): once it is spent no new search starts; the barbers left get `error: 'deadline'`
+ * and the file is still written, well inside the workflow's 10-minute timeout. Env AVAILABILITY_DEADLINE_MS.
+ */
+const DEADLINE_MS = Number.isFinite(Number(process.env.AVAILABILITY_DEADLINE_MS)) && process.env.AVAILABILITY_DEADLINE_MS !== ''
+  ? Number(process.env.AVAILABILITY_DEADLINE_MS) : 360000;
+const STARTED = Date.now();
+const pastDeadline = () => Date.now() - STARTED >= DEADLINE_MS;
 const SANDBOX_API = 'https://connect.squareupsandbox.com';
 
 let args;
@@ -66,11 +79,23 @@ const shops = JSON.parse(await readFile(new URL('src/data/locations.json', root)
 const exclude = new Set(shops.map((s) => s.any_artist_item_id).filter(Boolean));
 
 /* ---------- Previous file (a failing shop keeps its last good block) ---------- */
+// Read through parseFile (src/lib/availability.ts), so only well-formed shop and barber blocks are ever carried over.
 let previous = { shops: {} };
-try {
-  const p = JSON.parse(await readFile(previousPath, 'utf8'));
-  if (p && typeof p.shops === 'object' && p.shops) previous = p;
-} catch { /* first run, or no previous file: start empty */ }
+if (existsSync(previousPath)) {
+  let raw = null;
+  try {
+    raw = JSON.parse(await readFile(previousPath, 'utf8'));
+  } catch (e) {
+    console.log(`previous file ${previousPath} is unreadable (${e.message}); starting empty.`);
+  }
+  if (raw !== null) {
+    const isObj = (x) => typeof x === 'object' && x !== null && !Array.isArray(x);
+    if (!isObj(raw) || !isObj(raw.shops)) console.log(`previous file ${previousPath} is not an availability file (no "shops" object); starting empty.`);
+    previous = parseFile(raw);
+  }
+} else {
+  console.log(`no previous file at ${previousPath}; starting empty.`);
+}
 
 /* ---------- Credentials per shop ---------- */
 const fixture = args.fixture ? JSON.parse(await readFile(resolve(args.fixture), 'utf8')) : null;
@@ -113,6 +138,7 @@ function replay(f) {
       const flt = body.query.filter;
       const rec = f.availability?.[flt.segment_filters[0].service_variation_id];
       if (!rec) return Response.json({ availabilities: [], errors: [] });
+      if (rec.delay_ms) await new Promise((r) => setTimeout(r, rec.delay_ms)); // tests: a slow search (deadline)
       if (rec.status && rec.status !== 200) return Response.json({ errors: rec.errors ?? [] }, { status: rec.status });
       const from = Date.parse(flt.start_at_range.start_at), to = Date.parse(flt.start_at_range.end_at);
       const availabilities = (rec.availabilities ?? [])
@@ -168,6 +194,11 @@ const window = { start: now, end: new Date(now.getTime() + WINDOW_DAYS * 8640000
 const result = {};
 
 for (const shop of shops) {
+  if (pastDeadline()) {
+    console.log(`${shop.slug}: time budget (${DEADLINE_MS} ms) spent before this shop; keeping the previous block.`);
+    result[shop.slug] = failed(shop.slug, 'deadline');
+    continue;
+  }
   const creds = credsFor(shop);
   if (creds.missing) {
     console.log(`${shop.slug}: ${creds.missing}; ${previous.shops?.[shop.slug]?.barbers ? 'keeping the previous block' : 'no data'}.`);
@@ -223,6 +254,7 @@ for (const shop of shops) {
     const base = { variation_id: choice.variation.id, team_member_id: choice.team_member_id, ...(bookable !== undefined ? { bookable } : {}) };
     // Not bookable online: Square would only say "no openings"; skip the call and say so (no `error`: this is data).
     if (bookable === false) return [item.item_id, { ...base, next: null, soon: [], slots_today: 0, slots_7d: 0 }];
+    if (pastDeadline()) return [item.item_id, { ...base, error: 'deadline' }];
     try {
       const slots = await searchAvailability(creds.token, creds.locationId, choice.variation.id, choice.team_member_id, window, opts);
       return [item.item_id, { ...base, ...summarise(slots, now, TZ, WINDOW_DAYS) }];
@@ -263,6 +295,7 @@ try {
   console.log(`wrote ${out}`);
 } catch (e) {
   console.error(`could not write ${out}: ${e.message}`);
+  for (const line of authFailures) console.error(line); // the rotate hint still reaches the log
   process.exit(1);
 }
 reportAuthFailures();

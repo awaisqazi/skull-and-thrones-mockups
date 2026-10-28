@@ -328,3 +328,8 @@ $$('[data-pstrip]').forEach((strip) => {
   window.addEventListener('resize', sync);
   sync();
 });
+
+/* ---------- Live availability chips (spec §3) ---------- */
+// Only pages that embed #st-avail (home, location, team, barber, /book) need src/scripts/availability.ts; it is loaded
+// here on demand so Layout.astro has a single, unconditional <script> (see the note there).
+if (document.getElementById('st-avail')) void import('./availability');

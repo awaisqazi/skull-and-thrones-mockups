@@ -257,7 +257,7 @@ test('default export: unhandled exceptions become a plain 500', async () => {
   console.log = (...a) => lines.push(a.join(' '));
   try {
     const req = new Request('https://x.dev/square', { method: 'POST', body: '{}' });
-    Object.defineProperty(req, 'text', { value: () => Promise.reject(new Error('stream broke')) });
+    Object.defineProperty(req, 'arrayBuffer', { value: () => Promise.reject(new Error('stream broke')) });
     const r = await worker.fetch(req, ENV, {});
     assert.equal(r.status, 500);
     assert.equal((await worker.fetch(new Request('https://x.dev/health'), ENV, {})).status, 200);

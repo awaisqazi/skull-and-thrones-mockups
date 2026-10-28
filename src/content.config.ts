@@ -8,7 +8,7 @@
  * the same, so a bad CMS row fails the build instead of shipping a broken page.
  */
 import { defineCollection, z } from 'astro:content';
-import { file, type Loader } from 'astro/loaders';
+import { file, type Loader, type LoaderContext } from 'astro/loaders';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { fetchShops, type SquareShop } from './lib/square.ts';
@@ -20,6 +20,42 @@ import { allowedBrand, fetchSquareProducts, NO_LINKS, type BuyLinks } from './li
 
 const locationSlug = z.enum(['addison', 'elmhurst']);
 const time = z.string().regex(/^\d{2}:\d{2}$/, 'HH:MM, 24h shop-local time');
+
+/**
+ * Stores each row, never letting a row that fails the collection schema fail the build (QA 2026-10-28: Square data
+ * such as a 20-second service_duration used to stop every deploy). A row that does not parse is replaced by its
+ * `fallback` (the barbers.json / locations.json row it was merged from) with a warning; when there is no fallback or
+ * the fallback fails too, the row is skipped with an error in the build log.
+ */
+async function storeRows(
+  ctx: Pick<LoaderContext, 'store' | 'parseData' | 'generateDigest' | 'logger'>,
+  label: string, rows: Record<string, unknown>[], idOf: (r: Record<string, unknown>) => string, fallbackOf: (r: Record<string, unknown>) => Record<string, unknown> | undefined = () => undefined,
+  /** true when `rows` came straight from a data file (products.json): a bad row is then a content bug and fails the build. */
+  fromFile = false,
+) {
+  const firstLine = (e: unknown) => String((e as Error)?.message ?? e).split('\n').filter((l) => l.trim()).slice(0, 3).join(' ').slice(0, 300);
+  for (const row of rows) {
+    const id = idOf(row);
+    try {
+      ctx.store.set({ id, data: await ctx.parseData({ id, data: row }), digest: ctx.generateDigest(row) });
+      continue;
+    } catch (e) {
+      const fb = fallbackOf(row);
+      // A row that came straight from the data file (no Square merge) is a content bug: fail the build loudly,
+      // as the file() loader used to. Only rows Square changed get the silent fallback (Square data must never break a deploy).
+      if (fb === row || (!fb && fromFile)) throw new Error(`${label} ${id}: does not match the schema (${firstLine(e)})`);
+      // No file row and not from a file = a Square-only row (newcomer barber, Square product): skip it, never break the deploy.
+      if (!fb) { ctx.logger.error(`${label} ${id}: Square row does not match the schema, skipped (${firstLine(e)})`); continue; }
+      ctx.logger.warn(`${label} ${id}: merged row does not match the schema, using the file row (${firstLine(e)})`);
+      const fid = idOf(fb);
+      try {
+        ctx.store.set({ id: fid, data: await ctx.parseData({ id: fid, data: fb }), digest: ctx.generateDigest(fb) });
+      } catch (e2) {
+        throw new Error(`${label} ${id}: the file row does not match the schema either (${firstLine(e2)})`);
+      }
+    }
+  }
+}
 
 /** Unwraps `{ "_note": "...", "<key>": [...] }` and keys every entry by its slug/id. */
 const fromKey = (key: string, idField: string) => (text: string) =>
@@ -70,10 +106,8 @@ function squareRosterLoader(): Loader {
           roster = merged.rows;
         }
         store.clear();
-        for (const row of roster) {
-          const id = String(row.slug);
-          store.set({ id, data: await parseData({ id, data: row }), digest: generateDigest(row) });
-        }
+        const fileRow = new Map(rows.map((r) => [r.item_id, r]));
+        await storeRows({ store, parseData, generateDigest, logger }, 'barber', roster, (r) => String(r.slug), (r) => fileRow.get(String(r.item_id)));
       };
       await sync();
       // Dev server: re-run when barbers.json changes (what the file() loader used to do).
@@ -120,10 +154,8 @@ function locationsLoader(): Loader {
           logger.info('Square hours off (no Square token set): using src/data/locations.json.');
         }
         store.clear();
-        for (const row of out) {
-          const id = String(row.slug);
-          store.set({ id, data: await parseData({ id, data: row }), digest: generateDigest(row) });
-        }
+        const fileRow = new Map(rows.map((r) => [String(r.slug), r]));
+        await storeRows({ store, parseData, generateDigest, logger }, 'location', out, (r) => String(r.slug), (r) => fileRow.get(String(r.slug)));
       };
       await sync();
       // Dev server: re-run when locations.json changes (what the file() loader used to do).
@@ -280,7 +312,8 @@ function productsLoader(): Loader {
       const productsPath = dataPath('products.json');
       const readJson = async (path: string) => JSON.parse(await readFile(path, 'utf8'));
       const sync = async () => {
-        let rows: Record<string, unknown>[] = (await readJson(productsPath)).products;
+        const fileRows: Record<string, unknown>[] = (await readJson(productsPath)).products;
+        let rows: Record<string, unknown>[] = fileRows;
         const source = (process.env.SHOP_SOURCE || 'bodega').trim().toLowerCase();
         if (source === 'square') {
           const links: BuyLinks = { ...NO_LINKS };
@@ -303,11 +336,9 @@ function productsLoader(): Loader {
           }
         }
         store.clear();
-        for (const row of rows) {
-          if (!allowedBrand(row.vendor)) continue;
-          const id = String(row.handle);
-          store.set({ id, data: await parseData({ id, data: row }), digest: generateDigest(row) });
-        }
+        // A product row that fails the schema is skipped with an error (no per-row fallback: a Square row and a Bodega row are different products).
+        const fromSquare = rows !== fileRows;
+        await storeRows({ store, parseData, generateDigest, logger }, 'product', rows.filter((r) => allowedBrand(r.vendor)), (r) => String(r.handle), () => undefined, !fromSquare);
       };
       await sync();
       // Dev server: re-run when products.json changes (what the file() loader used to do).
