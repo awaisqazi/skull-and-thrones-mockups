@@ -28,6 +28,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
+      # SQUARE_TOKEN = the main account (Addison). Elmhurst books through a separate Square account,
+      # so SQUARE_TOKEN_ELMHURST overrides it for that shop (spec §9). SQUARE_TOKEN_ADDISON is unused.
+      SQUARE_TOKEN: ${{ secrets.SQUARE_TOKEN }}
       SQUARE_TOKEN_ADDISON: ${{ secrets.SQUARE_TOKEN_ADDISON }}
       SQUARE_TOKEN_ELMHURST: ${{ secrets.SQUARE_TOKEN_ELMHURST }}
     steps:
@@ -46,8 +49,8 @@ jobs:
         id: tokens
         if: steps.guard.outputs.run == 'true'
         run: |
-          if [ -z "$SQUARE_TOKEN_ADDISON" ] && [ -z "$SQUARE_TOKEN_ELMHURST" ]; then
-            echo "No SQUARE_TOKEN_* secrets yet (spec §9): nothing to fetch, nothing published."
+          if [ -z "$SQUARE_TOKEN" ] && [ -z "$SQUARE_TOKEN_ADDISON" ] && [ -z "$SQUARE_TOKEN_ELMHURST" ]; then
+            echo "No SQUARE_TOKEN secret yet (spec §9): nothing to fetch, nothing published."
             echo "go=false" >> "$GITHUB_OUTPUT"
           else
             echo "go=true" >> "$GITHUB_OUTPUT"

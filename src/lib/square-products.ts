@@ -15,7 +15,7 @@
  * Pure fetch, no SDK, no Astro imports (loadable by `node --test` and the scripts; Node strips the types).
  * Deliberately independent of the roster's SquareItem so the two workstreams never share a struct.
  */
-import { SQUARE_API, SQUARE_VERSION, isAtLocation, tokenEnv, type SquareShop } from './square.ts';
+import { SQUARE_API, SQUARE_VERSION, isAtLocation, missingTokens, squareToken, type SquareShop } from './square.ts';
 
 /**
  * Brand allowlist, shared by BOTH sources (client request 2026-10-18): only these vendors are listed.
@@ -396,8 +396,8 @@ export interface ShopCreds { slug: string; token: string; locationId: string }
 const isSandbox = (apiBase?: string) => /squareupsandbox\.com/.test(apiBase ?? '');
 
 /**
- * Production: one token per shop (SQUARE_TOKEN_ADDISON / SQUARE_TOKEN_ELMHURST) and the shop's
- * square_location_id; any token missing -> nothing (half a shop would be confusing).
+ * Production: SQUARE_TOKEN (the main account) or a per-shop override (SQUARE_TOKEN_ADDISON /
+ * SQUARE_TOKEN_ELMHURST) and the shop's square_location_id; any token missing -> nothing (half a shop would be confusing).
  * Sandbox (apiBase is squareupsandbox.com): both shops use SQUARE_TOKEN_<SHOP> if set else SQUARE_SANDBOX_TOKEN,
  * and the single sandbox location SQUARE_SANDBOX_LOCATION_ID, so a one-account sandbox stands in for both shops.
  */
@@ -405,11 +405,11 @@ export function resolveCreds(shops: SquareShop[], env: Record<string, string | u
   if (isSandbox(apiBase)) {
     const missing = ['SQUARE_SANDBOX_TOKEN', 'SQUARE_SANDBOX_LOCATION_ID'].filter((k) => !env[k]);
     if (missing.length) return { creds: [], missing };
-    return { creds: shops.map((s) => ({ slug: s.slug, token: env[tokenEnv(s.slug)] || env.SQUARE_SANDBOX_TOKEN!, locationId: env.SQUARE_SANDBOX_LOCATION_ID! })), missing: [] };
+    return { creds: shops.map((s) => ({ slug: s.slug, token: squareToken(env, s.slug) || env.SQUARE_SANDBOX_TOKEN!, locationId: env.SQUARE_SANDBOX_LOCATION_ID! })), missing: [] };
   }
-  const missing = shops.map((s) => tokenEnv(s.slug)).filter((k) => !env[k]);
+  const missing = missingTokens(shops, env);
   if (missing.length) return { creds: [], missing };
-  return { creds: shops.map((s) => ({ slug: s.slug, token: env[tokenEnv(s.slug)]!, locationId: s.square_location_id })), missing: [] };
+  return { creds: shops.map((s) => ({ slug: s.slug, token: squareToken(env, s.slug)!, locationId: s.square_location_id })), missing: [] };
 }
 
 export interface SquareProductsResult {

@@ -49,6 +49,23 @@ export interface SquareVariation {
   available_for_booking: boolean;
 }
 
+const NOT_STANDARD = /kid|child|teen|senior|long|mid|pixie|beard|perm|color|consult|lining|facial|braid/i;
+
+/**
+ * The barber's standard adult haircut, the service the site prices and probes availability for:
+ * a variation named exactly "Haircut" (case/space-insensitive), else the cheapest priced variation whose
+ * name contains "haircut" but is not a kids/senior/long-length/add-on service, else the cheapest priced
+ * "haircut" of any kind, else null. Checked against both production catalogs 2026-10-29: every barber
+ * has a plain "Haircut" variation, so the fallbacks only matter for future catalog edits.
+ */
+export function standardHaircut(variations: SquareVariation[]): SquareVariation | null {
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '');
+  const exact = variations.find((v) => norm(v.name) === 'haircut');
+  if (exact) return exact;
+  const priced = variations.filter((v) => /haircut/i.test(v.name) && v.price != null && v.price > 0).sort((a, b) => a.price! - b.price!);
+  return priced.find((v) => !NOT_STANDARD.test(v.name)) ?? priced[0] ?? null;
+}
+
 /* Minimal shapes of the Catalog API objects we read (https://developer.squareup.com/reference/square/catalog-api/search-catalog-objects). */
 interface Money { amount?: number | bigint | null; currency?: string }
 interface CatalogVariation {
@@ -185,6 +202,19 @@ export interface SquareShop { slug: string; square_location_id: string; any_arti
 /** Env var holding a shop's access token: addison → SQUARE_TOKEN_ADDISON, elmhurst → SQUARE_TOKEN_ELMHURST. */
 export const tokenEnv = (slug: string) => `SQUARE_TOKEN_${slug.toUpperCase()}`;
 
+/**
+ * A shop's access token: `SQUARE_TOKEN_<SHOP>` when set, else the shared `SQUARE_TOKEN`.
+ * Production (checked 2026-10-28, spec §9): the main "Skull & Thrones" account holds Addison (D11BVA91E8V3N)
+ * and is `SQUARE_TOKEN`; Elmhurst's live booking page (L65DF5AG5BDAN) is a SEPARATE account, "Skull and Thrones
+ * Elmhurst", so it needs `SQUARE_TOKEN_ELMHURST`. (The main account also has an "S&T Elmhurst" location,
+ * L60NY7G2ZQ7B0, with duplicate barber services; it is not what customers book through today.)
+ */
+export const squareToken = (env: Record<string, string | undefined>, slug: string) => env[tokenEnv(slug)] || env.SQUARE_TOKEN;
+
+/** Names of the token env vars still needed: [] when SQUARE_TOKEN is set, else each unset SQUARE_TOKEN_<SHOP>. */
+export const missingTokens = (shops: { slug: string }[], env: Record<string, string | undefined>) =>
+  shops.map((s) => tokenEnv(s.slug)).filter((k) => !env[k] && !env.SQUARE_TOKEN);
+
 export interface ShopsResult {
   /** Items per shop slug, only for shops fetched successfully with at least one item. */
   square: Record<string, SquareItem[]>;
@@ -199,12 +229,12 @@ export interface ShopsResult {
  * would be confusing). Never throws: failures come back in `errors`.
  */
 export async function fetchShops(shops: SquareShop[], env: Record<string, string | undefined>, opts: ListOptions = {}): Promise<ShopsResult> {
-  const missing = shops.map((s) => tokenEnv(s.slug)).filter((k) => !env[k]);
+  const missing = missingTokens(shops, env);
   const result: ShopsResult = { square: {}, missing, errors: [] };
   if (missing.length) return result;
   await Promise.all(shops.map(async (s) => {
     try {
-      const items = await listSquareItems(env[tokenEnv(s.slug)]!, s.square_location_id, opts);
+      const items = await listSquareItems(squareToken(env, s.slug)!, s.square_location_id, opts);
       // An empty catalog almost always means a wrong token/location or missing permission, not "everyone quit".
       if (!items.some((i) => i.item_id !== s.any_artist_item_id)) throw new Error(`no items at location ${s.square_location_id}`);
       result.square[s.slug] = items;

@@ -5,7 +5,7 @@ on:
     branches: [main]
   workflow_dispatch: {}
   # Nightly rebuild (09:00 UTC = 3/4 AM Chicago) so barbers added/removed in Square appear by
-  # morning. Only does anything once the SQUARE_TOKEN_* secrets exist (see README "Square roster").
+  # morning. Only does anything once the SQUARE_TOKEN secret exists (see README "Square roster").
   schedule:
     - cron: '0 9 * * *'
   # Later (CMS): Supabase fires a repository_dispatch on content changes.
@@ -33,6 +33,9 @@ jobs:
     env:
       # Square roster (src/content.config.ts). Unset secrets = empty strings = build uses
       # src/data/barbers.json as before. Build-time only; never exposed to the browser.
+      # SQUARE_TOKEN = the main account (Addison). Elmhurst books through a separate Square account,
+      # so SQUARE_TOKEN_ELMHURST overrides it for that shop (spec §9). SQUARE_TOKEN_ADDISON is unused.
+      SQUARE_TOKEN: ${{ secrets.SQUARE_TOKEN }}
       SQUARE_TOKEN_ADDISON: ${{ secrets.SQUARE_TOKEN_ADDISON }}
       SQUARE_TOKEN_ELMHURST: ${{ secrets.SQUARE_TOKEN_ELMHURST }}
       # Retail products source for /shop/ and the home strip (spec §5): `bodega` = src/data/products.json

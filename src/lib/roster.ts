@@ -6,7 +6,7 @@
  * Pure function, no I/O and no Astro imports, so it is unit-tested with `npm test`
  * (src/lib/roster.test.ts). The content loader in src/content.config.ts calls it.
  */
-import type { SquareItem } from './square.ts';
+import { standardHaircut, type SquareItem } from './square.ts';
 
 export type Row = Record<string, unknown> & { slug: string; name: string; location: string; item_id: string };
 
@@ -31,10 +31,18 @@ export interface MergeResult {
   stats: { matched: number; added: number; deactivated: number; passthrough: number };
 }
 
-/** Barber = a bookable service item that is not the "Any artist" item, not archived, not retail. */
+/** Square's "No Show" fee item is an APPOINTMENTS_SERVICE too (both production accounts have one). */
+const NOT_A_BARBER = /^no[ -]?shows?$/i;
+
+/**
+ * Barber = a service item that is not the "Any artist" item, not archived, not retail, not the no-show fee,
+ * and has at least one variation customers can book online (a fee-only item has none).
+ */
 export function isBarberItem(item: SquareItem, exclude: ReadonlySet<string>): boolean {
-  if (exclude.has(item.item_id) || item.is_archived || !item.name) return false;
-  return item.product_type == null || item.product_type === 'APPOINTMENTS_SERVICE';
+  if (exclude.has(item.item_id) || item.is_archived || !item.name || NOT_A_BARBER.test(item.name.trim())) return false;
+  if (item.product_type != null && item.product_type !== 'APPOINTMENTS_SERVICE') return false;
+  // Items from the roster tests/fixtures carry no variations; only reject when Square listed some and none is bookable.
+  return !item.variations?.length || item.variations.some((v) => v.available_for_booking);
 }
 
 export function slugify(name: string): string {
@@ -52,6 +60,10 @@ function uniqueSlug(base: string, taken: Set<string>, fallback: string): string 
 }
 
 const dollars = (price: number | null) => (price != null && price > 0 ? Math.round(price) : undefined);
+/** "Haircuts from $X": the standard adult haircut's price, else Square's cheapest variation. */
+const haircutFrom = (item: SquareItem) => dollars(standardHaircut(item.variations ?? [])?.price ?? item.price_from);
+/** Minutes of that same service. */
+const haircutMinutes = (item: SquareItem) => standardHaircut(item.variations ?? [])?.duration_minutes ?? item.duration_minutes;
 
 export function mergeRoster({ rows, square: input, excludeItemIds = [], maxDeactivateShare = 0.5 }: MergeInput): MergeResult {
   const exclude = new Set(excludeItemIds);
@@ -91,8 +103,8 @@ export function mergeRoster({ rows, square: input, excludeItemIds = [], maxDeact
         ...row,
         name: item.name || row.name,
         location,
-        haircut_from: dollars(item.price_from) ?? row.haircut_from,
-        duration_minutes: item.duration_minutes ?? row.duration_minutes,
+        haircut_from: haircutFrom(item) ?? row.haircut_from,
+        duration_minutes: haircutMinutes(item) ?? row.duration_minutes,
         square_note: item.description || row.square_note,
         needs_profile: false,
       };
@@ -127,8 +139,8 @@ export function mergeRoster({ rows, square: input, excludeItemIds = [], maxDeact
       location,
       tier: 'barber',
       role: 'Barber',
-      ...(dollars(item.price_from) != null ? { haircut_from: dollars(item.price_from) } : {}),
-      ...(item.duration_minutes != null ? { duration_minutes: item.duration_minutes } : {}),
+      ...(haircutFrom(item) != null ? { haircut_from: haircutFrom(item) } : {}),
+      ...(haircutMinutes(item) != null ? { duration_minutes: haircutMinutes(item) } : {}),
       item_id: id,
       specialties: [],
       bio: '',

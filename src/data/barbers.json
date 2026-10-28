@@ -714,6 +714,27 @@
       ],
       "confidence": "confirmed",
       "headshot_source": "instagram-profile"
+    },
+    {
+      "slug": "alexa",
+      "name": "Alexa",
+      "location": "addison",
+      "tier": "barber",
+      "role": "Barber",
+      "item_id": "HA2X54P3K4CS6TYGTKYU7743",
+      "specialties": [],
+      "bio": "",
+      "accepting_new_clients": true,
+      "sort_order": 16,
+      "is_active": false,
+      "placeholder_fields": [
+        "role",
+        "bio",
+        "specialties",
+        "headshot"
+      ],
+      "confidence": "none",
+      "_note": "Appeared in the Addison Square catalog 2026-10-29 with no team member assigned to any service, so online booking would fail. Hidden (is_active false) until Eric confirms she is taking online bookings and sends a photo + bio; then set is_active true."
     }
   ]
 }

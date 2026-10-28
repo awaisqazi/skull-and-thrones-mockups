@@ -14,7 +14,7 @@
  *   --fixture <file>     replay recorded Square responses instead of calling Square (no tokens needed);
  *                        slot dates are moved so the fixture's anchor_date becomes today
  *
- * Tokens: SQUARE_TOKEN_ADDISON / SQUARE_TOKEN_ELMHURST (env or the git-ignored site/.env).
+ * Tokens: SQUARE_TOKEN (main account) plus SQUARE_TOKEN_ELMHURST (separate Elmhurst account); SQUARE_TOKEN_<SHOP> overrides (env or the git-ignored site/.env).
  * SQUARE_API_BASE overrides the API host. Tokens are never printed.
  * Exit code: 0 even when Square fails for a shop (the failure is recorded in the file); 1 only when
  * the file cannot be written or the arguments are wrong.
@@ -24,7 +24,7 @@ import { existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { fileURLToPath } from 'node:url';
-import { listSquareItems, tokenEnv } from '../src/lib/square.ts';
+import { listSquareItems, squareToken } from '../src/lib/square.ts';
 import { isBarberItem } from '../src/lib/roster.ts';
 import { pickBookableVariation, searchAvailability, summarise, isoSeconds, localDate } from '../src/lib/bookings.ts';
 
@@ -78,7 +78,7 @@ function credsFor(shop) {
     if (!token || !locationId) return { missing: 'token missing (SQUARE_SANDBOX_TOKEN / SQUARE_SANDBOX_LOCATION_ID)' };
     return { token, locationId, apiBase: process.env.SQUARE_API_BASE || SANDBOX_API };
   }
-  const token = process.env[tokenEnv(shop.slug)];
+  const token = squareToken(process.env, shop.slug);
   if (!token) return { missing: 'token missing' };
   return { token, locationId: shop.square_location_id, apiBase: process.env.SQUARE_API_BASE || undefined };
 }

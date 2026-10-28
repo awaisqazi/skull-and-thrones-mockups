@@ -24,7 +24,7 @@ const fromKey = (key: string, idField: string) => (text: string) =>
 
 /**
  * Barbers roster: Square decides who exists, barbers.json (the CMS later) decides how they look.
- * - SQUARE_TOKEN_ADDISON and SQUARE_TOKEN_ELMHURST set: list each shop's Square catalog items
+ * - SQUARE_TOKEN (or SQUARE_TOKEN_ADDISON and SQUARE_TOKEN_ELMHURST) set: list each shop's Square catalog items
  *   (src/lib/square.ts) and merge with barbers.json by item_id (src/lib/roster.ts, unit-tested).
  *   New Square items get an auto slug + needs_profile; rows gone from Square get is_active: false.
  * - Tokens missing: barbers.json exactly as before (one info line in the build log).
@@ -102,7 +102,7 @@ const locations = defineCollection({
 
 const barbers = defineCollection({
   // barbers.json merged with both shops' Square catalogs (see squareRosterLoader below);
-  // without SQUARE_TOKEN_ADDISON + SQUARE_TOKEN_ELMHURST this is exactly barbers.json.
+  // without SQUARE_TOKEN (or SQUARE_TOKEN_ADDISON + SQUARE_TOKEN_ELMHURST) this is exactly barbers.json.
   loader: squareRosterLoader(),
   schema: z.object({
     slug: z.string().regex(/^[a-z0-9-]+$/),
@@ -195,7 +195,7 @@ const cultureStats = defineCollection({
 /**
  * Retail products. Two sources, one row shape (see docs/SQUARE-INTEGRATION-SPEC.md section 5):
  * - default (SHOP_SOURCE unset or "bodega"): src/data/products.json from the Bodega Shopify feed, exactly as before.
- * - SHOP_SOURCE=square AND both SQUARE_TOKEN_* set: the shops' Square retail catalog (src/lib/square-products.ts),
+ * - SHOP_SOURCE=square AND SQUARE_TOKEN (or both SQUARE_TOKEN_*) set: the shops' Square retail catalog (src/lib/square-products.ts),
  *   with stock from the Inventory API and buy links from src/data/square-buy-links.json / square-payment-links.json.
  * A Square failure, or Square returning no listable products, logs a warning and falls back to products.json.
  * The brand allowlist (BRANDS in src/lib/square-products.ts, shared with scripts/sync-products.mjs) applies to both.

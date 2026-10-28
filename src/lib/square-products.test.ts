@@ -227,6 +227,9 @@ test('fetchSquareProducts: a failing shop is reported, never thrown', async () =
 test('resolveCreds: production needs every token; sandbox base falls back to the sandbox token and location', () => {
   const shops = [{ slug: 'addison', square_location_id: 'A' }, { slug: 'elmhurst', square_location_id: 'E' }];
   assert.deepEqual(resolveCreds(shops, {}, undefined).missing, ['SQUARE_TOKEN_ADDISON', 'SQUARE_TOKEN_ELMHURST']);
+  const one = resolveCreds(shops, { SQUARE_TOKEN: 'T', SQUARE_TOKEN_ELMHURST: 'E' }, undefined);
+  assert.deepEqual(one.missing, [], 'one SQUARE_TOKEN covers both shops');
+  assert.deepEqual(one.creds.map((c) => c.token), ['T', 'E'], 'per-shop token still wins over SQUARE_TOKEN');
   assert.deepEqual(resolveCreds(shops, { SQUARE_TOKEN_ADDISON: 'a', SQUARE_TOKEN_ELMHURST: 'e' }).creds.map((c) => [c.slug, c.token, c.locationId]), [['addison', 'a', 'A'], ['elmhurst', 'e', 'E']]);
   const sb = 'https://connect.squareupsandbox.com';
   assert.deepEqual(resolveCreds(shops, {}, sb).missing, ['SQUARE_SANDBOX_TOKEN', 'SQUARE_SANDBOX_LOCATION_ID']);

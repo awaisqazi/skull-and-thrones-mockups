@@ -1,7 +1,7 @@
 /* npm test  (node --test; Node 22.18+ runs .ts directly). No network: Square is faked. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mergeRoster, slugify, type Row } from './roster.ts';
+import { isBarberItem, mergeRoster, slugify, type Row } from './roster.ts';
 import { listSquareItems, toSquareItem, type CatalogObject, type SquareItem } from './square.ts';
 
 const ADDISON = 'D11BVA91E8V3N';
@@ -149,4 +149,14 @@ test('listSquareItems paginates with cursor and sends the auth + version headers
 test('listSquareItems throws on API errors (the loader catches and falls back)', async () => {
   const fakeFetch = (async () => new Response(JSON.stringify({ errors: [{ category: 'AUTHENTICATION_ERROR', code: 'UNAUTHORIZED' }] }), { status: 401 })) as unknown as typeof fetch;
   await assert.rejects(listSquareItems('bad', ADDISON, { fetch: fakeFetch }), /HTTP 401.*UNAUTHORIZED/);
+});
+
+test('isBarberItem: the "No Show" fee item and items with no online-bookable variation are not barbers', () => {
+  const ex = new Set<string>();
+  const vb = (available_for_booking: boolean) => ({ id: 'V', name: 'Regular', price: 0, duration_minutes: 30, team_member_ids: [], available_for_booking });
+  assert.equal(isBarberItem(sq('N1', 'No Show', { variations: [vb(false)] }), ex), false);
+  assert.equal(isBarberItem(sq('N2', 'No-show', { variations: [vb(true)] }), ex), false);
+  assert.equal(isBarberItem(sq('F1', 'Fee only', { variations: [vb(false)] }), ex), false, 'nothing bookable online');
+  assert.equal(isBarberItem(sq('B1', 'Bella', { variations: [vb(false), { ...vb(true), name: 'Haircut' }] }), ex), true);
+  assert.equal(isBarberItem(sq('B2', 'Nick'), ex), true, 'no variations listed (fixtures) still counts');
 });

@@ -123,3 +123,10 @@ test('searchAvailability: auth errors are not retried and keep Square\'s detail'
   );
   assert.equal(calls, 1);
 });
+
+test('pickBookableVariation: the plain "Haircut" beats a cheaper "Kids Haircut" (production catalogs list both)', () => {
+  const pick = pickBookableVariation({ variations: [v('HB', 'Haircut and Beard', 75), v('K', 'Kids Haircut', 40), v('H', 'Haircut', 65), v('B', 'Beard Grooming', 30)] })!;
+  assert.equal(pick.variation.id, 'H');
+  const noPlain = pickBookableVariation({ variations: [v('K', 'Kids Haircut (12 and under)', 35), v('L', 'Long Length Haircut', 70), v('M', "Men's haircut", 50)] })!;
+  assert.equal(noPlain.variation.id, 'M', 'not kids, not long-length');
+});

@@ -80,7 +80,7 @@ changes (or `--from page1.json …` to use saved feed pages), then rebuild.
 By default (`SHOP_SOURCE` unset or `bodega`) nothing above changes: the shop is `products.json` from Bodega.
 Setting `SHOP_SOURCE=square` (a variable in `.github/workflows/deploy.yml`, or in the shell) makes the
 `products` collection (`productsLoader()` in `src/content.config.ts`) read the shops' **Square retail catalog**
-instead, **only when both `SQUARE_TOKEN_ADDISON` and `SQUARE_TOKEN_ELMHURST` are set**. Any failure (a token missing,
+instead, **only when `SQUARE_TOKEN` (or both `SQUARE_TOKEN_ADDISON` and `SQUARE_TOKEN_ELMHURST`) is set**. Any failure (a token missing,
 a Square error, no listable items) logs a warning and falls back to `products.json`; the build never fails because of Square.
 Decision tree and fee notes: `../docs/SQUARE-INTEGRATION-SPEC.md` section 5.
 
@@ -169,8 +169,9 @@ Square shows up the next morning, or immediately via Actions → Deploy site →
 
 | Secret | Value |
 |---|---|
-| `SQUARE_TOKEN_ADDISON` | Production access token for the **Addison** Square account (location `D11BVA91E8V3N`) |
-| `SQUARE_TOKEN_ELMHURST` | Production access token for the **Elmhurst** Square account (location `L65DF5AG5BDAN`) |
+| `SQUARE_TOKEN` | Production access token of the main "Skull & Thrones" Square account (Addison, location `D11BVA91E8V3N`). Used by any shop without a per-shop token. Only the account owner can copy it from the Developer Console. |
+| `SQUARE_TOKEN_ELMHURST` | Production access token of the separate "Skull and Thrones Elmhurst" account (location `L65DF5AG5BDAN`, the booking page customers use) |
+| `SQUARE_TOKEN_ADDISON` | Optional override for Addison; unused today |
 
 The shops are two separate Square merchant accounts, so each needs its own token: create an app at
 developer.squareup.com while signed in to that account, and copy its **Production** access token

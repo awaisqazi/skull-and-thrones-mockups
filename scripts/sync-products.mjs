@@ -16,7 +16,7 @@
  * that ONE shop's Square catalog (pickup is at a specific shop, so the shop is required; run it once per shop) that has no Square Online page and no stored link yet, creates ONE Checkout API payment link
  * (POST /v2/online-checkout/payment-links) and stores it in src/data/square-payment-links.json keyed by variation id, so
  * links are reused, never duplicated. Without --write it only lists what it would create. Writing needs production tokens
- * (SQUARE_TOKEN_ADDISON / SQUARE_TOKEN_ELMHURST, env or site/.env) with ORDERS_WRITE + PAYMENTS_WRITE; it refuses the sandbox
+ * (SQUARE_TOKEN, or SQUARE_TOKEN_ADDISON / SQUARE_TOKEN_ELMHURST, env or site/.env) with ORDERS_WRITE + PAYMENTS_WRITE; it refuses the sandbox
  * unless SQUARE_API_BASE is the sandbox (then it uses the sandbox token). Does not touch products.json.
  *
  * buy_url is the checkout route switch: today it equals the Bodega product page. When the route is

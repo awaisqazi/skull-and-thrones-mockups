@@ -8,7 +8,7 @@
  * Pure fetch, no SDK, no Astro imports, so `node --test` and scripts/fetch-availability.mjs load it
  * directly. The pure helpers (pickBookableVariation, summarise) are unit-tested in bookings.test.ts.
  */
-import { SQUARE_API, squareHeaders, type SquareItem, type SquareVariation } from './square.ts';
+import { SQUARE_API, squareHeaders, standardHaircut, type SquareItem, type SquareVariation } from './square.ts';
 
 /** One entry of Square's `availabilities[]` (https://developer.squareup.com/reference/square/bookings-api/search-availability). */
 export interface Availability {
@@ -112,8 +112,9 @@ const byPrice = (a: SquareVariation, b: SquareVariation) => (a.price ?? Infinity
  * Which service to ask Square about for a barber (spec §3):
  * 1. only variations bookable online (available_for_booking not false);
  * 2. prefer variations that have a team member assigned (a variation with nobody on it cannot be searched);
- * 3. the cheapest priced variation whose name contains "haircut" (case-insensitive), else the cheapest priced
- *    variation, else (no fixed prices at all) the first variation in catalog order.
+ * 3. the standard adult haircut (`standardHaircut` in square.ts: a variation named "Haircut", else the cheapest
+ *    "haircut" that is not a kids/senior/long-length service), else the cheapest priced variation whose name
+ *    contains "haircut", else the cheapest priced variation, else the first variation in catalog order.
  * The team member is that variation's team_member_ids[0] (a barber item has one barber).
  * Returns null when the item has no bookable variation.
  */
@@ -123,7 +124,7 @@ export function pickBookableVariation(item: Pick<SquareItem, 'variations'>): Boo
   const staffed = bookable.filter((v) => v.team_member_ids.length > 0);
   const pool = staffed.length ? staffed : bookable;
   const priced = pool.filter((v) => v.price != null && v.price > 0).sort(byPrice);
-  const variation = priced.find(isHaircut) ?? priced[0] ?? pool[0]!;
+  const variation = standardHaircut(pool) ?? priced.find(isHaircut) ?? priced[0] ?? pool[0]!;
   return { variation, team_member_id: variation.team_member_ids[0] ?? null };
 }
 

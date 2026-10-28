@@ -10,7 +10,7 @@
  * SQUARE_API_BASE=https://connect.squareupsandbox.com: runs against the sandbox with SQUARE_SANDBOX_TOKEN and
  * SQUARE_SANDBOX_LOCATION_ID standing in for both shops (barbers.json item ids will not exist there).
  *
- * Needs SQUARE_TOKEN_ADDISON and SQUARE_TOKEN_ELMHURST (env or a git-ignored site/.env).
+ * Needs SQUARE_TOKEN (main account) plus SQUARE_TOKEN_ELMHURST (the separate Elmhurst account) (env or a git-ignored site/.env).
  * Without them it says so and exits 0. Exits 1 if a shop's fetch fails.
  * Node 22.18+ (imports the .ts modules directly; Node strips the types).
  */
@@ -44,7 +44,7 @@ if (sandbox) {
 const { square, missing, errors } = await fetchShops(shops, env, { apiBase });
 if (missing.length) {
   console.log(`Square check skipped: ${missing.join(' and ')} not set. The build uses src/data/barbers.json as-is.`);
-  console.log(`Set both (${shops.map((s) => tokenEnv(s.slug)).join(', ')}) to test against the live Square Catalog API.`);
+  console.log(`Set SQUARE_TOKEN (or both ${shops.map((s) => tokenEnv(s.slug)).join(' and ')}) to test against the live Square Catalog API.`);
   process.exit(0);
 }
 
