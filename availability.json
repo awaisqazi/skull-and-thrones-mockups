@@ -1,0 +1,346 @@
+{
+  "generated_at": "2026-10-31T19:16:04Z",
+  "window_days": 7,
+  "tz": "America/Chicago",
+  "shops": {
+    "addison": {
+      "fetched_at": "2026-10-31T19:16:06Z",
+      "ok": true,
+      "barbers": {
+        "IG6Y73MXISY24MVYVEHSSFCQ": {
+          "variation_id": "ZEXCR7ARTMRYS6P3WDIAGIG2",
+          "team_member_id": "AI3pYv13MNWpU3TGZQNK",
+          "bookable": true,
+          "next": "2026-11-02T22:00:00Z",
+          "soon": [
+            "2026-11-02T22:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 1
+        },
+        "QKLFDTZSBKHTGSWG3U5WMSP6": {
+          "variation_id": "5DFJ6VDJKXI2TN5GAH22WOJX",
+          "team_member_id": "RudHutNUytXrnD4_6e9P",
+          "bookable": true,
+          "next": "2026-11-03T14:00:00Z",
+          "soon": [
+            "2026-11-03T14:00:00Z",
+            "2026-11-03T15:00:00Z",
+            "2026-11-03T16:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 26
+        },
+        "YH7L6N2OL6D2VKKQTYLGCDAY": {
+          "variation_id": "4AOE6RD4DYZE6S7UIESSSH2P",
+          "team_member_id": "TMwnRbn0p6KKUKwY",
+          "bookable": true,
+          "next": "2026-11-02T16:00:00Z",
+          "soon": [
+            "2026-11-02T16:00:00Z",
+            "2026-11-02T18:00:00Z",
+            "2026-11-02T19:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 27
+        },
+        "DBRRZN5WC3Y3RTSNMMW5EJGN": {
+          "variation_id": "FPCVSMT3TYDWCAEEODAU3APY",
+          "team_member_id": "Nm6JqcM2-IAtpYAgLhqz",
+          "bookable": true,
+          "next": "2026-11-02T20:15:00Z",
+          "soon": [
+            "2026-11-02T20:15:00Z",
+            "2026-11-02T23:00:00Z",
+            "2026-11-03T00:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 20
+        },
+        "MYAXT2YC2OF3RGKNCMQSGFPF": {
+          "variation_id": "OXRKZRL4PA727TGFJE23TIM7",
+          "team_member_id": "TMyCMZlT-wCacQkk",
+          "bookable": true,
+          "next": "2026-11-03T16:00:00Z",
+          "soon": [
+            "2026-11-03T16:00:00Z",
+            "2026-11-03T18:00:00Z",
+            "2026-11-03T19:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 34
+        },
+        "WMWW4OSKI334OASEUQRV5OY2": {
+          "variation_id": "GSO4VWDFW3C3JZS2FY3IU3P5",
+          "team_member_id": "TMHv_9JLDc9HQEmw",
+          "bookable": true,
+          "next": "2026-11-03T17:00:00Z",
+          "soon": [
+            "2026-11-03T17:00:00Z",
+            "2026-11-03T18:00:00Z",
+            "2026-11-03T20:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 10
+        },
+        "KJ3JCPRVP32IKO6LKXIZINL4": {
+          "variation_id": "S7NT7MNYDKYAJU4Y36UTNLTJ",
+          "team_member_id": "TMQ73JCabgw3woMy",
+          "bookable": true,
+          "next": "2026-11-03T18:00:00Z",
+          "soon": [
+            "2026-11-03T18:00:00Z",
+            "2026-11-03T19:00:00Z",
+            "2026-11-03T20:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 29
+        },
+        "7R7UJ47T2F44GVJKH7NU6WNC": {
+          "variation_id": "YDKDG3WJ6VP2KSD2BQ32ZN5S",
+          "team_member_id": "_S3l18_nLqo0SdjihsDK",
+          "bookable": true,
+          "next": "2026-11-02T15:00:00Z",
+          "soon": [
+            "2026-11-02T15:00:00Z",
+            "2026-11-02T16:00:00Z",
+            "2026-11-02T17:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 31
+        },
+        "BTOOSYPMAEG6PIBBRE75L5GH": {
+          "variation_id": "VOX5U2PZXONFJ33GPD6HKPG2",
+          "team_member_id": "TMzBz0WLlAMsBASm",
+          "bookable": true,
+          "next": "2026-11-02T21:00:00Z",
+          "soon": [
+            "2026-11-02T21:00:00Z",
+            "2026-11-04T16:00:00Z",
+            "2026-11-04T17:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 19
+        },
+        "DVE3222JSCK3F4E36XHADN6Q": {
+          "variation_id": "HJODLTGBMBBNHDUGNTP2VPI7",
+          "team_member_id": "mMdi2qLP_He0-odO_zDW",
+          "bookable": true,
+          "next": "2026-11-02T16:00:00Z",
+          "soon": [
+            "2026-11-02T16:00:00Z",
+            "2026-11-02T17:00:00Z",
+            "2026-11-02T18:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 27
+        },
+        "L6DOT2SZ7CYQMOSFUKXCTTLH": {
+          "variation_id": "OA6P4D25Q7EUOJYFAWFHU2KX",
+          "team_member_id": "TMBraNpo3Cv-ug5N",
+          "bookable": true,
+          "next": "2026-11-01T14:00:00Z",
+          "soon": [
+            "2026-11-01T14:00:00Z",
+            "2026-11-01T16:00:00Z",
+            "2026-11-01T17:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 33
+        },
+        "AN2U5RNAGZJQASIRIMLYO6XL": {
+          "variation_id": "UYS6NMDQKA5TJPRRQD4OZQRV",
+          "team_member_id": "TMoSsr5hn3f8g7iN",
+          "bookable": true,
+          "next": "2026-11-05T21:30:00Z",
+          "soon": [
+            "2026-11-05T21:30:00Z",
+            "2026-11-05T22:30:00Z",
+            "2026-11-06T19:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 8
+        },
+        "I56TJK2FOFIPPKGZG2SJMTHQ": {
+          "variation_id": "I27MO26WOLKV7JREER6QBDDW",
+          "team_member_id": "zJcYMwraHWsYoHfLYFwh",
+          "bookable": true,
+          "next": "2026-11-03T16:00:00Z",
+          "soon": [
+            "2026-11-03T16:00:00Z",
+            "2026-11-03T17:00:00Z",
+            "2026-11-03T19:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 18
+        },
+        "RETPNFELD4Y3X65VHIKL3WBY": {
+          "variation_id": "WV7BREGWGDAY47H3HZ4ZXV2X",
+          "team_member_id": "TM4lLF_NIMe5unqD",
+          "bookable": true,
+          "next": "2026-11-04T16:00:00Z",
+          "soon": [
+            "2026-11-04T16:00:00Z",
+            "2026-11-04T17:00:00Z",
+            "2026-11-04T18:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 29
+        },
+        "GP7OICKASS3DQAC247I72VST": {
+          "variation_id": "2OO3CIFSQ77FZIIDCZP2IZTR",
+          "team_member_id": "TMeqi35H1Wqsj_xQ",
+          "bookable": true,
+          "next": "2026-11-01T15:00:00Z",
+          "soon": [
+            "2026-11-01T15:00:00Z",
+            "2026-11-01T16:00:00Z",
+            "2026-11-01T17:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 55
+        },
+        "HA2X54P3K4CS6TYGTKYU7743": {
+          "variation_id": "RT62QAID6M7B62KIEBTRLZTK",
+          "error": "no team member assigned to variation RT62QAID6M7B62KIEBTRLZTK (Haircut)"
+        }
+      }
+    },
+    "elmhurst": {
+      "fetched_at": "2026-10-31T19:16:07Z",
+      "ok": true,
+      "barbers": {
+        "PJDURCJVBAVPSBXAUP6VQEV4": {
+          "variation_id": "TAQVKK27GVOUY6VIZYSONLGB",
+          "team_member_id": "TMe4bsZOJQOZZYBG",
+          "bookable": true,
+          "next": "2026-11-02T20:00:00Z",
+          "soon": [
+            "2026-11-02T20:00:00Z",
+            "2026-11-05T15:00:00Z",
+            "2026-11-05T16:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 23
+        },
+        "25FEVIHUXEJIZQE7HGFYTYPH": {
+          "variation_id": "SJXBJO4VD64FYW7I42K2J3M5",
+          "team_member_id": "TM9jvEHzQXRJysKN",
+          "bookable": true,
+          "next": "2026-11-02T16:00:00Z",
+          "soon": [
+            "2026-11-02T16:00:00Z",
+            "2026-11-02T17:00:00Z",
+            "2026-11-02T19:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 26
+        },
+        "3LCO5MAREUX4XXLRT4SMYGRH": {
+          "variation_id": "RMVZOKRKWXI2KMSRLRDASZCG",
+          "team_member_id": "TMDbOCehQXAYEMsx",
+          "bookable": true,
+          "next": "2026-11-02T20:00:00Z",
+          "soon": [
+            "2026-11-02T20:00:00Z",
+            "2026-11-03T21:00:00Z",
+            "2026-11-04T16:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 29
+        },
+        "KEEGQN3I73ENOAGL5UDVA272": {
+          "variation_id": "DQKB5LVCW7365MY4PYHRVG3D",
+          "team_member_id": "TMKrEx3NfXV-PPKd",
+          "bookable": true,
+          "next": "2026-11-01T13:00:00Z",
+          "soon": [
+            "2026-11-01T13:00:00Z",
+            "2026-11-03T16:00:00Z",
+            "2026-11-03T18:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 16
+        },
+        "36F635MXDBRTJVBMC7XAP6ME": {
+          "variation_id": "WVBHBDRUDEB2ANJWDXCIFMVC",
+          "team_member_id": "TMz59iSfivMYUWye",
+          "bookable": true,
+          "next": "2026-11-02T16:00:00Z",
+          "soon": [
+            "2026-11-02T16:00:00Z",
+            "2026-11-02T17:00:00Z",
+            "2026-11-02T18:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 31
+        },
+        "MFGYLL5AFGGE5P66FEHPPJB2": {
+          "variation_id": "HD2MXPJ5JD6HGBAJ62K5CAJG",
+          "team_member_id": "TMxdFARJYx6x0O7Z",
+          "bookable": true,
+          "next": "2026-11-01T16:00:00Z",
+          "soon": [
+            "2026-11-01T16:00:00Z",
+            "2026-11-01T18:00:00Z",
+            "2026-11-01T19:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 40
+        },
+        "T4NNZ4UDRM4XSIJBQG6LNFTM": {
+          "variation_id": "RR4TOXURCMR5C46SJCKYUKG2",
+          "team_member_id": "TM26KpkhMPn5Zzeh",
+          "bookable": true,
+          "next": "2026-11-02T18:00:00Z",
+          "soon": [
+            "2026-11-02T18:00:00Z",
+            "2026-11-02T19:00:00Z",
+            "2026-11-02T20:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 41
+        },
+        "PJLZAFYIIXKWMX7JBUWPUQEF": {
+          "variation_id": "FNX76PRHOVP2CYQYSFVUC6NK",
+          "team_member_id": "TM3uHVWCca7ldOQB",
+          "bookable": true,
+          "next": "2026-11-01T21:00:00Z",
+          "soon": [
+            "2026-11-01T21:00:00Z",
+            "2026-11-03T00:00:00Z",
+            "2026-11-04T21:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 13
+        },
+        "ECJVDSIFOU7UOT2VLHD54HRE": {
+          "variation_id": "TM5ICMHQ6VBJ4DJXORVO5API",
+          "team_member_id": "TMQayUvY3jNbPVqr",
+          "bookable": true,
+          "next": "2026-11-03T23:00:00Z",
+          "soon": [
+            "2026-11-03T23:00:00Z",
+            "2026-11-04T00:00:00Z",
+            "2026-11-04T01:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 6
+        },
+        "5GLRERZEXKX2AXHI5KJR5GAV": {
+          "variation_id": "A2EM2Q65KZJFQM6YTLQ36AP7",
+          "team_member_id": "TMwvoed1gp40CJBo",
+          "bookable": true,
+          "next": "2026-11-01T16:00:00Z",
+          "soon": [
+            "2026-11-01T16:00:00Z",
+            "2026-11-01T18:00:00Z",
+            "2026-11-01T19:00:00Z"
+          ],
+          "slots_today": 0,
+          "slots_7d": 54
+        }
+      }
+    }
+  }
+}
