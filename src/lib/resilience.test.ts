@@ -79,7 +79,11 @@ test('fetchShops: a hung Square call is cut off by the timeout and reported, not
   const hang = ((_url: string, init: RequestInit) => new Promise<Response>((_, reject) => {
     init.signal!.addEventListener('abort', () => reject(init.signal!.reason));
   })) as unknown as typeof fetch;
-  const r = await fetchShops(SHOPS, ENV, { fetch: hang, timeoutMs: 50 });
+  // AbortSignal.timeout's timer is unref'd: on Node 22 nothing else keeps the event loop alive while the fake
+  // fetch hangs, so the test runner would finish with this promise pending. A ref'd timer keeps the loop up.
+  const keepAlive = setTimeout(() => {}, 5000);
+  let r;
+  try { r = await fetchShops(SHOPS, ENV, { fetch: hang, timeoutMs: 50 }); } finally { clearTimeout(keepAlive); }
   assert.deepEqual(r.square, {});
   assert.equal(r.errors.length, 2);
   assert.match(r.errors[0]!, /timeout|abort/i);
