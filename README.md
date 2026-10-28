@@ -7,9 +7,9 @@ from the HTML mockups in `../mockups/`. Booking goes to each shop's own Square p
 
 ```sh
 npm install
-npm run dev        # http://localhost:4321/skull-and-thrones-mockups/
+npm run dev        # http://localhost:4321/ (BASE_PATH defaults to the old project path unless set; `BASE_PATH=/ npm run dev` matches production)
 npm run build      # outputs dist/
-npm run preview    # serves dist/ at http://localhost:4321/skull-and-thrones-mockups/
+npm run preview    # serves dist/ (build with BASE_PATH=/ SITE_URL=https://skullandthrones.com to match production)
 npm run check      # astro check (types + .astro diagnostics)
 npm test           # unit tests: roster merge + Square client (no network)
 npm run check:square  # live Square catalogs → roster, item_id check, retail items + shop route (S1/S2/S3); needs the two tokens, exits 0 without them
@@ -125,26 +125,26 @@ It also runs nightly (09:00 UTC) and on a `repository_dispatch` of type `square-
 1. Push the repo to GitHub (the workflow assumes this `site/` folder is the repo root; if not,
    move the workflow to the root `.github/workflows/` and set `path: site`).
 2. Repo → Settings → Pages → Source: **GitHub Actions**.
-3. Push to `main` (or Actions → Deploy site → Run workflow). The site appears at
-   `https://awaisqazi.github.io/skull-and-thrones-mockups/`.
+3. Push to `main` (or Actions → Deploy site → Run workflow). The site is live at
+   `https://skullandthrones.com/` (custom domain on GitHub Pages since 2026-10-28; the old
+   `https://awaisqazi.github.io/skull-and-thrones-mockups/` address 301-redirects there).
 
 The Pages artifact is uploaded by the action, so no `.nojekyll` file is needed (Jekyll never runs
 on an Actions deploy, and `_astro/` assets are served as-is).
 
-### Base path
+### Base path and domain
 
-`astro.config.mjs` reads `BASE_PATH` (default `/skull-and-thrones-mockups`) and `SITE_URL`
-(default `https://awaisqazi.github.io`). The workflow sets both in its `env:` block.
+`astro.config.mjs` reads `BASE_PATH` and `SITE_URL`; the workflow sets `BASE_PATH: /` and
+`SITE_URL: https://skullandthrones.com` in its `env:` block (the old project-site pair is kept there in a
+comment for rollback). `public/CNAME` holds the domain for reference; what counts for an Actions deploy is
+the custom domain registered in repo Settings → Pages (set with
+`gh api repos/awaisqazi/skull-and-thrones-mockups/pages -X PUT -f cname=skullandthrones.com`).
 
-### Switching to the custom domain
-
-1. In `.github/workflows/deploy.yml` set `BASE_PATH: /` and `SITE_URL: https://skullandthrones.com`
-   (and update the defaults in `astro.config.mjs` if you like).
-2. Repo → Settings → Pages → Custom domain: `skullandthrones.com`, then tick **Enforce HTTPS**.
-   With an Actions deploy, the domain set in Settings is what counts. If you also want a `CNAME`
-   file in the build for reference, add `public/CNAME` containing `skullandthrones.com`.
-3. DNS: apex `A` → 185.199.108.153 / .109.153 / .110.153 / .111.153, `www` CNAME → `awaisqazi.github.io`.
-   See `../cms/ARCHITECTURE.md` for the full checklist.
+DNS at Namecheap (account `skullandthrones`, Advanced DNS): apex `A` → 185.199.108.153 / .109.153 /
+.110.153 / .111.153 and `www` CNAME → `awaisqazi.github.io`, TTL 5 min; the MX and SPF records belong to
+Namecheap email forwarding and must stay. Old Square Online URLs (`/gallery`, `/s/shop`, `/s/order`,
+`/product/...`) are static redirects in `astro.config.mjs`. Full runbook, verification and rollback:
+`../docs/DOMAIN-CUTOVER-READY.md`.
 
 Because every link goes through `url()` / `import.meta.env.BASE_URL`, nothing else changes.
 At the domain root, `robots.txt` and the sitemap also become effective for crawlers (on a
