@@ -12,7 +12,8 @@ import { file, type Loader, type LoaderContext } from 'astro/loaders';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { fetchShops, type SquareShop } from './lib/square.ts';
-import { mergeRoster, type Row } from './lib/roster.ts';
+import { mergeRosterCheckingPhotos, type Row } from './lib/roster.ts';
+import { checkPhotos } from './lib/square-photos.ts';
 import { listTeamMemberBookingProfiles, type BookingProfile } from './lib/bookings.ts';
 import { squareToken } from './lib/square.ts';
 import { fetchLocation, resolveHours, type SquareLocation } from './lib/square-locations.ts';
@@ -69,6 +70,10 @@ const fromKey = (key: string, idField: string) => (text: string) =>
  * - Bios: each fetched shop's team member booking profiles (listTeamMemberBookingProfiles in src/lib/bookings.ts)
  *   fill the bio of rows whose barbers.json bio is empty (bio_source: 'square'); a barbers.json bio always wins.
  *   A failed profiles call only warns: the roster builds without Square bios, exactly as before.
+ * - Headshots (spec §4): the item image, else the staff profile photo, becomes `headshot` with
+ *   `headshot_source: 'square'` (rendered ahead of the local file in src/assets/headshots). Each Square photo URL
+ *   is HEAD-checked first (checkPhotos in src/lib/square-photos.ts: 8 s timeout, 4 in flight); a 404, timeout or
+ *   non-image falls back to the next source with a warning, so a bad photo never fails the build.
  * - Tokens missing: barbers.json exactly as before (one info line in the build log).
  * - Square error for a shop: warn, that shop falls back to barbers.json. Never fails the build.
  */
@@ -97,9 +102,16 @@ function squareRosterLoader(): Loader {
               logger.warn(`Square roster: ${s.slug}: booking profiles failed (${(e as Error).message}); no Square bios for that shop.`);
             }
           }));
-          const merged = mergeRoster({ rows, square, excludeItemIds: shops.map((l) => l.any_artist_item_id ?? ''), profiles });
+          const merged = await mergeRosterCheckingPhotos(
+            { rows, square, excludeItemIds: shops.map((l) => l.any_artist_item_id ?? ''), profiles },
+            (urls) => checkPhotos(urls, { timeoutMs: 8000, concurrency: 4 }),
+          );
           const fromSquare = merged.rows.filter((r) => r.bio_source === 'square').map((r) => r.slug);
           if (fromSquare.length) logger.info(`Square roster: bio from Square for ${fromSquare.join(', ')}.`);
+          const photoSlugs = (from: 'item' | 'profile') => Object.entries(merged.photos).filter(([, f]) => f === from).map(([s]) => s);
+          const noPhoto = merged.rows.filter((r) => r.is_active !== false && r.headshot_source !== 'square' && Object.keys(square).includes(r.location)).map((r) => r.slug);
+          logger.info(`Square roster: photo from the Square item image for ${photoSlugs('item').join(', ') || 'nobody'}; from the staff photo for ${photoSlugs('profile').join(', ') || 'nobody'}; no Square photo (local file or placeholder) for ${noPhoto.join(', ') || 'nobody'}.`);
+          for (const w of merged.photoWarnings) logger.warn(w);
           for (const w of merged.warnings) logger.warn(w);
           const { matched, added, deactivated } = merged.stats;
           logger.info(`Square roster (${Object.keys(square).join(' + ')}): ${matched} matched, ${added} new, ${deactivated} no longer in Square.`);
@@ -221,10 +233,17 @@ const barbers = defineCollection({
     /** Pre-resolved URL (the Supabase `barbers_with_booking` view provides this). Wins over item_id. */
     booking_url: z.string().url().optional(),
     instagram: z.string().optional(),
-    /** Remote headshot URL (Supabase Storage later). Absent = generated placeholder tile. */
+    /**
+     * Remote headshot URL. With headshot_source 'square' it is the barber's Square photo (set by the roster loader,
+     * spec §4) and renders ahead of the local file; otherwise (Supabase Storage later) the local file in
+     * src/assets/headshots wins. Absent and no local file = generated placeholder tile.
+     */
     headshot: z.string().url().optional(),
-    /** Where the current headshot came from; 'instagram-profile' / 'instagram-post' (a crop from a shop or collab post) mean interim until the shop supplies real headshots. */
-    headshot_source: z.enum(['client', 'instagram-profile', 'instagram-post']).optional(),
+    /**
+     * Where the current headshot came from. 'square' = Square item image or staff photo (this build, roster loader);
+     * 'instagram-profile' / 'instagram-post' (a crop from a shop or collab post) mean interim until the shop supplies real headshots.
+     */
+    headshot_source: z.enum(['client', 'instagram-profile', 'instagram-post', 'square']).optional(),
     specialties: z.array(z.string()).default([]),
     bio: z.string().default(''),
     /** 'square' = the bio came from the barber's Square booking profile because barbers.json had none. Absent = barbers.json. */

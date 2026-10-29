@@ -298,7 +298,7 @@ test('fix 3 jsonForScript: </script>, <!--, &, U+2028/2029 cannot break out of a
 
 /* ---------- Fix 4: roster valves ---------- */
 
-const sqItem = (item_id: string, extra: Partial<SquareItem> = {}): SquareItem => ({ item_id, name: item_id, price_from: 45, duration_minutes: 45, description: '', product_type: 'APPOINTMENTS_SERVICE', is_archived: false, variations: [], image_ids: [], ...extra });
+const sqItem = (item_id: string, extra: Partial<SquareItem> = {}): SquareItem => ({ item_id, name: item_id, price_from: 45, duration_minutes: 45, description: '', product_type: 'APPOINTMENTS_SERVICE', is_archived: false, variations: [], image_ids: [], image_url: null, ...extra });
 const rosterRow = (slug: string, item_id: string): Row => ({ slug, name: slug, location: 'addison', item_id, tier: 'barber', role: 'Barber', is_active: true });
 
 test('fix 4 isBarberItem: only APPOINTMENTS_SERVICE items are barbers (a missing product_type is retail)', () => {

@@ -1,7 +1,7 @@
 ---
 import type { GetStaticPaths } from 'astro';
 import { Image } from 'astro:assets';
-import { localHeadshot } from '../../lib/localImages';
+import { headshotFor } from '../../lib/localImages';
 import Layout from '../../layouts/Layout.astro';
 import BarberCard from '../../components/BarberCard.astro';
 import PortfolioGrid from '../../components/PortfolioGrid.astro';
@@ -23,8 +23,10 @@ const loc = (await getLocationMap())[b.location];
 const work = await getPortfolio({ barber: b.slug });
 const others = (await getBarbers(b.location)).filter((x) => x.slug !== b.slug).slice(0, 4);
 const isPlaceholder = (f: string) => b.placeholder_fields.includes(f);
-const local = localHeadshot(b.slug);
-const hasPhoto = Boolean(local || b.headshot);
+// Same rule as BarberCard (headshotFor, spec §4): Square photo → local file → other remote headshot → placeholder.
+// Two <Image> branches below only for the types (remote URL vs local import); both render the same markup.
+const photo = headshotFor(b);
+const hasPhoto = Boolean(photo);
 // Copy flagged as placeholder, or anything that reads like a developer note ("TODO client: …"), never renders publicly.
 const isDevNote = (s: string) => /\b(TODO|FIXME|TBD)\b|\bclient:/i.test(s);
 const bio = b.bio && !isPlaceholder('bio') && !isDevNote(b.bio) ? b.bio.trim() : '';
@@ -64,10 +66,10 @@ const person = {
     <div class="rule-row"><a class="eyebrow profile__back" href={url(`barbers/#${loc.slug}`)}>← All barbers</a><a class="eyebrow profile__back" href={loc.href}>{loc.name} · {loc.street}</a></div>
     <div class="profile">
       <div class:list={['media profile__media', !hasPhoto && 'profile__media--initials']} data-initials={b.initials}>
-        {local
-          ? <Image src={local} alt={`Headshot of ${b.name}`} width={900} height={1125} widths={[450, 700, 900]} sizes={headshotSizes} loading="eager" fetchpriority="high" />
-          : b.headshot
-            ? <Image src={b.headshot} alt={`Headshot of ${b.name}`} width={900} height={1125} widths={[450, 700, 900]} sizes={headshotSizes} loading="eager" fetchpriority="high" />
+        {typeof photo === 'string'
+          ? <Image src={photo} alt={`Headshot of ${b.name}`} width={900} height={1125} widths={[450, 700, 900]} sizes={headshotSizes} loading="eager" fetchpriority="high" />
+          : photo
+            ? <Image src={photo} alt={`Headshot of ${b.name}`} width={900} height={1125} widths={[450, 700, 900]} sizes={headshotSizes} loading="eager" fetchpriority="high" />
             : <span class="sr-only">Photo of {b.name} coming soon</span>}
       </div>
       <div class="profile__body">

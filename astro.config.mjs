@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import assertAppScript from './scripts/assert-app-script.mjs';
+import { SQUARE_IMAGE_HOSTS, SQUARE_IMAGE_PATH_PREFIX } from './src/lib/square-photos.ts';
 
 // Production is https://skullandthrones.com/ (deploy.yml sets SITE_URL and BASE_PATH=/ and public/CNAME names the host).
 // These defaults are only for a bare local `astro build` / `astro dev`: the old GitHub Pages project site,
@@ -67,7 +68,11 @@ export default defineConfig({
     }),
   ],
   image: {
+    // Barber photos from Square (spec §4): astro:assets downloads and optimises them at build like the local
+    // headshots. Exact hosts, shared with the roster's URL check (SQUARE_IMAGE_HOSTS in src/lib/square-photos.ts),
+    // so a URL the roster accepts is always one Astro may fetch.
     // Add the Supabase Storage host here once headshots/portfolio photos move there:
-    // remotePatterns: [{ protocol: 'https', hostname: '<project-ref>.supabase.co' }],
+    // { protocol: 'https', hostname: '<project-ref>.supabase.co' }
+    remotePatterns: SQUARE_IMAGE_HOSTS.map((hostname) => ({ protocol: 'https', hostname, pathname: `${SQUARE_IMAGE_PATH_PREFIX}**` })),
   },
 });

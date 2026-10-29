@@ -33,6 +33,12 @@ export interface SquareItem {
   variations: SquareVariation[];
   /** Catalog IMAGE object ids attached to the item (resolve with include_related_objects). */
   image_ids: string[];
+  /**
+   * URL of the item's first image that resolved (`image_ids` order, IMAGE objects from `include_related_objects`):
+   * the photo Square's own booking page shows for this barber. null = no image, or none of its ids resolved.
+   * Raw from Square: the roster checks host and scheme (`isSquarePhotoUrl` in square-photos.ts) before using it.
+   */
+  image_url: string | null;
 }
 
 /** One service variation of a barber item. */
@@ -100,8 +106,22 @@ export interface CatalogObject {
     image_ids?: string[] | null;
     variations?: CatalogVariation[];
   };
+  /** Only on IMAGE objects (returned in `related_objects`). */
+  image_data?: { url?: string; name?: string; caption?: string };
 }
-interface SearchResponse { objects?: CatalogObject[]; cursor?: string; errors?: { category: string; code: string; detail?: string }[] }
+interface SearchResponse { objects?: CatalogObject[]; related_objects?: CatalogObject[]; cursor?: string; errors?: { category: string; code: string; detail?: string }[] }
+
+/** IMAGE id → url from a search page's `related_objects` (anything that is not an IMAGE with a non-empty string url is ignored). */
+export function imageUrlsById(related: unknown): Map<string, string> {
+  const m = new Map<string, string>();
+  if (!Array.isArray(related)) return m;
+  for (const o of related) {
+    if (!isPlainObject(o) || o.type !== 'IMAGE' || typeof o.id !== 'string' || o.is_deleted) continue;
+    const url = isPlainObject(o.image_data) ? o.image_data.url : undefined;
+    if (typeof url === 'string' && url.trim()) m.set(o.id, url.trim());
+  }
+  return m;
+}
 
 type Located = Pick<CatalogObject, 'present_at_all_locations' | 'present_at_location_ids' | 'absent_at_location_ids'>;
 
@@ -121,8 +141,11 @@ function minutesOf(ms: number | null | undefined): number | null {
   return m >= 1 ? m : null;
 }
 
-/** Pure: catalog ITEM object → SquareItem (null when it is not an item sold at this location). */
-export function toSquareItem(o: CatalogObject, locationId: string): SquareItem | null {
+/**
+ * Pure: catalog ITEM object → SquareItem (null when it is not an item sold at this location).
+ * `images` (IMAGE id → url, from `imageUrlsById`) resolves `image_url`; without it `image_url` is null.
+ */
+export function toSquareItem(o: CatalogObject, locationId: string, images: ReadonlyMap<string, string> = new Map()): SquareItem | null {
   if (o.type !== 'ITEM' || o.is_deleted || !o.item_data || !isAtLocation(o, locationId)) return null;
   const d = o.item_data;
   const here = (d.variations ?? []).filter((v) => !v.is_deleted && isAtLocation(v, locationId));
@@ -159,7 +182,8 @@ export function toSquareItem(o: CatalogObject, locationId: string): SquareItem |
         available_for_booking: v.item_variation_data?.available_for_booking !== false,
       };
     }),
-    image_ids: [...(d.image_ids ?? [])],
+    image_ids: [...(Array.isArray(d.image_ids) ? d.image_ids : [])],
+    image_url: (Array.isArray(d.image_ids) ? d.image_ids : []).map((id) => images.get(id)).find((u): u is string => Boolean(u)) ?? null,
   };
 }
 
@@ -285,8 +309,10 @@ export async function squareCall<T extends object>(label: string, url: string, i
 
 /**
  * Lists every catalog ITEM present at `locationId` for the merchant that owns `token`.
- * POST /v2/catalog/search, paginated via `cursor`, through `squareCall` (retries, strict bodies). Throws
+ * POST /v2/catalog/search with `include_related_objects` (each page's IMAGE objects resolve that page's
+ * `image_ids` into `image_url`), paginated via `cursor`, through `squareCall` (retries, strict bodies). Throws
  * SquareApiError so the caller can decide to fall back (the content loader never lets this fail the build).
+ * A malformed `related_objects` only costs the photos, never the roster.
  */
 export async function listSquareItems(token: string, locationId: string, opts: ListOptions = {}): Promise<SquareItem[]> {
   const items: SquareItem[] = [];
@@ -296,10 +322,11 @@ export async function listSquareItems(token: string, locationId: string, opts: L
     const body = await squareCall<SearchResponse>('Square catalog search', `${opts.apiBase ?? SQUARE_API}/v2/catalog/search`, {
       method: 'POST',
       token,
-      body: JSON.stringify({ object_types: ['ITEM'], include_deleted_objects: false, limit: 1000, ...(cursor ? { cursor } : {}) }),
+      body: JSON.stringify({ object_types: ['ITEM'], include_deleted_objects: false, include_related_objects: true, limit: 1000, ...(cursor ? { cursor } : {}) }),
     }, opts);
+    const images = imageUrlsById(body.related_objects);
     for (const o of arrayField<CatalogObject>(body as Record<string, unknown>, 'objects', 'Square catalog search')) {
-      const item = isPlainObject(o) ? toSquareItem(o, locationId) : null;
+      const item = isPlainObject(o) ? toSquareItem(o, locationId, images) : null;
       if (item) items.push(item);
     }
     cursor = typeof body.cursor === 'string' && body.cursor ? body.cursor : undefined;

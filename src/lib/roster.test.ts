@@ -1,13 +1,14 @@
 /* npm test  (node --test; Node 22.18+ runs .ts directly). No network: Square is faked. */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { isBarberItem, mergeRoster, slugify, cleanBio, squareBio, BIO_MAX, type Row } from './roster.ts';
-import { listSquareItems, toSquareItem, type CatalogObject, type SquareItem } from './square.ts';
+import { isBarberItem, mergeRoster, mergeRosterCheckingPhotos, photoTeamMember, slugify, cleanBio, squareBio, squarePhoto, BIO_MAX, type Row } from './roster.ts';
+import { imageUrlsById, listSquareItems, toSquareItem, type CatalogObject, type SquareItem } from './square.ts';
+import type { PhotoCheck } from './square-photos.ts';
 
 const ADDISON = 'D11BVA91E8V3N';
 const sq = (item_id: string, name: string, extra: Partial<SquareItem> = {}): SquareItem => ({
   item_id, name, price_from: 45, duration_minutes: 45, description: '', product_type: 'APPOINTMENTS_SERVICE', is_archived: false,
-  variations: [], image_ids: [], ...extra,
+  variations: [], image_ids: [], image_url: null, ...extra,
 });
 const row = (slug: string, item_id: string, location = 'addison', extra: Record<string, unknown> = {}): Row => ({
   slug, name: slug[0]!.toUpperCase() + slug.slice(1), location, item_id, tier: 'barber', role: 'Barber', haircut_from: 40,
@@ -236,4 +237,186 @@ test('mergeRoster profiles: rows of a shop that was not fetched are untouched', 
   const elm = row('javier', 'E1', 'elmhurst', { bio: '' });
   const { rows } = mergeRoster({ rows: [row('nick', 'A1'), elm], square: { addison: [sq('A1', 'Nick')] }, profiles: PROFILES });
   assert.deepEqual(rows.find((r) => r.slug === 'javier'), elm);
+});
+
+/* ---------- Headshots from Square (spec §4) ---------- */
+// Real host shapes (production, read-only 2026-10-29); the hashes are made up.
+const ITEM_IMG = 'https://items-images-production.s3.us-west-2.amazonaws.com/files/aaaa1111/original.jpeg';
+const ITEM_IMG_2 = 'https://items-images-production.s3.us-west-2.amazonaws.com/files/bbbb2222/original.jpeg';
+const STAFF_IMG = 'https://appointments-production-f.squarecdn.com/files/cccc3333/original.jpg';
+const STAFF = new Map<string, { description?: string; profile_image_url?: string | null; display_name?: string }>([
+  ['TM_ERIC', { display_name: 'Eric', profile_image_url: STAFF_IMG }],
+  ['TM_BELLA', { display_name: 'Bella', profile_image_url: 'https://appointments-production-f.squarecdn.com/files/bella/original.jpg' }],
+  ['TM_NICK', { display_name: 'Nick Celli', profile_image_url: 'https://appointments-production-f.squarecdn.com/files/nick/original.jpg' }],
+  ['TM_NOPHOTO', { display_name: 'Fabi', profile_image_url: null }],
+  ['TM_HTTP', { display_name: 'Http', profile_image_url: 'http://appointments-production-f.squarecdn.com/files/x/original.jpg' }],
+]);
+
+test('squarePhoto precedence: item image → staff photo → none', () => {
+  const both = { name: 'Eric el Samurai', image_url: ITEM_IMG, variations: [hv('H', 'Haircut', ['TM_ERIC'])] };
+  assert.deepEqual(squarePhoto(both, STAFF), { url: ITEM_IMG, from: 'item' }, 'the item image (what Square\'s booking page shows) wins');
+  assert.deepEqual(squarePhoto({ ...both, image_url: null }, STAFF), { url: STAFF_IMG, from: 'profile' });
+  assert.equal(squarePhoto({ ...both, image_url: null }, undefined), null, 'no profiles = no staff photo');
+  assert.equal(squarePhoto({ name: 'Fabi', image_url: null, variations: [hv('H', 'Haircut', ['TM_NOPHOTO'])] }, STAFF), null);
+  assert.equal(squarePhoto({ name: 'Nobody', image_url: null, variations: [] }, STAFF), null);
+});
+
+test('squarePhoto: only https URLs on the Square photo hosts count; others are ignored with a warning', () => {
+  const warnings: string[] = [];
+  const bad = ['http://items-images-production.s3.us-west-2.amazonaws.com/files/a/original.jpeg', 'https://evil.example/files/a.jpg', 'https://items-images-production.s3.us-west-2.amazonaws.com.evil.example/files/a.jpg', '/files/a.jpg', 'not a url', 'https://items-images-production.s3.us-west-2.amazonaws.com/other/a.jpg', 'https://u:p@appointments-production-f.squarecdn.com/files/a.jpg'];
+  for (const image_url of bad) {
+    assert.equal(squarePhoto({ name: 'X', image_url, variations: [] }, STAFF, { warnings, label: 'x' }), null, image_url);
+  }
+  assert.equal(warnings.length, bad.length);
+  assert.match(warnings[0]!, /^x: Square item image ignored \(not an https URL on a Square photo host\)/);
+  // A bad item image falls through to a good staff photo; a bad staff photo is ignored too.
+  assert.deepEqual(squarePhoto({ name: 'Eric', image_url: 'https://evil.example/files/a.jpg', variations: [hv('H', 'Haircut', ['TM_ERIC'])] }, STAFF), { url: STAFF_IMG, from: 'profile' });
+  const w2: string[] = [];
+  assert.equal(squarePhoto({ name: 'Http', image_url: null, variations: [hv('H', 'Haircut', ['TM_HTTP'])] }, STAFF, { warnings: w2 }), null);
+  assert.match(w2[0]!, /staff photo ignored/);
+});
+
+test('photoTeamMember: one team member, or the one whose name matches on a shared service, else none', () => {
+  assert.equal(photoTeamMember({ name: 'Eric el Samurai', variations: [hv('H', 'Haircut', ['TM_ERIC'])] }, STAFF), 'TM_ERIC');
+  const shared = [hv('H', 'Haircut', ['TM_NICK', 'TM_BELLA', 'TM_ERIC'])];
+  assert.equal(photoTeamMember({ name: 'Bella', variations: shared }, STAFF), 'TM_BELLA');
+  assert.equal(photoTeamMember({ name: 'Nick Celli', variations: shared }, STAFF), 'TM_NICK');
+  assert.equal(photoTeamMember({ name: 'Christian', variations: shared }, STAFF), undefined, 'never a colleague\'s face');
+  assert.equal(photoTeamMember({ name: 'Christian', variations: shared }, undefined), undefined);
+  assert.equal(photoTeamMember({ name: 'Rudy', variations: [hv('H', 'Haircut', []), hv('B', 'Beard', ['TM_ERIC'])] }, STAFF), 'TM_ERIC', 'first staffed variation when the haircut has nobody');
+});
+
+test('mergeRoster photos: a Square photo sets headshot + headshot_source square; none keeps the row as it was', () => {
+  const { rows, photos } = mergeRoster({
+    rows: [
+      row('eric', 'A1'),
+      row('juan', 'A2', 'addison', { headshot_source: 'client', headshot: 'https://cms.example/juan.jpg' }),
+      row('fabi', 'A3'),
+      row('angel', 'A4', 'addison', { placeholder_fields: ['role', 'headshot'] }),
+    ],
+    square: { addison: [
+      sq('A1', 'Eric', { image_url: ITEM_IMG, variations: [hv('H', 'Haircut', ['TM_ERIC'])] }),
+      sq('A2', 'Juan', { image_url: ITEM_IMG_2 }),
+      sq('A3', 'Fabi', { variations: [hv('H', 'Haircut', ['TM_NOPHOTO'])] }),
+      sq('A4', 'Angel', { variations: [hv('H', 'Haircut', ['TM_ERIC'])] }),
+    ] },
+    profiles: STAFF,
+  });
+  const by = (slug: string) => rows.find((r) => r.slug === slug)!;
+  assert.deepEqual([by('eric').headshot, by('eric').headshot_source], [ITEM_IMG, 'square']);
+  assert.deepEqual([by('juan').headshot, by('juan').headshot_source], [ITEM_IMG_2, 'square'], 'Square wins over a hand-set remote headshot');
+  assert.deepEqual([by('fabi').headshot, by('fabi').headshot_source], [undefined, 'instagram-profile'], 'no Square photo: row unchanged (local file renders)');
+  assert.deepEqual([by('angel').headshot, by('angel').headshot_source], [STAFF_IMG, 'square']);
+  assert.deepEqual(by('angel').placeholder_fields, ['role'], 'a real photo is no longer a placeholder field');
+  assert.deepEqual(photos, { eric: 'item', juan: 'item', angel: 'profile' });
+});
+
+test('mergeRoster photos: newcomers get the Square photo; unfetched shops and rejected URLs are untouched', () => {
+  const square = { addison: [sq('A1', 'Nick'), sq('NEW', 'Newbie', { image_url: ITEM_IMG })] };
+  const fresh = mergeRoster({ rows: [row('nick', 'A1')], square }).rows.find((r) => r.item_id === 'NEW')!;
+  assert.deepEqual([fresh.headshot, fresh.headshot_source, fresh.needs_profile], [ITEM_IMG, 'square', true]);
+  assert.deepEqual(fresh.placeholder_fields, ['role', 'bio', 'specialties']);
+  const elm = row('javier', 'E1', 'elmhurst');
+  assert.deepEqual(mergeRoster({ rows: [row('nick', 'A1'), elm], square }).rows.find((r) => r.slug === 'javier'), elm);
+  const rejected = mergeRoster({ rows: [row('nick', 'A1')], square: { addison: [sq('A1', 'Nick', { image_url: ITEM_IMG })] }, rejectPhotos: new Set([ITEM_IMG]) });
+  assert.equal(rejected.rows[0]!.headshot_source, 'instagram-profile');
+  assert.equal('headshot' in rejected.rows[0]!, false);
+  assert.deepEqual(rejected.photos, {});
+});
+
+test('mergeRosterCheckingPhotos: a failed item image falls to the staff photo, then to the row; each URL checked once', async () => {
+  const input = {
+    rows: [row('eric', 'A1'), row('juan', 'A2'), row('reno', 'A3')],
+    square: { addison: [
+      sq('A1', 'Eric', { image_url: ITEM_IMG, variations: [hv('H', 'Haircut', ['TM_ERIC'])] }), // item 404 → staff ok
+      sq('A2', 'Juan', { image_url: ITEM_IMG_2 }), // item times out, no staff photo → row (local file)
+      sq('A3', 'Reno', { image_url: 'https://items-images-production.s3.us-west-2.amazonaws.com/files/ok/original.jpeg' }),
+    ] },
+    profiles: STAFF,
+  };
+  const asked: string[][] = [];
+  const check = async (urls: string[]): Promise<PhotoCheck[]> => {
+    asked.push(urls);
+    return urls.map((url) => (url === ITEM_IMG ? { url, ok: false, reason: 'HTTP 404' } : url === ITEM_IMG_2 ? { url, ok: false, reason: 'timed out after 8 s' } : { url, ok: true }));
+  };
+  const res = await mergeRosterCheckingPhotos(input, check);
+  const by = (slug: string) => res.rows.find((r) => r.slug === slug)!;
+  assert.deepEqual([by('eric').headshot, by('eric').headshot_source], [STAFF_IMG, 'square']);
+  assert.deepEqual([by('juan').headshot, by('juan').headshot_source], [undefined, 'instagram-profile']);
+  assert.equal(by('reno').headshot_source, 'square');
+  assert.deepEqual(res.photos, { eric: 'profile', reno: 'item' });
+  assert.equal(asked.length, 2, 'second round only for the staff photo');
+  assert.deepEqual(asked[1], [STAFF_IMG]);
+  assert.equal(new Set(asked.flat()).size, asked.flat().length, 'no URL checked twice');
+  assert.equal(res.photoWarnings.length, 2);
+  assert.match(res.photoWarnings.join('\n'), /eric: Square photo failed the pre-check \(HTTP 404\)/);
+  assert.match(res.photoWarnings.join('\n'), /juan: Square photo failed the pre-check \(timed out after 8 s\)/);
+});
+
+test('mergeRosterCheckingPhotos: a check that throws drops every Square photo; no Square photo = no check call', async () => {
+  const input = { rows: [row('eric', 'A1')], square: { addison: [sq('A1', 'Eric', { image_url: ITEM_IMG })] } };
+  const res = await mergeRosterCheckingPhotos(input, async () => { throw new Error('boom'); });
+  assert.equal(res.rows[0]!.headshot_source, 'instagram-profile');
+  assert.match(res.photoWarnings[0]!, /pre-check failed \(boom\)/);
+  let calls = 0;
+  const none = await mergeRosterCheckingPhotos({ rows: [row('eric', 'A1')], square: { addison: [sq('A1', 'Eric')] } }, async () => { calls++; return []; });
+  assert.equal(calls, 0);
+  assert.deepEqual(none.rows, mergeRoster({ rows: [row('eric', 'A1')], square: { addison: [sq('A1', 'Eric')] } }).rows);
+});
+
+/* ---------- square.ts: image ids → URLs (related IMAGE objects) ---------- */
+// Shaped like the production catalog search with include_related_objects (2026-10-29): IMAGE, CATEGORY and TAX objects.
+const relatedFixture = [
+  { type: 'IMAGE', id: 'IMG_A', image_data: { name: '', url: 'https://items-images-production.s3.us-west-2.amazonaws.com/files/757c/original.jpeg', caption: '' } },
+  { type: 'IMAGE', id: 'IMG_B', image_data: { url: 'https://items-images-production.s3.us-west-2.amazonaws.com/files/cfe0/original.jpeg' } },
+  { type: 'IMAGE', id: 'IMG_EMPTY', image_data: { url: '' } },
+  { type: 'IMAGE', id: 'IMG_GONE', is_deleted: true, image_data: { url: 'https://items-images-production.s3.us-west-2.amazonaws.com/files/dead/original.jpeg' } },
+  { type: 'CATEGORY', id: 'CAT', category_data: { name: 'Barbers' } },
+  { type: 'TAX', id: 'TAX' },
+  null,
+  'junk',
+];
+
+test('imageUrlsById: IMAGE objects with a url only', () => {
+  const m = imageUrlsById(relatedFixture);
+  assert.deepEqual([...m.keys()], ['IMG_A', 'IMG_B']);
+  assert.equal(imageUrlsById(undefined).size, 0);
+  assert.equal(imageUrlsById({ not: 'a list' }).size, 0);
+});
+
+test('toSquareItem: image_url = the first image id that resolves; ids kept; none = null', () => {
+  const images = imageUrlsById(relatedFixture);
+  const o = obj('X');
+  o.item_data!.image_ids = ['IMG_MISSING', 'IMG_EMPTY', 'IMG_B', 'IMG_A'];
+  const item = toSquareItem(o, ADDISON, images)!;
+  assert.equal(item.image_url, 'https://items-images-production.s3.us-west-2.amazonaws.com/files/cfe0/original.jpeg');
+  assert.deepEqual(item.image_ids, ['IMG_MISSING', 'IMG_EMPTY', 'IMG_B', 'IMG_A']);
+  assert.equal(toSquareItem(obj('Y'), ADDISON, images)!.image_url, null, 'no image_ids');
+  assert.equal(toSquareItem(o, ADDISON)!.image_url, null, 'no related objects passed');
+});
+
+test('listSquareItems: asks for related objects and resolves each page\'s images', async () => {
+  const a = obj('A');
+  a.item_data!.image_ids = ['IMG_A'];
+  const b = obj('B');
+  b.item_data!.image_ids = ['IMG_B'];
+  const pages = [
+    { objects: [a], related_objects: relatedFixture.slice(0, 1), cursor: 'p2' },
+    { objects: [b, obj('C')], related_objects: relatedFixture.slice(1) },
+  ];
+  const bodies: Record<string, unknown>[] = [];
+  const fakeFetch = (async (_url: string, init: RequestInit) => {
+    bodies.push(JSON.parse(String(init.body)));
+    return new Response(JSON.stringify(pages[bodies.length - 1]), { status: 200 });
+  }) as unknown as typeof fetch;
+  const items = await listSquareItems('tok', ADDISON, { fetch: fakeFetch });
+  assert.equal(bodies[0]!.include_related_objects, true);
+  assert.deepEqual(items.map((i) => [i.item_id, i.image_url]), [
+    ['A', 'https://items-images-production.s3.us-west-2.amazonaws.com/files/757c/original.jpeg'],
+    ['B', 'https://items-images-production.s3.us-west-2.amazonaws.com/files/cfe0/original.jpeg'],
+    ['C', null],
+  ]);
+  // A malformed related_objects costs only the photos.
+  const odd = (async () => new Response(JSON.stringify({ objects: [a], related_objects: 'nope' }), { status: 200 })) as unknown as typeof fetch;
+  assert.deepEqual((await listSquareItems('tok', ADDISON, { fetch: odd })).map((i) => [i.item_id, i.image_url]), [['A', null]]);
 });

@@ -1,7 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import type { Barber } from '../lib/data';
-import { localHeadshot } from '../lib/localImages';
+import { headshotFor } from '../lib/localImages';
 import { barberView, parseFile, NEW_CLIENTS } from '../lib/availability';
 // Baked snapshot (deploy.yml copies the `data` branch file here before the build; checked-in default = empty).
 import bakedJson from '../data/availability.json';
@@ -14,8 +14,12 @@ interface Props {
   eager?: boolean;
 }
 const { barber: b, locationName, headingLevel: H = 'h3', eager = false } = Astro.props;
-const local = localHeadshot(b.slug);
-const hasPhoto = Boolean(b.headshot || local);
+// Square photo (headshot_source 'square') → local file → other remote headshot → placeholder (headshotFor, spec §4).
+// A Square URL is downloaded and optimised at build like a local file (astro.config.mjs image.remotePatterns).
+// The template has two <Image> branches only for the types (astro:assets types a remote URL and a local import
+// separately); both render the same markup.
+const photo = headshotFor(b);
+const hasPhoto = Boolean(photo);
 const alt = hasPhoto ? `Headshot of ${b.name}` : `Placeholder headshot for ${b.name}`;
 const flag = b.accepting_new_clients ? NEW_CLIENTS.yes : NEW_CLIENTS.no;
 // Live Square availability (spec §3). null = no data: the chip renders hidden and
@@ -25,10 +29,10 @@ const img = { widths: [300, 450, 600], sizes: '(min-width: 1100px) 22vw, (min-wi
 ---
 <article class="card" data-slug={b.slug} data-loc={b.location} data-needs-profile={b.needs_profile ? '' : undefined}>
   <div class:list={['card__media', !hasPhoto && 'card__media--initials']} data-initials={b.initials}>
-    {local
-      ? <Image src={local} alt={alt} width={600} height={750} {...img} />
-      : b.headshot
-        ? <Image src={b.headshot} alt={alt} width={600} height={750} {...img} />
+    {typeof photo === 'string'
+      ? <Image src={photo} alt={alt} width={600} height={750} {...img} />
+      : photo
+        ? <Image src={photo} alt={alt} width={600} height={750} {...img} />
         : <span class="sr-only">Photo of {b.name} coming soon</span>}
     <div class="card__flags">
       <span class="avail" data-avail={b.item_id} data-shop={b.location} data-state={avail?.state} hidden={!avail}>

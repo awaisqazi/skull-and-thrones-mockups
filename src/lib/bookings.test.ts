@@ -154,9 +154,9 @@ test('listTeamMemberBookingProfiles: GET per location, follows cursor, maps and 
   }) as unknown as typeof fetch;
   const out = await listTeamMemberBookingProfiles('tok', 'LOC1', { fetch: fakeFetch, apiBase: 'https://sq.test' });
   assert.deepEqual(out, [
-    { team_member_id: 'TM1', display_name: 'Christian', is_bookable: true, description: 'Shear work and classic cuts.' },
-    { team_member_id: 'TM2', display_name: 'Front Desk', is_bookable: false, description: '' },
-    { team_member_id: 'TM3', display_name: 'Elyse', is_bookable: true, description: '' },
+    { team_member_id: 'TM1', display_name: 'Christian', is_bookable: true, description: 'Shear work and classic cuts.', profile_image_url: null },
+    { team_member_id: 'TM2', display_name: 'Front Desk', is_bookable: false, description: '', profile_image_url: null },
+    { team_member_id: 'TM3', display_name: 'Elyse', is_bookable: true, description: '', profile_image_url: 'https://x.test/a.jpg' },
   ], 'is_bookable unset counts as bookable; a profile without an id is dropped');
   assert.equal(seen.length, 2);
   const u0 = new URL(seen[0]!.url), u1 = new URL(seen[1]!.url);
@@ -166,6 +166,20 @@ test('listTeamMemberBookingProfiles: GET per location, follows cursor, maps and 
   assert.equal(seen[0]!.init.method, 'GET');
   assert.equal(seen[0]!.init.body, undefined, 'a GET carries no body');
   assert.equal((seen[0]!.init.headers as Record<string, string>).Authorization, 'Bearer tok');
+});
+
+test('listTeamMemberBookingProfiles: profile_image_url is trimmed; missing, empty or not a string = null', async () => {
+  const photo = 'https://appointments-production-f.squarecdn.com/files/ed1732a03032bb3b73893f15c499385b/original.jpg';
+  const page = profilePage([
+    { team_member_id: 'P1', display_name: 'Eric', is_bookable: true, profile_image_url: `  ${photo} ` },
+    { team_member_id: 'P2', display_name: 'Fabi', is_bookable: true },
+    { team_member_id: 'P3', display_name: 'Blank', profile_image_url: '   ' },
+    { team_member_id: 'P4', display_name: 'Odd', profile_image_url: { url: photo } },
+    { team_member_id: 'P5', display_name: 'Num', profile_image_url: 42 },
+  ]);
+  const fakeFetch = (async () => new Response(JSON.stringify(page), { status: 200 })) as unknown as typeof fetch;
+  const out = await listTeamMemberBookingProfiles('t', 'L', { fetch: fakeFetch });
+  assert.deepEqual(out.map((p) => [p.team_member_id, p.profile_image_url]), [['P1', photo], ['P2', null], ['P3', null], ['P4', null], ['P5', null]]);
 });
 
 test('listTeamMemberBookingProfiles: same retry policy as searchAvailability; 401 is not retried', async () => {
@@ -210,8 +224,8 @@ test('isAuthFailure: 401/403 from either client; outages and other errors are no
 
 test('bookableFrom: profile flag wins; missing from the list = bookable; no list = unknown', () => {
   const m = profilesById([
-    { team_member_id: 'ON', display_name: 'On', is_bookable: true, description: '' },
-    { team_member_id: 'OFF', display_name: 'Off', is_bookable: false, description: '' },
+    { team_member_id: 'ON', display_name: 'On', is_bookable: true, description: '', profile_image_url: null },
+    { team_member_id: 'OFF', display_name: 'Off', is_bookable: false, description: '', profile_image_url: null },
   ]);
   assert.equal(bookableFrom(m, 'ON'), true);
   assert.equal(bookableFrom(m, 'OFF'), false);

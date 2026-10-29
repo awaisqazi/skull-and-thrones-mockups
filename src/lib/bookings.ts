@@ -8,7 +8,7 @@
  *
  * Pure fetch, no SDK, no Astro imports, so `node --test` and scripts/fetch-availability.mjs load it
  * directly. The pure helpers (pickBookableVariation, summarise) are unit-tested in bookings.test.ts.
- * listTeamMemberBookingProfiles reads GET /v2/bookings/team-member-booking-profiles (is_bookable + bio).
+ * listTeamMemberBookingProfiles reads GET /v2/bookings/team-member-booking-profiles (is_bookable + bio + staff photo).
  */
 import { SQUARE_API, SquareApiError, arrayField, squareCall, standardHaircut, type ListOptions, type SquareErrorBody, type SquareItem, type SquareVariation } from './square.ts';
 
@@ -75,9 +75,15 @@ export interface BookingProfile {
   is_bookable: boolean;
   /** The bio typed in Square (optional; '' when not set). */
   description: string;
+  /**
+   * The staff profile photo (Square: Staff → team member → photo), e.g.
+   * https://appointments-production-f.squarecdn.com/files/<hash>/original.jpg. null when not set or not a string.
+   * Raw from Square: the roster checks host and scheme before using it (square-photos.ts).
+   */
+  profile_image_url: string | null;
 }
 interface ProfilesResponse extends SquareErrorBody {
-  team_member_booking_profiles?: { team_member_id?: string; display_name?: string; is_bookable?: boolean; description?: string }[];
+  team_member_booking_profiles?: { team_member_id?: string; display_name?: string; is_bookable?: boolean; description?: string; profile_image_url?: string }[];
   cursor?: string;
 }
 
@@ -102,6 +108,7 @@ export async function listTeamMemberBookingProfiles(token: string, locationId: s
         // Square omits is_bookable only for profiles that are bookable; treat unset as bookable (never hide on doubt).
         is_bookable: p.is_bookable !== false,
         description: typeof p.description === 'string' ? p.description.trim() : '',
+        profile_image_url: typeof p.profile_image_url === 'string' && p.profile_image_url.trim() ? p.profile_image_url.trim() : null,
       });
     }
     cursor = typeof json.cursor === 'string' && json.cursor ? json.cursor : undefined;
