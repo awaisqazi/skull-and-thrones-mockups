@@ -49,7 +49,12 @@ test('checkPhotoUrl: a hung host times out (real AbortSignal timer) and a networ
     init.signal!.addEventListener('abort', () => reject(init.signal!.reason));
   }));
   const t0 = Date.now();
-  assert.deepEqual(await checkPhotoUrl(STAFF, { fetch: hang.f, timeoutMs: 50 }), { url: STAFF, ok: false, reason: 'timed out after 0.05 s' });
+  // AbortSignal.timeout's timer is unref'd; with a fake fetch nothing else keeps Node 22's event loop alive,
+  // so the runner would exit with the promise pending. A ref'd timer keeps the loop up (same as resilience.test.ts).
+  const keepAlive = setTimeout(() => {}, 5000);
+  try {
+    assert.deepEqual(await checkPhotoUrl(STAFF, { fetch: hang.f, timeoutMs: 50 }), { url: STAFF, ok: false, reason: 'timed out after 0.05 s' });
+  } finally { clearTimeout(keepAlive); }
   assert.ok(Date.now() - t0 < 2000);
   const down = fake(() => { throw new TypeError('fetch failed'); });
   assert.deepEqual(await checkPhotoUrl(STAFF, { fetch: down.f }), { url: STAFF, ok: false, reason: 'network error (fetch failed)' });
