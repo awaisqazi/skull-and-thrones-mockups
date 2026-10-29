@@ -205,6 +205,17 @@ const locations = defineCollection({
     square_location_id: z.string(),
     any_artist_item_id: z.string(),
     map_query: z.string(),
+    /**
+     * The shop's Google Maps place URL (Maps > Share > Copy link). Optional:
+     * when set it becomes JSON-LD `hasMap` and a `sameAs` entry (src/lib/schema.ts); until then `hasMap` falls back to
+     * the address search URL and `sameAs` has Instagram only.
+     */
+    google_maps_url: z.string().url().nullish(),
+    /** Decimal degrees with 5+ decimals, from the Business Profile / Maps pin. Absent = no JSON-LD `geo` (never guessed). */
+    latitude: z.number().min(-90).max(90).nullish(),
+    longitude: z.number().min(-180).max(180).nullish(),
+    /** The name exactly as the Google listing shows it (JSON-LD `name` should match it). Absent = the site name. */
+    google_listing_name: z.string().nullish(),
     parking: z.string().optional(),
     /** Instagram handle (no @) for this location; both shops currently share @skullandthrones. */
     instagram: z.string().optional(),

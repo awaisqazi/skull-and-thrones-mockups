@@ -1,5 +1,5 @@
 {
-  "_note": "Both shops. Hours: days use 0 = Sunday … 6 = Saturday, times are 24h shop-local (America/Chicago). square_booking_url is the location's Square services page; per-barber URLs append /{item_id}. square_location_id is the Square location id inside that URL; the build uses it to list each shop's Square catalog (SQUARE_TOKEN_ADDISON / SQUARE_TOKEN_ELMHURST). Parking text is PLACEHOLDER until the client confirms. instagram/notes verified from @skullandthrones on 2026-10-07; there is one shared Instagram account for both shops. Walk-in policy, gift cards and prices were NOT found on Instagram.",
+  "_note": "Both shops. Hours: days use 0 = Sunday … 6 = Saturday, times are 24h shop-local (America/Chicago). square_booking_url is the location's Square services page; per-barber URLs append /{item_id}. square_location_id is the Square location id inside that URL; the build uses it to list each shop's Square catalog (SQUARE_TOKEN_ADDISON / SQUARE_TOKEN_ELMHURST). Parking text is PLACEHOLDER until the client confirms. instagram/notes verified from @skullandthrones on 2026-10-07; there is one shared Instagram account for both shops. Walk-in policy, gift cards and prices were NOT found on Instagram. google_maps_url / latitude / longitude / google_listing_name: from the live Google Maps listings (verified 2026-10-30; google_maps_url is the place's cid URL). They feed JSON-LD hasMap, a sameAs entry, geo and the node name (src/lib/schema.ts). Set any of them to null to drop it (hasMap then falls back to the address-search URL, name to the site name).",
   "locations": [
     {
       "slug": "addison",
@@ -46,6 +46,10 @@
       "square_location_id": "D11BVA91E8V3N",
       "any_artist_item_id": "UPKLK2CAHWYINF22WNWPSCY4",
       "map_query": "1405 W Lake Street, Addison, IL 60101",
+      "google_maps_url": "https://maps.google.com/?cid=7409634362052936548",
+      "latitude": 41.9453839,
+      "longitude": -88.0232381,
+      "google_listing_name": "Skull & Thrones",
       "parking": "Details to confirm with client (lot / street / meters).",
       "placeholder_fields": [
         "parking"
@@ -100,6 +104,10 @@
       "square_location_id": "L65DF5AG5BDAN",
       "any_artist_item_id": "YWLSORKMSZEAIER66TICZXKB",
       "map_query": "183 N. York St., Elmhurst, IL 60126",
+      "google_maps_url": "https://maps.google.com/?cid=13349482931740690172",
+      "latitude": 41.9025834,
+      "longitude": -87.9392646,
+      "google_listing_name": "Skull & Thrones Hair Society",
       "parking": "Details to confirm with client (lot / street / meters).",
       "placeholder_fields": [
         "parking"

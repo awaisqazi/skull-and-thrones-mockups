@@ -13,6 +13,8 @@ import { SITE } from '../lib/site';
 import { url } from '../lib/url';
 import { DEFAULT_LIVE_URL, parseFile, slimFile } from '../lib/availability';
 import { jsonForScript } from '../lib/safe';
+import { buildJsonLd } from '../lib/schema';
+import { localLocationPhoto } from '../lib/localImages';
 import bakedAvailability from '../data/availability.json';
 
 export type NavKey = 'home' | 'team' | 'portfolio' | 'culture' | 'shop' | 'book' | 'contact' | 'none';
@@ -37,55 +39,24 @@ const og = await getImage({ src: ogSource, width: 1200, height: 630, format: 'pn
 const ogImage = new URL(og.src, site).href;
 
 const locations = await getLocations();
-const orgId = new URL(url('#organization'), site).href;
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'Organization',
-      '@id': orgId,
-      name: SITE.name,
-      alternateName: SITE.alt_name,
-      slogan: SITE.slogan,
-      url: new URL(url(''), site).href,
-      logo: new URL(url('logo-512.png'), site).href,
-      email: SITE.email,
-      sameAs: [SITE.instagram],
-    },
-    ...locations.map((l) => ({
-      '@type': 'HairSalon',
-      '@id': new URL(url(`${l.slug}/#salon`), site).href,
-      name: `${SITE.name} — ${l.name}`,
-      url: new URL(l.href, site).href,
-      image: ogImage,
-      parentOrganization: { '@id': orgId },
-      telephone: l.phone_e164,
-      email: SITE.email,
-      priceRange: '$$',
-      address: {
-        '@type': 'PostalAddress',
-        streetAddress: l.street,
-        addressLocality: l.city,
-        addressRegion: l.region,
-        postalCode: l.postal_code,
-        addressCountry: 'US',
-      },
-      openingHoursSpecification: l.hours.map((h) => ({
-        '@type': 'OpeningHoursSpecification',
-        dayOfWeek: h.days.map((d) => ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d]),
-        opens: h.opens,
-        closes: h.closes,
-      })),
-      hasMap: l.maps_url,
-      sameAs: [SITE.instagram],
-      potentialAction: {
-        '@type': 'ReserveAction',
-        target: { '@type': 'EntryPoint', urlTemplate: l.square_booking_url, actionPlatform: ['https://schema.org/DesktopWebPlatform', 'https://schema.org/MobileWebPlatform'] },
-        result: { '@type': 'Reservation', name: `Haircut at ${SITE.name} ${l.name}` },
-      },
-    })),
-  ],
-};
+// Structured data lives in src/lib/schema.ts (unit-tested); this only supplies the absolute URLs.
+const abs = (path: string) => new URL(path, site).href;
+const locationPhotos = Object.fromEntries(
+  await Promise.all(locations.map(async (l) => {
+    const src = localLocationPhoto(l.slug);
+    return [l.slug, src ? abs((await getImage({ src, width: 1200 })).src) : undefined] as const;
+  })),
+);
+const jsonLd = buildJsonLd(locations, {
+  site: SITE,
+  abs,
+  orgId: abs(url('#organization')),
+  homeUrl: abs(url('')),
+  locationId: (slug) => abs(url(`${slug}/#salon`)),
+  logo: abs(url('logo-512.png')),
+  fallbackImage: ogImage,
+  locationImage: (slug) => locationPhotos[slug],
+});
 const hours = await getHoursPayload();
 // Live availability chips (spec §3) render on these pages only (barber cards, barber page, /book).
 // They get the baked snapshot plus the live file's URL; src/scripts/availability.ts swaps in newer data.
